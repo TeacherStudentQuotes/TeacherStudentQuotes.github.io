@@ -623,7 +623,7 @@ document.addEventListener('keydown', (e) => {
 
 async function getRealSize() {
   try {
-    const res = await fetch('STZHONGS.TTF', { headers: { 'Range': 'bytes=0-0' } });
+    const res = await fetch('STZHONGS.TTF', { headers: { 'Range': 'bytes=0-0' }, cache: 'no-store' });
     if (res.status === 206) {
       const range = res.headers.get('Content-Range'); // bytes 0-0/12582912
       if (range) {
