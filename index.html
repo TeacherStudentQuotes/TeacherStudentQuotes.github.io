@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>名言</title>
-<meta id="ogDesc" property="og:description" content="教师名言录">
-<meta id="metaDesc" name="description" content="教师名言录">
+
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -548,8 +547,7 @@ function showList() {
   listView.style.display = 'flex';
   quoteView.classList.remove('show');
   document.title = '名言';
-  document.getElementById('ogDesc').setAttribute('content', '教师名言录，共144条名言');
-  document.getElementById('metaDesc').setAttribute('content', '教师名言录，共144条名言');
+
   history.replaceState(null, '', location.pathname + location.search);
 }
 
@@ -562,8 +560,7 @@ function showQuote(index) {
   const q = quotes[index - 1];
   const preview = q.content.length > 20 ? q.content.slice(0, 20) + '...' : q.content;
   document.title = `名言 #${index} — ${q.author}：${preview}`;
-  document.getElementById('ogDesc').setAttribute('content', `${q.author}：${q.content}`);
-  document.getElementById('metaDesc').setAttribute('content', `${q.author}：${q.content}`);
+
   updateHash();
 }
 
