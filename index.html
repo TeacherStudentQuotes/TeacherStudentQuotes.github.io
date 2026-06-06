@@ -3,26 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta id="ogDesc" property="og:description" content="师生语录精选，共144条名言">
+<meta id="metaDesc" name="description" content="师生语录精选，共144条名言">
 <title>名言</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
 
 body {
   background: #f5f0e8;
   font-family: "Noto Serif SC", "SimSun", "宋体", serif;
   overflow: hidden;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .book {
-  width: 90vw;
-  max-width: 800px;
-  height: 85vh;
+  width: 100vw;
+  height: 100vh;
   position: relative;
-  perspective: 1500px;
 }
 
 .page {
@@ -30,35 +31,14 @@ body {
   top: 0; left: 0;
   width: 100%; height: 100%;
   background: #fffef8;
-  border-radius: 4px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
   padding: 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  backface-visibility: hidden;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(100px) rotateY(-15deg);
 }
 
-.page.active {
-  opacity: 1;
-  pointer-events: all;
-  transform: translateX(0) rotateY(0deg);
-  z-index: 10;
-}
-
-.page.prev {
-  opacity: 0;
-  transform: translateX(-100px) rotateY(15deg);
-  z-index: 5;
-}
-
-/* 封面 */
-.cover {
+.page.cover {
   background: #2c2c2c;
   color: #f5f0e8;
 }
@@ -77,7 +57,6 @@ body {
   opacity: 0.7;
 }
 
-/* 名言页 */
 .quote-mark {
   position: absolute;
   font-size: 8rem;
@@ -104,6 +83,7 @@ body {
   color: #333;
   max-width: 90%;
   z-index: 2;
+  transition: opacity 0.3s ease;
 }
 
 .quote-author {
@@ -113,16 +93,21 @@ body {
   font-size: 1.3rem;
   color: #666;
   font-style: italic;
+  transition: opacity 0.3s ease;
 }
 
 .quote-author::before {
   content: "—— ";
 }
 
-.page-number {
+.page-jump {
   position: absolute;
   bottom: 0;
   right: 0;
+  z-index: 20;
+}
+
+.page-jump .page-number {
   width: 60px;
   height: 36px;
   background: #2c2c2c;
@@ -133,22 +118,27 @@ body {
   font-size: 0.9rem;
   font-family: Georgia, serif;
   clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
-  box-shadow: -2px -2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+  user-select: none;
 }
 
-/* 导航提示 */
-.hint {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #999;
+.page-jump input {
+  width: 60px;
+  height: 36px;
+  background: #2c2c2c;
+  color: #f5f0e8;
+  border: none;
+  text-align: center;
   font-size: 0.9rem;
-  opacity: 0.6;
-  pointer-events: none;
+  font-family: Georgia, serif;
+  clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
+  outline: none;
 }
 
-/* 左右点击区域 */
+.page-jump input::placeholder {
+  color: #999;
+}
+
 .click-zone {
   position: fixed;
   top: 0;
@@ -161,9 +151,17 @@ body {
 .click-zone.left { left: 0; }
 .click-zone.right { right: 0; }
 
+.hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #999;
+  font-size: 0.9rem;
+  opacity: 0.6;
+  pointer-events: none;
+}
 
-
-/* 移动端适配 */
 @media (max-width: 600px) {
   .page { padding: 40px 30px; }
   .cover h1 { font-size: 3.5rem; }
@@ -187,31 +185,29 @@ body {
 <script src="quotes.js"></script>
 <script>
 let current = 0;
-const total = quotes.length + 1; // 包含封面
+const total = quotes.length + 1;
 
-function createPages() {
-  const book = document.getElementById('book');
+const book = document.getElementById('book');
 
-  // 封面
-  const cover = document.createElement('div');
-  cover.className = 'page cover active';
-  cover.innerHTML = `<h1>名言</h1><div class="subtitle">—— 师生语录精选</div>`;
-  book.appendChild(cover);
+const coverPage = document.createElement('div');
+coverPage.className = 'page cover';
+coverPage.innerHTML = `<h1>名言</h1><div class="subtitle">—— 师生语录精选</div>`;
+book.appendChild(coverPage);
 
-  // 名言页
-  quotes.forEach((q, i) => {
-    const page = document.createElement('div');
-    page.className = 'page';
-    page.innerHTML = `
-      <div class="quote-mark top-left">“</div>
-      <div class="quote-content">${escapeHtml(q.content)}</div>
-      <div class="quote-author">${escapeHtml(q.author)}</div>
-      <div class="quote-mark bottom-right">”</div>
-      <div class="page-number">${i + 1}</div>
-    `;
-    book.appendChild(page);
-  });
-}
+const quotePage = document.createElement('div');
+quotePage.className = 'page';
+quotePage.style.opacity = '0';
+quotePage.style.pointerEvents = 'none';
+quotePage.innerHTML = `
+  <div class="quote-mark top-left">\u201c</div>
+  <div class="quote-content" id="qContent"></div>
+  <div class="quote-author" id="qAuthor"></div>
+  <div class="quote-mark bottom-right">\u201d</div>
+  <div class="page-jump" id="pageJump">
+    <div class="page-number" id="pageNum" onclick="startJump()"></div>
+  </div>
+`;
+book.appendChild(quotePage);
 
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -219,18 +215,50 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function renderQuote(index) {
+  const q = quotes[index - 1];
+  const contentEl = document.getElementById('qContent');
+  const authorEl = document.getElementById('qAuthor');
+  const numEl = document.getElementById('pageNum');
+
+  contentEl.style.opacity = '0';
+  authorEl.style.opacity = '0';
+
+  setTimeout(() => {
+    contentEl.innerHTML = escapeHtml(q.content);
+    authorEl.innerHTML = escapeHtml(q.author);
+    numEl.textContent = index;
+    contentEl.style.opacity = '1';
+    authorEl.style.opacity = '1';
+  }, 150);
+}
+
 function showPage(index) {
   if (index < 0 || index >= total) return;
-  const pages = document.querySelectorAll('.page');
-  pages.forEach((p, i) => {
-    p.classList.remove('active', 'prev');
-    if (i === index) {
-      p.classList.add('active');
-    } else if (i < index) {
-      p.classList.add('prev');
-    }
-  });
   current = index;
+
+  if (index === 0) {
+    coverPage.style.opacity = '1';
+    coverPage.style.pointerEvents = 'all';
+    quotePage.style.opacity = '0';
+    quotePage.style.pointerEvents = 'none';
+    document.title = '名言';
+    document.getElementById('ogDesc').setAttribute('content', '师生语录精选，共144条名言');
+    document.getElementById('metaDesc').setAttribute('content', '师生语录精选，共144条名言');
+  } else {
+    coverPage.style.opacity = '0';
+    coverPage.style.pointerEvents = 'none';
+    quotePage.style.opacity = '1';
+    quotePage.style.pointerEvents = 'all';
+    renderQuote(index);
+    const q = quotes[index - 1];
+    const preview = q.content.length > 20 ? q.content.slice(0, 20) + '...' : q.content;
+    document.title = `名言 #${index} — ${q.author}：${preview}`;
+    document.getElementById('ogDesc').setAttribute('content', `${q.author}：${q.content}`);
+    document.getElementById('metaDesc').setAttribute('content', `${q.author}：${q.content}`);
+  }
+
+  updateHash();
 }
 
 function nextPage() {
@@ -241,12 +269,61 @@ function prevPage() {
   if (current > 0) showPage(current - 1);
 }
 
+function startJump() {
+  const container = document.getElementById('pageJump');
+  const numEl = document.getElementById('pageNum');
+  const val = numEl.textContent;
+  container.innerHTML = `<input type="number" id="jumpInput" min="1" max="${quotes.length}" value="${val}" onblur="endJump()" onkeydown="if(event.key==='Enter')endJump()">`;
+  const input = document.getElementById('jumpInput');
+  input.focus();
+  input.select();
+}
+
+function endJump() {
+  const input = document.getElementById('jumpInput');
+  const num = parseInt(input.value, 10);
+  const container = document.getElementById('pageJump');
+  container.innerHTML = `<div class="page-number" id="pageNum" onclick="startJump()"></div>`;
+  document.getElementById('pageNum').textContent = current >= 1 ? current : '';
+  if (!isNaN(num) && num >= 1 && num <= quotes.length) {
+    showPage(num);
+  }
+}
+
+function updateHash() {
+  if (current === 0) {
+    history.replaceState(null, '', location.pathname + location.search);
+  } else {
+    history.replaceState(null, '', '#page=' + current);
+  }
+}
+
+function readHash() {
+  const hash = location.hash;
+  if (!hash) return 0;
+  let num = 0;
+  if (hash.startsWith('#page=')) {
+    num = parseInt(hash.slice(6), 10);
+  } else {
+    num = parseInt(hash.slice(1), 10);
+  }
+  if (!isNaN(num) && num >= 1 && num < total) {
+    return num;
+  }
+  return 0;
+}
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') nextPage();
   if (e.key === 'ArrowLeft') prevPage();
 });
 
-createPages();
+showPage(0);
+
+const initialPage = readHash();
+if (initialPage > 0) {
+  showPage(initialPage);
+}
 </script>
 </body>
 </html>
