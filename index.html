@@ -199,6 +199,8 @@ body {
   height: 100vh;
   position: relative;
   display: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .quote-view.show {
@@ -224,6 +226,7 @@ body {
   font-family: 'STZhongsong', Georgia, serif;
   line-height: 1;
   user-select: none;
+  z-index: 5;
 }
 
 .quote-mark.top-left {
@@ -254,6 +257,7 @@ body {
   color: #666;
   font-style: italic;
   transition: opacity 0.3s ease;
+  z-index: 5;
 }
 
 .quote-author::before {
@@ -261,7 +265,7 @@ body {
 }
 
 .page-jump {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   right: 0;
   z-index: 20;
@@ -302,7 +306,7 @@ body {
 .back-btn {
   position: fixed;
   top: 16px;
-  left: 20px;
+  right: 20px;
   padding: 6px 16px;
   border: 1px solid #ccc;
   background: #fffef8;
@@ -330,28 +334,26 @@ body {
 .click-zone.left { left: 0; }
 .click-zone.right { right: 0; }
 
-.hint {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #999;
-  font-size: 0.9rem;
-  opacity: 0.6;
-  pointer-events: none;
-}
+
 
 @media (max-width: 600px) {
   .list-header { padding: 16px 20px 12px; }
   .list-header h1 { font-size: 1.5rem; }
   .list-body { padding: 12px 20px 20px; }
   .list-item-content { white-space: normal; }
-  .page { padding: 40px 30px; }
-  .quote-content { font-size: 1.3rem; line-height: 1.8; }
-  .quote-author { font-size: 1rem; bottom: 60px; right: 50px; }
-  .quote-mark { font-size: 5rem; }
-  .quote-mark.top-left { top: 20px; left: 20px; }
-  .quote-mark.bottom-right { bottom: 20px; right: 20px; }
+  .page {
+    padding: 80px 28px 100px;
+    height: auto;
+    min-height: 100%;
+    justify-content: center;
+  }
+  .quote-content { font-size: 1.2rem; line-height: 1.7; max-width: 100%; }
+  .quote-author { font-size: 1rem; bottom: 70px; right: 24px; }
+  .quote-mark { font-size: 5.5rem; }
+  .quote-mark.top-left { top: 24px; left: 24px; }
+  .quote-mark.bottom-right { bottom: 24px; right: 24px; }
+  .page-jump { bottom: 0; right: 0; }
+  .page-jump .page-number, .page-jump input { width: 48px; height: 32px; font-size: 0.85rem; }
 }
 .loading-overlay {
   position: fixed;
@@ -411,7 +413,6 @@ body {
   <button class="back-btn" onclick="showList()">返回列表</button>
   <div class="click-zone left" onclick="prevPage()"></div>
   <div class="click-zone right" onclick="nextPage()"></div>
-  <div class="hint">点击左右翻页，或使用键盘 ← → 方向键</div>
   <div class="page">
     <div class="quote-mark top-left">“</div>
     <div class="quote-content" id="qContent"></div>
