@@ -20,10 +20,92 @@ body {
   overflow: hidden;
 }
 
-.book {
+/* ===== 列表视图 ===== */
+.list-view {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.list-header {
+  padding: 24px 40px 16px;
+  border-bottom: 1px solid #ddd8ce;
+  flex-shrink: 0;
+  background: #f5f0e8;
+  z-index: 10;
+}
+
+.list-header h1 {
+  font-size: 2rem;
+  color: #333;
+  letter-spacing: 0.15em;
+}
+
+.list-header p {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.list-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 40px 40px;
+}
+
+.list-item {
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  background: #fffef8;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  border: 1px solid #e8e3d9;
+}
+
+.list-item:hover {
+  background: #faf7ef;
+  transform: translateX(4px);
+  border-color: #d5cfc4;
+}
+
+.list-item-index {
+  font-size: 0.85rem;
+  color: #999;
+  font-family: Georgia, serif;
+  min-width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.list-item-content {
+  flex: 1;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.6;
+}
+
+.list-item-author {
+  font-size: 0.85rem;
+  color: #888;
+  flex-shrink: 0;
+}
+
+/* ===== 名言单页视图 ===== */
+.quote-view {
   width: 100vw;
   height: 100vh;
   position: relative;
+  display: none;
+}
+
+.quote-view.show {
+  display: block;
 }
 
 .page {
@@ -36,25 +118,6 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-
-.page.cover {
-  background: #2c2c2c;
-  color: #f5f0e8;
-}
-
-.cover h1 {
-  font-size: 6rem;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-align: center;
-}
-
-.cover .subtitle {
-  margin-top: 20px;
-  font-size: 1.2rem;
-  letter-spacing: 0.2em;
-  opacity: 0.7;
 }
 
 .quote-mark {
@@ -139,6 +202,25 @@ body {
   color: #999;
 }
 
+.back-btn {
+  position: fixed;
+  top: 16px;
+  left: 20px;
+  padding: 6px 16px;
+  border: 1px solid #ccc;
+  background: #fffef8;
+  color: #333;
+  font-family: inherit;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 200;
+}
+
+.back-btn:hover {
+  background: #eee;
+}
+
 .click-zone {
   position: fixed;
   top: 0;
@@ -163,8 +245,11 @@ body {
 }
 
 @media (max-width: 600px) {
+  .list-header { padding: 16px 20px 12px; }
+  .list-header h1 { font-size: 1.5rem; }
+  .list-body { padding: 12px 20px 20px; }
+  .list-item-content { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .page { padding: 40px 30px; }
-  .cover h1 { font-size: 3.5rem; }
   .quote-content { font-size: 1.3rem; line-height: 1.8; }
   .quote-author { font-size: 1rem; bottom: 60px; right: 50px; }
   .quote-mark { font-size: 5rem; }
@@ -175,44 +260,61 @@ body {
 </head>
 <body>
 
-<div class="book" id="book"></div>
+<!-- 列表视图 -->
+<div class="list-view" id="listView">
+  <div class="list-header">
+    <h1>名言</h1>
+    <p>师生语录精选，共 <span id="totalCount">0</span> 条</p>
+  </div>
+  <div class="list-body" id="listBody"></div>
+</div>
 
-<div class="click-zone left" onclick="prevPage()"></div>
-<div class="click-zone right" onclick="nextPage()"></div>
-
-<div class="hint">点击左右翻页，或使用键盘 ← → 方向键</div>
+<!-- 名言单页视图 -->
+<div class="quote-view" id="quoteView">
+  <button class="back-btn" onclick="showList()">返回列表</button>
+  <div class="click-zone left" onclick="prevPage()"></div>
+  <div class="click-zone right" onclick="nextPage()"></div>
+  <div class="hint">点击左右翻页，或使用键盘 ← → 方向键</div>
+  <div class="page">
+    <div class="quote-mark top-left">&ldquo;</div>
+    <div class="quote-content" id="qContent"></div>
+    <div class="quote-author" id="qAuthor"></div>
+    <div class="quote-mark bottom-right">&rdquo;</div>
+    <div class="page-jump" id="pageJump">
+      <div class="page-number" id="pageNum" onclick="startJump()"></div>
+    </div>
+  </div>
+</div>
 
 <script src="quotes.js"></script>
 <script>
 let current = 0;
 const total = quotes.length + 1;
 
-const book = document.getElementById('book');
-
-const coverPage = document.createElement('div');
-coverPage.className = 'page cover';
-coverPage.innerHTML = `<h1>名言</h1><div class="subtitle">—— 师生语录精选</div>`;
-book.appendChild(coverPage);
-
-const quotePage = document.createElement('div');
-quotePage.className = 'page';
-quotePage.style.opacity = '0';
-quotePage.style.pointerEvents = 'none';
-quotePage.innerHTML = `
-  <div class="quote-mark top-left">\u201c</div>
-  <div class="quote-content" id="qContent"></div>
-  <div class="quote-author" id="qAuthor"></div>
-  <div class="quote-mark bottom-right">\u201d</div>
-  <div class="page-jump" id="pageJump">
-    <div class="page-number" id="pageNum" onclick="startJump()"></div>
-  </div>
-`;
-book.appendChild(quotePage);
+const listView = document.getElementById('listView');
+const quoteView = document.getElementById('quoteView');
 
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+function createList() {
+  document.getElementById('totalCount').textContent = quotes.length;
+  const listBody = document.getElementById('listBody');
+  quotes.forEach((q, i) => {
+    const item = document.createElement('div');
+    item.className = 'list-item';
+    item.onclick = () => showQuote(i + 1);
+    const preview = q.content;
+    item.innerHTML = `
+      <span class="list-item-index">${i + 1}</span>
+      <span class="list-item-content">${escapeHtml(preview)}</span>
+      <span class="list-item-author">${escapeHtml(q.author)}</span>
+    `;
+    listBody.appendChild(item);
+  });
 }
 
 function renderQuote(index) {
@@ -233,40 +335,35 @@ function renderQuote(index) {
   }, 150);
 }
 
-function showPage(index) {
-  if (index < 0 || index >= total) return;
+function showList() {
+  listView.style.display = 'flex';
+  quoteView.classList.remove('show');
+  document.title = '名言';
+  document.getElementById('ogDesc').setAttribute('content', '师生语录精选，共144条名言');
+  document.getElementById('metaDesc').setAttribute('content', '师生语录精选，共144条名言');
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+function showQuote(index) {
+  if (index < 1 || index >= total) return;
   current = index;
-
-  if (index === 0) {
-    coverPage.style.opacity = '1';
-    coverPage.style.pointerEvents = 'all';
-    quotePage.style.opacity = '0';
-    quotePage.style.pointerEvents = 'none';
-    document.title = '名言';
-    document.getElementById('ogDesc').setAttribute('content', '师生语录精选，共144条名言');
-    document.getElementById('metaDesc').setAttribute('content', '师生语录精选，共144条名言');
-  } else {
-    coverPage.style.opacity = '0';
-    coverPage.style.pointerEvents = 'none';
-    quotePage.style.opacity = '1';
-    quotePage.style.pointerEvents = 'all';
-    renderQuote(index);
-    const q = quotes[index - 1];
-    const preview = q.content.length > 20 ? q.content.slice(0, 20) + '...' : q.content;
-    document.title = `名言 #${index} — ${q.author}：${preview}`;
-    document.getElementById('ogDesc').setAttribute('content', `${q.author}：${q.content}`);
-    document.getElementById('metaDesc').setAttribute('content', `${q.author}：${q.content}`);
-  }
-
+  listView.style.display = 'none';
+  quoteView.classList.add('show');
+  renderQuote(index);
+  const q = quotes[index - 1];
+  const preview = q.content.length > 20 ? q.content.slice(0, 20) + '...' : q.content;
+  document.title = `名言 #${index} — ${q.author}：${preview}`;
+  document.getElementById('ogDesc').setAttribute('content', `${q.author}：${q.content}`);
+  document.getElementById('metaDesc').setAttribute('content', `${q.author}：${q.content}`);
   updateHash();
 }
 
 function nextPage() {
-  if (current < total - 1) showPage(current + 1);
+  if (current < total - 1) showQuote(current + 1);
 }
 
 function prevPage() {
-  if (current > 0) showPage(current - 1);
+  if (current > 1) showQuote(current - 1);
 }
 
 function startJump() {
@@ -286,16 +383,12 @@ function endJump() {
   container.innerHTML = `<div class="page-number" id="pageNum" onclick="startJump()"></div>`;
   document.getElementById('pageNum').textContent = current >= 1 ? current : '';
   if (!isNaN(num) && num >= 1 && num <= quotes.length) {
-    showPage(num);
+    showQuote(num);
   }
 }
 
 function updateHash() {
-  if (current === 0) {
-    history.replaceState(null, '', location.pathname + location.search);
-  } else {
-    history.replaceState(null, '', '#page=' + current);
-  }
+  history.replaceState(null, '', '#page=' + current);
 }
 
 function readHash() {
@@ -314,15 +407,16 @@ function readHash() {
 }
 
 document.addEventListener('keydown', (e) => {
+  if (!quoteView.classList.contains('show')) return;
   if (e.key === 'ArrowRight') nextPage();
   if (e.key === 'ArrowLeft') prevPage();
 });
 
-showPage(0);
+createList();
 
 const initialPage = readHash();
 if (initialPage > 0) {
-  showPage(initialPage);
+  showQuote(initialPage);
 }
 </script>
 </body>
