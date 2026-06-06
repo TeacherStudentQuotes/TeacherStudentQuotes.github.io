@@ -621,11 +621,28 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') prevPage();
 });
 
+async function getRealSize() {
+  try {
+    const res = await fetch('STZHONGS.TTF', { headers: { 'Range': 'bytes=0-0' } });
+    if (res.status === 206) {
+      const range = res.headers.get('Content-Range'); // bytes 0-0/12582912
+      if (range) {
+        const m = range.match(/\/(\d+)$/);
+        if (m) return parseInt(m[1], 10);
+      }
+    }
+  } catch (e) {}
+  return 0;
+}
+
 async function loadFontWithProgress() {
   const progressNum = document.getElementById('progressNum');
   try {
+    let total = await getRealSize();
     const response = await fetch('STZHONGS.TTF');
-    const total = parseInt(response.headers.get('Content-Length') || '0', 10);
+    if (!total) {
+      total = parseInt(response.headers.get('Content-Length') || '0', 10);
+    }
     const reader = response.body.getReader();
     const chunks = [];
     let loaded = 0;
@@ -650,10 +667,13 @@ async function loadFontWithProgress() {
     const font = new FontFace('STZhongsong', allChunks.buffer);
     await font.load();
     document.fonts.add(font);
+    progressNum.textContent = '100';
   } catch (err) {
     console.error('字体加载失败', err);
   } finally {
-    document.getElementById('loadingOverlay').classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('loadingOverlay').classList.add('hide');
+    }, 200);
   }
 }
 
