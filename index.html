@@ -6,6 +6,7 @@
 <meta id="ogDesc" property="og:description" content="师生语录精选，共144条名言">
 <meta id="metaDesc" name="description" content="师生语录精选，共144条名言">
 <title>名言</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -37,6 +38,12 @@ body {
   z-index: 10;
 }
 
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 .list-header h1 {
   font-size: 2rem;
   color: #333;
@@ -47,6 +54,78 @@ body {
   margin-top: 6px;
   font-size: 0.9rem;
   color: #888;
+}
+
+.filter-wrap {
+  position: relative;
+}
+
+.filter-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ccc;
+  background: #fffef8;
+  color: #555;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.filter-btn:hover {
+  background: #eee;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  min-width: 140px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #fffef8;
+  border: 1px solid #ddd8ce;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  display: none;
+  z-index: 50;
+}
+
+.filter-dropdown.show {
+  display: block;
+}
+
+.filter-option {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  color: #333;
+  cursor: pointer;
+  border-bottom: 1px solid #f0ece3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-option:last-child {
+  border-bottom: none;
+}
+
+.filter-option:hover {
+  background: #f5f0e8;
+}
+
+.filter-option.active {
+  background: #e8e3d9;
+  font-weight: bold;
+}
+
+.filter-option-count {
+  font-size: 0.8rem;
+  color: #999;
+  font-family: Georgia, serif;
+  margin-left: 8px;
 }
 
 .list-body {
@@ -263,8 +342,14 @@ body {
 <!-- 列表视图 -->
 <div class="list-view" id="listView">
   <div class="list-header">
-    <h1>名言</h1>
-    <p>师生语录精选，共 <span id="totalCount">0</span> 条</p>
+    <div>
+      <h1>名言</h1>
+      <p>师生语录精选，共 <span id="totalCount">0</span> 条</p>
+    </div>
+    <div class="filter-wrap">
+      <button class="filter-btn" onclick="toggleFilter()" title="筛选作者"><i class="fas fa-filter"></i></button>
+      <div class="filter-dropdown" id="filterDropdown"></div>
+    </div>
   </div>
   <div class="list-body" id="listBody"></div>
 </div>
@@ -300,12 +385,17 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+let allItems = [];
+let currentFilter = '全部';
+
 function createList() {
   document.getElementById('totalCount').textContent = quotes.length;
   const listBody = document.getElementById('listBody');
+  allItems = [];
   quotes.forEach((q, i) => {
     const item = document.createElement('div');
     item.className = 'list-item';
+    item.dataset.author = q.author;
     item.onclick = () => showQuote(i + 1);
     const preview = q.content;
     item.innerHTML = `
@@ -314,8 +404,59 @@ function createList() {
       <span class="list-item-author">${escapeHtml(q.author)}</span>
     `;
     listBody.appendChild(item);
+    allItems.push(item);
+  });
+  createFilter();
+}
+
+function createFilter() {
+  const dropdown = document.getElementById('filterDropdown');
+  dropdown.innerHTML = '';
+  const authorCounts = {};
+  quotes.forEach(q => {
+    authorCounts[q.author] = (authorCounts[q.author] || 0) + 1;
+  });
+  const sortedAuthors = Object.entries(authorCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(entry => entry[0]);
+  const authors = ['全部', ...sortedAuthors];
+  authors.forEach(author => {
+    const div = document.createElement('div');
+    div.className = 'filter-option' + (author === currentFilter ? ' active' : '');
+    const count = author === '全部' ? quotes.length : (authorCounts[author] || 0);
+    div.innerHTML = `<span>${escapeHtml(author)}</span><span class="filter-option-count">${count}</span>`;
+    div.onclick = (e) => {
+      e.stopPropagation();
+      applyFilter(author);
+    };
+    dropdown.appendChild(div);
   });
 }
+
+function toggleFilter() {
+  const dropdown = document.getElementById('filterDropdown');
+  dropdown.classList.toggle('show');
+}
+
+function applyFilter(author) {
+  currentFilter = author;
+  allItems.forEach(item => {
+    if (author === '全部' || item.dataset.author === author) {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+  createFilter();
+  toggleFilter();
+}
+
+document.addEventListener('click', (e) => {
+  const wrap = document.querySelector('.filter-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('filterDropdown').classList.remove('show');
+  }
+});
 
 function renderQuote(index) {
   const q = quotes[index - 1];

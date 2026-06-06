@@ -40,7 +40,7 @@ const quotes = [
   { author: '叶枫', content: '这个不是斗鸡眼就是帕金森' },
   { author: '高冬梅', content: '乌干达基巴来' },
   { author: '高冬梅', content: '讲黄段子我有年龄优势' },
-  { author: '邓子', content: '有这一个帅哥，我恨不得炫' },
+  { author: '邓婉晴', content: '有这一个帅哥，我恨不得炫' },
   { author: '高冬梅', content: '搞事我真把你拉到前面来扒裤子展示。' },
   { author: '高冬梅', content: '滚一边去' },
   { author: '邓婉晴', content: '多邻国比它（椰子精[?]）猥琐多了' },
