@@ -352,9 +352,43 @@ body {
   .quote-mark.top-left { top: 20px; left: 20px; }
   .quote-mark.bottom-right { bottom: 20px; right: 20px; }
 }
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #f5f0e8;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.4s ease;
+}
+
+.loading-overlay.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spinner {
+  width: 64px;
+  height: 64px;
+  border: 4px solid #ddd;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
 
 <!-- 列表视图 -->
 <div class="list-view" id="listView">
@@ -568,6 +602,10 @@ document.addEventListener('keydown', (e) => {
   if (!quoteView.classList.contains('show')) return;
   if (e.key === 'ArrowRight') nextPage();
   if (e.key === 'ArrowLeft') prevPage();
+});
+
+document.fonts.ready.then(() => {
+  document.getElementById('loadingOverlay').classList.add('hide');
 });
 
 createList();
