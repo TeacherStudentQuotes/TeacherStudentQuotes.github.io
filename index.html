@@ -19,6 +19,13 @@
 /* STZhongsong 字体由 JS 手动加载以显示进度 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* 隐藏所有滚动条 */
+::-webkit-scrollbar { display: none; }
+html, body, .list-body, .filter-dropdown, .quote-view {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 html, body {
   width: 100%;
   height: 100%;
