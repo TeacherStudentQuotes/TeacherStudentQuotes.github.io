@@ -10,7 +10,7 @@
 <style>
 @font-face {
   font-family: 'Computer Modern';
-  src: url('cmu.serif-roman.ttf') format('truetype');
+  src: url('cmu.serif-roman.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -369,8 +369,8 @@ body {
 
 .spinner-wrap {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 84px;
+  height: 84px;
 }
 
 .spinner {
@@ -387,7 +387,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 0.85rem;
+  font-size: 1.4rem;
   color: #333;
   font-family: 'Computer Modern', Cambria, Georgia, serif;
   z-index: 2;
@@ -620,7 +620,7 @@ document.addEventListener('keydown', (e) => {
 
 async function getRealSize() {
   try {
-    const res = await fetch('STZHONGS.TTF', { headers: { 'Range': 'bytes=0-0' }, cache: 'no-store' });
+    const res = await fetch('STZHONGS.woff2', { headers: { 'Range': 'bytes=0-0' }, cache: 'no-store' });
     if (res.status === 206) {
       const range = res.headers.get('Content-Range'); // bytes 0-0/12582912
       if (range) {
@@ -636,7 +636,7 @@ async function loadFontWithProgress() {
   const progressNum = document.getElementById('progressNum');
   try {
     let total = await getRealSize();
-    const response = await fetch('STZHONGS.TTF');
+    const response = await fetch('STZHONGS.woff2');
     if (!total) {
       total = parseInt(response.headers.get('Content-Length') || '0', 10);
     }
