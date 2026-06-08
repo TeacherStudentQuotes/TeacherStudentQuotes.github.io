@@ -228,7 +228,7 @@ const quotes = [
   { author: '高冬梅', content: '你今天就在新竹园打地铺吧' },
   { author: '高冬梅', content: '我把你们家底都翻过了' },
   { author: '高冬梅', content: '好色不一定是缺点，不好色怎么繁衍后代呢？你难道不喜欢帅哥美女吗？虚伪。我反正喜欢看帅哥美女。施宝华你想让我喜欢你，你就变美一点。' },
-  { author: '胡贵妃', content: '孙行者都是拉拉' },
+  { author: '胡诚杰', content: '孙行者都是拉拉' },
   { author: '高冬梅', content: '底部的同学做得跟屎一样' },
   { author: '高冬梅', content: '你们烂就烂吧' },
   { author: '王继玲', content: '我从幼儿园到八年级从来没有写过作业（道法）' },
