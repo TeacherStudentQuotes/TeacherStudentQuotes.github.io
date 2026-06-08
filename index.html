@@ -76,6 +76,62 @@ body {
   position: relative;
 }
 
+.search-wrap {
+  position: relative;
+}
+
+.search-input {
+  width: 180px;
+  height: 36px;
+  padding: 0 44px 0 32px;
+  border: 1px solid #ccc;
+  background: #fffef8;
+  color: #333;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #999;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.search-count {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: #999;
+  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  pointer-events: none;
+}
+
+.search-highlight {
+  background: #ffe082;
+  color: #333;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+@media (max-width: 600px) {
+  .search-input {
+    width: 120px;
+    font-size: 0.9rem;
+  }
+}
+
 .filter-btn {
   width: 36px;
   height: 36px;
@@ -421,9 +477,16 @@ body {
       <h1>名言</h1>
       <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
     </div>
-    <div class="filter-wrap">
-      <button class="filter-btn" onclick="toggleFilter()" title="筛选作者"><i class="fas fa-filter"></i></button>
-      <div class="filter-dropdown" id="filterDropdown"></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="search-wrap">
+        <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="applySearch()">
+        <i class="fas fa-search search-icon"></i>
+        <span class="search-count" id="searchCount"></span>
+      </div>
+      <div class="filter-wrap">
+        <button class="filter-btn" onclick="toggleFilter()" title="筛选作者"><i class="fas fa-filter"></i></button>
+        <div class="filter-dropdown" id="filterDropdown"></div>
+      </div>
     </div>
   </div>
   <div class="list-body" id="listBody"></div>
@@ -461,6 +524,7 @@ function escapeHtml(text) {
 
 let allItems = [];
 let currentFilter = '全部';
+let currentSearch = '';
 
 function createList() {
   document.getElementById('totalCount').textContent = quotes.length;
@@ -470,6 +534,8 @@ function createList() {
     const item = document.createElement('div');
     item.className = 'list-item';
     item.dataset.author = q.author;
+    item.dataset.content = q.content;
+    item.dataset.index = i + 1;
     item.onclick = () => showQuote(i + 1);
     const preview = q.content;
     item.innerHTML = `
@@ -514,15 +580,52 @@ function toggleFilter() {
 
 function applyFilter(author) {
   currentFilter = author;
+  applySearch();
+  createFilter();
+  toggleFilter();
+}
+
+function highlightText(text, query) {
+  if (!query) return escapeHtml(text);
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  let result = '';
+  let lastIndex = 0;
+  let index = lowerText.indexOf(lowerQuery);
+  while (index !== -1) {
+    result += escapeHtml(text.slice(lastIndex, index));
+    result += `<span class="search-highlight">${escapeHtml(text.slice(index, index + query.length))}</span>`;
+    lastIndex = index + query.length;
+    index = lowerText.indexOf(lowerQuery, lastIndex);
+  }
+  result += escapeHtml(text.slice(lastIndex));
+  return result;
+}
+
+function applySearch() {
+  const input = document.getElementById('searchInput');
+  currentSearch = input ? input.value.trim() : '';
+  let visibleCount = 0;
   allItems.forEach(item => {
-    if (author === '全部' || item.dataset.author === author) {
+    const author = item.dataset.author;
+    const content = item.dataset.content;
+    const matchesFilter = currentFilter === '全部' || author === currentFilter;
+    const matchesSearch = !currentSearch ||
+      author.toLowerCase().includes(currentSearch.toLowerCase()) ||
+      content.toLowerCase().includes(currentSearch.toLowerCase());
+    if (matchesFilter && matchesSearch) {
       item.style.display = 'flex';
+      visibleCount++;
+      const contentSpan = item.querySelector('.list-item-content');
+      const authorSpan = item.querySelector('.list-item-author');
+      if (contentSpan) contentSpan.innerHTML = highlightText(content, currentSearch);
+      if (authorSpan) authorSpan.innerHTML = highlightText(author, currentSearch);
     } else {
       item.style.display = 'none';
     }
   });
-  createFilter();
-  toggleFilter();
+  const countEl = document.getElementById('searchCount');
+  if (countEl) countEl.textContent = currentSearch ? visibleCount : '';
 }
 
 document.addEventListener('click', (e) => {
