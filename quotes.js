@@ -479,7 +479,7 @@ const quotes = [
   { author: '高冬梅', content: '以后中国婚姻制度变了，女的娶一个男的回来' },
   { author: '高冬梅', content: '我喜欢这个，和这个……噢，是的，这个是有点帅。那我喜欢这个，这个和这个，我是颜控' },
   { author: '高冬梅', content: '那我以后看你找个丑的对象' },
-  { author: '陈玉玲', content: '差点听成康洲诚带着刘彦君去马尔代夫' },
+  { author: '陈玉玲', content: '差点听成康洲城带着刘彦君去马尔代夫' },
   { author: '叶枫', content: '老子今天猜中上海中考卷了！' },
   { author: '邓婉晴', content: '他居然想找个帅老公？' },
   { author: '叶枫', content: '读书屎，屎读书，读屎书。' },
@@ -489,7 +489,7 @@ const quotes = [
   // 12
   { author: '高冬梅', content: '布了布了布了布了（ble ble ble ble）' },
   { author: '高冬梅', content: '作(zuō)作(zuō)的！' },
-  { author: '叶枫', content: '你（康洲诚）是0我是1' },
+  { author: '叶枫', content: '你（康洲城）是0我是1' },
   { author: '高冬梅', content: '来查我 你们查完我 我就（开始）查你们了' },
   { author: '叶枫', content: '你现在变成自爆卡车啦' },
   { author: '高冬梅', content: '你（柴雨轩）手真好玩' },
