@@ -143,7 +143,7 @@ const quotes = [
   // 9
   { author: '余丹丹', content: '下你个大头' },
   { author: '余丹丹', content: '你的小耳朵听不见' },
-  { author: '范道强', content: '□□□' },
+  { author: '范道强', content: '压儿一（一二一）' },
   { author: '余丹丹', content: '□□□□□□□□□□擦屁股纸' },
   { author: '余丹丹', content: '□□□□□□□□□□□□□□□□' },
   { author: '余丹丹', content: '你怎么□得要死不活的' },
@@ -161,9 +161,9 @@ const quotes = [
   { author: '邓婉晴', content: '小小年纪就一把年纪' },
   { author: '邓婉晴', content: '比我妈还关心别人的人生大事' },
   // 10
-  { author: '邓婉晴', content: '东西夹击把□□灭了' },
-  { author: '邓婉晴', content: '一起把□□□□进来' },
-  { author: '高冬梅', content: '你是□巴□' },
+  { author: '邓婉晴', content: '东西夹击把他给灭了' },
+  { author: '邓婉晴', content: '一起把宗教传进来' },
+  { author: '高冬梅', content: '你是城巴佬' },
   { author: '高冬梅', content: '这个“秃”是“禾”下加一个“几”吧' },
   { author: '高冬梅', content: '□□□□□□' },
   { author: '高冬梅', content: '□□□□□□□□□' },
@@ -216,7 +216,7 @@ const quotes = [
   { author: '毕建清', content: '你是牙膏我是挤吗' },
   { author: '高冬梅', content: '没实力就稀烂一坨屎' },
   { author: '高冬梅', content: '这不废物吗' },
-  { author: '高冬梅', content: '你怎么这么□（让猪八戒□睡你！）' },
+  { author: '高冬梅', content: '你怎么这么□（让猪八戒来睡你！）' },
   { author: '高冬梅', content: '历史不就是史吗' },
   { author: '邓婉晴', content: '不要玩烂梗' },
   // 13
@@ -274,7 +274,7 @@ const quotes = [
   { author: '余丹丹', content: '你们这咋有两个非洲大峡谷啊' },
   // 16
   { author: '叶枫', content: '我们就听着你的声音波浪形地旋转' },
-  { author: '叶枫', content: '什么个情况□□□□□分手啦' },
+  { author: '叶枫', content: '什么个情况你们两个人分手啦' },
   { author: '叶枫', content: '□□□□□□□□' },
   { author: '叶枫', content: '一见钟情□□□□' },
   { author: '叶枫', content: '你□□□□□□一样' },
@@ -331,7 +331,7 @@ const quotes = [
   { author: '毕建清', content: '干什mó？' },
   { author: '毕建清', content: '为什么鸡腿好吃？' },
   { author: '高冬梅', content: '插到底' },
-  { author: '□□', content: '□□把食物分给我' },
+  { author: '□□', content: '猪把食物分给我' },
   { author: '王继玲', content: '算了，我不能爆粗口' },
   { author: '王继玲', content: '这是1+1=2' },
   { author: '王继玲', content: '我感觉你们是不管别人问你们有没有吃饭还是有没有什么爱好，你们的统一回答都是“我要上厕所”' },
