@@ -241,7 +241,7 @@ const quotes = [
   { author: '王继玲', content: '是你们都喜欢的类型吗' },
   { author: '王继玲', content: '来，刚刚在抠鼻屎的郑天星，你来' },
   { author: '王继玲', content: '你们两个男生怎么搞得跟变态一样' },
-  { author: '王继玲', content: '要不要拿个□□□把你那两张卷毛给卷直了' },
+  { author: '王继玲', content: '要不要拿个□□□把你那两根卷毛给卷直了' },
   { author: '高冬梅', content: '你是猪吗？' },
   { author: '高冬梅', content: '见证奇迹的时刻到了' },
   { author: '高冬梅', content: '我生气了' },
