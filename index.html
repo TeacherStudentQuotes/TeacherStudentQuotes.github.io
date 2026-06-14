@@ -360,44 +360,53 @@ body {
   color: #999;
 }
 
-.back-btn, .export-btn {
+.action-bar {
   position: fixed;
   top: 16px;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 1px solid #ccc;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 999px;
   background: #fffef8;
+  border: 1px solid #ccc;
+  z-index: 200;
+}
+
+.action-bar button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
   color: #555;
   font-size: 1rem;
-  border-radius: 4px;
   cursor: pointer;
-  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.15s;
 }
 
-.back-btn {
-  right: 20px;
-}
-
-.export-btn {
-  right: 70px;
-}
-
-.back-btn:hover, .export-btn:hover {
+.action-bar button:hover {
   background: #eee;
 }
 
+.action-bar button:active {
+  background: #e0e0e0;
+}
+
 @media (max-width: 600px) {
-  .back-btn, .export-btn {
+  .action-bar {
+    top: 14px;
+    right: 14px;
+    padding: 3px;
+  }
+  .action-bar button {
     width: 40px;
     height: 40px;
-    font-size: 1rem;
-  }
-  .export-btn {
-    right: 70px;
+    font-size: 0.95rem;
   }
 }
 
@@ -535,8 +544,10 @@ body {
 
 <!-- 名言单页视图 -->
 <div class="quote-view" id="quoteView">
-  <button class="back-btn" onclick="showList()" title="返回列表"><i class="fas fa-arrow-left"></i></button>
-  <button class="export-btn" onclick="exportQuoteImage()" title="导出图片"><i class="fas fa-image"></i></button>
+  <div class="action-bar">
+    <button onclick="showList()" title="返回列表"><i class="fas fa-arrow-left"></i></button>
+    <button onclick="exportQuoteImage()" title="导出图片"><i class="fas fa-image"></i></button>
+  </div>
   <div class="click-zone left" onclick="prevPage()"></div>
   <div class="click-zone right" onclick="nextPage()"></div>
   <div class="page">
