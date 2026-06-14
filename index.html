@@ -1058,7 +1058,8 @@ function exportQuoteImage() {
   ctx.fillStyle = '#999';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText(`名言 #${current}`, width / 2, height - 80);
+  const imageUrl = location.origin + location.pathname + location.hash;
+  ctx.fillText(imageUrl, width / 2, height - 80);
 
   // 黑色梯形页码
   const jumpW = 120;
