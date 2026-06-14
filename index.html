@@ -765,6 +765,7 @@ function highlightText(text, query) {
 function applySearch() {
   const input = document.getElementById('searchInput');
   currentSearch = input ? input.value.trim() : '';
+  updateSearchParam(currentSearch);
   let visibleCount = 0;
   allItems.forEach(item => {
     const author = item.dataset.author;
@@ -786,6 +787,21 @@ function applySearch() {
   });
   const countEl = document.getElementById('searchCount');
   if (countEl) countEl.textContent = currentSearch ? visibleCount : '';
+}
+
+function updateSearchParam(search) {
+  const url = new URL(location.href);
+  if (search) {
+    url.searchParams.set('search', search);
+  } else {
+    url.searchParams.delete('search');
+  }
+  history.replaceState(null, '', url.pathname + url.search + location.hash);
+}
+
+function readSearchParam() {
+  const url = new URL(location.href);
+  return url.searchParams.get('search') || '';
 }
 
 document.addEventListener('click', (e) => {
@@ -864,7 +880,7 @@ function endJump() {
 }
 
 function updateHash() {
-  history.replaceState(null, '', '#page=' + current);
+  history.replaceState(null, '', location.search + '#page=' + current);
 }
 
 function wrapTextForCanvas(ctx, text, maxWidth) {
@@ -1163,6 +1179,13 @@ async function loadFontWithProgress() {
 loadFontWithProgress();
 
 createList();
+
+const initialSearch = readSearchParam();
+if (initialSearch) {
+  const input = document.getElementById('searchInput');
+  if (input) input.value = initialSearch;
+  applySearch();
+}
 
 const initialPage = readHash();
 if (initialPage > 0) {
