@@ -125,6 +125,11 @@ body {
   padding: 0;
 }
 
+.list-jump-wrap {
+  position: relative;
+  display: inline-block;
+}
+
 @media (max-width: 600px) {
   .search-input {
     width: 120px;
@@ -375,14 +380,83 @@ rt {
   content: "—— ";
 }
 
-.page-jump {
+.popover-trigger {
+  position: relative;
+  display: inline-block;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  background: #fffef8;
+  border: 1px solid #ddd8ce;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 12px 14px;
+  display: none;
+  z-index: 210;
+  min-width: 170px;
+}
+
+.popover.show {
+  display: block;
+}
+
+.popover::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: var(--arrow-left, 50%);
+  width: 12px;
+  height: 12px;
+  background: #fffef8;
+  border-left: 1px solid #ddd8ce;
+  border-top: 1px solid #ddd8ce;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.popover-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.popover-label {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.popover-input {
+  width: 64px;
+  height: 34px;
+  padding: 0 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #333;
+  border-radius: 6px;
+  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-size: 0.95rem;
+  text-align: center;
+  outline: none;
+}
+
+.popover-input:focus {
+  border-color: #999;
+}
+
+.popover-total {
+  font-size: 0.85rem;
+  color: #888;
+  font-family: 'Computer Modern', Cambria, Georgia, serif;
+}
+
+.page-indicator {
   position: fixed;
   bottom: 0;
   right: 0;
-  z-index: 20;
-}
-
-.page-jump .page-number {
+  z-index: 30;
   width: 60px;
   height: 36px;
   background: #2c2c2c;
@@ -393,25 +467,7 @@ rt {
   font-size: 0.9rem;
   font-family: 'Computer Modern', Cambria, Georgia, serif;
   clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
-  cursor: pointer;
   user-select: none;
-}
-
-.page-jump input {
-  width: 60px;
-  height: 36px;
-  background: #2c2c2c;
-  color: #f5f0e8;
-  border: none;
-  text-align: center;
-  font-size: 0.9rem;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
-  clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
-  outline: none;
-}
-
-.page-jump input::placeholder {
-  color: #999;
 }
 
 .action-bar {
@@ -494,9 +550,13 @@ rt {
   .quote-mark { font-size: 5.5rem; }
   .quote-mark.top-left { top: 24px; left: 24px; }
   .quote-mark.bottom-right { bottom: 24px; right: 24px; }
-  .page-jump { bottom: 0; right: 0; }
-  .page-jump .page-number, .page-jump input { width: 48px; height: 32px; font-size: 0.85rem; }
 }
+@media (max-width: 600px) {
+  .popover { padding: 10px 12px; min-width: 140px; top: calc(100% + 8px); }
+  .popover-input { width: 56px; height: 30px; font-size: 0.9rem; }
+  .page-indicator { width: 48px; height: 32px; font-size: 0.85rem; }
+}
+
 .loading-overlay {
   position: fixed;
   top: 0; left: 0;
@@ -582,6 +642,16 @@ rt {
       <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
+      <div class="list-jump-wrap" id="listJumpWrap">
+        <button class="filter-btn" onclick="toggleListJumpPopover()" title="跳转至"><i class="fas fa-hashtag"></i></button>
+        <div class="popover popover-list" id="listJumpPopover">
+          <div class="popover-row">
+            <span class="popover-label">跳转至</span>
+            <input type="number" id="listJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value)">
+            <span class="popover-total">/ <span id="listJumpTotal"></span></span>
+          </div>
+        </div>
+      </div>
       <div class="search-wrap">
         <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="applySearch()">
         <i class="fas fa-search search-icon"></i>
@@ -598,20 +668,28 @@ rt {
 
 <!-- 名言单页视图 -->
 <div class="quote-view" id="quoteView">
-  <div class="action-bar">
+  <div class="action-bar" id="actionBar">
     <button onclick="showList()" title="返回列表"><i class="fas fa-arrow-left"></i></button>
     <button onclick="exportQuoteImage()" title="导出图片"><i class="fas fa-image"></i></button>
+    <div class="popover-trigger">
+      <button onclick="toggleJumpPopover()" title="跳转至"><i class="fas fa-hashtag"></i></button>
+      <div class="popover popover-quote" id="jumpPopover">
+      <div class="popover-row">
+        <span class="popover-label">跳转至</span>
+        <input type="number" id="quoteJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToQuote(this.value)">
+        <span class="popover-total">/ <span id="quoteJumpTotal"></span></span>
+      </div>
+    </div>
   </div>
-  <div class="click-zone left" onclick="prevPage()"></div>
+</div>
+<div class="click-zone left" onclick="prevPage()"></div>
   <div class="click-zone right" onclick="nextPage()"></div>
   <div class="page">
     <div class="quote-mark top-left">“</div>
     <div class="quote-content" id="qContent"></div>
     <div class="quote-author" id="qAuthor"></div>
     <div class="quote-mark bottom-right">”</div>
-    <div class="page-jump" id="pageJump">
-      <div class="page-number" id="pageNum" onclick="startJump()"></div>
-    </div>
+    <div class="page-indicator" id="pageIndicator"><span id="pageIndicatorNum"></span></div>
   </div>
 </div>
 
@@ -711,6 +789,11 @@ function createList() {
     allItems.push(item);
   });
   createFilter();
+  document.getElementById('listJumpInput').max = quotes.length;
+  document.getElementById('listJumpInput').placeholder = `1-${quotes.length}`;
+  document.getElementById('listJumpTotal').textContent = quotes.length;
+  document.getElementById('quoteJumpInput').max = quotes.length;
+  document.getElementById('quoteJumpTotal').textContent = quotes.length;
 }
 
 function createFilter() {
@@ -813,13 +896,27 @@ document.addEventListener('click', (e) => {
   if (wrap && !wrap.contains(e.target)) {
     document.getElementById('filterDropdown').classList.remove('show');
   }
+  const actionBar = document.getElementById('actionBar');
+  if (actionBar && !actionBar.contains(e.target)) {
+    document.getElementById('jumpPopover').classList.remove('show');
+  }
+  const listJumpWrap = document.getElementById('listJumpWrap');
+  if (listJumpWrap && !listJumpWrap.contains(e.target)) {
+    document.getElementById('listJumpPopover').classList.remove('show');
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('jumpPopover').classList.remove('show');
+    document.getElementById('listJumpPopover').classList.remove('show');
+  }
 });
 
 function renderQuote(index) {
   const q = quotes[index - 1];
   const contentEl = document.getElementById('qContent');
   const authorEl = document.getElementById('qAuthor');
-  const numEl = document.getElementById('pageNum');
 
   contentEl.style.opacity = '0';
   authorEl.style.opacity = '0';
@@ -827,7 +924,10 @@ function renderQuote(index) {
   setTimeout(() => {
     contentEl.innerHTML = renderContentWithPinyin(q.content, '', 'quote');
     authorEl.innerHTML = escapeHtml(q.author);
-    numEl.textContent = index;
+    const quoteJumpInput = document.getElementById('quoteJumpInput');
+    if (quoteJumpInput) quoteJumpInput.value = index;
+    const pageIndicatorNum = document.getElementById('pageIndicatorNum');
+    if (pageIndicatorNum) pageIndicatorNum.textContent = index;
     contentEl.style.opacity = '1';
     authorEl.style.opacity = '1';
   }, 150);
@@ -862,24 +962,85 @@ function prevPage() {
   if (current > 1) showQuote(current - 1);
 }
 
-function startJump() {
-  const container = document.getElementById('pageJump');
-  const numEl = document.getElementById('pageNum');
-  const val = numEl.textContent;
-  container.innerHTML = `<input type="number" id="jumpInput" min="1" max="${quotes.length}" value="${val}" onblur="endJump()" onkeydown="if(event.key==='Enter')endJump()">`;
-  const input = document.getElementById('jumpInput');
-  input.focus();
-  input.select();
+function jumpToList(value) {
+  const num = parseInt(value, 10);
+  if (isNaN(num) || num < 1 || num > quotes.length) return;
+  document.getElementById('listJumpPopover').classList.remove('show');
+  currentFilter = '全部';
+  currentSearch = '';
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+  applySearch();
+  createFilter();
+  const item = allItems.find(el => parseInt(el.dataset.index, 10) === num);
+  if (item) {
+    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    item.style.backgroundColor = '#ffe082';
+    setTimeout(() => { item.style.backgroundColor = ''; }, 800);
+  }
 }
 
-function endJump() {
-  const input = document.getElementById('jumpInput');
-  const num = parseInt(input.value, 10);
-  const container = document.getElementById('pageJump');
-  container.innerHTML = `<div class="page-number" id="pageNum" onclick="startJump()"></div>`;
-  document.getElementById('pageNum').textContent = current >= 1 ? current : '';
-  if (!isNaN(num) && num >= 1 && num <= quotes.length) {
-    showQuote(num);
+function positionPopover(trigger, popover) {
+  const triggerRect = trigger.getBoundingClientRect();
+  const popoverRect = popover.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const gap = 8;
+  const triggerCenter = triggerRect.left + triggerRect.width / 2;
+  let desiredLeft = triggerCenter - popoverRect.width / 2;
+  const maxLeft = viewportWidth - popoverRect.width - gap;
+  if (desiredLeft < gap) desiredLeft = gap;
+  if (desiredLeft > maxLeft) desiredLeft = maxLeft;
+  const relativeLeft = desiredLeft - triggerRect.left;
+  const arrowLeft = triggerCenter - desiredLeft;
+  popover.style.left = relativeLeft + 'px';
+  popover.style.setProperty('--arrow-left', arrowLeft + 'px');
+}
+
+function toggleListJumpPopover() {
+  const popover = document.getElementById('listJumpPopover');
+  const trigger = document.getElementById('listJumpWrap');
+  const willShow = !popover.classList.contains('show');
+  popover.classList.toggle('show');
+  if (willShow) {
+    popover.style.visibility = 'hidden';
+    requestAnimationFrame(() => {
+      positionPopover(trigger, popover);
+      popover.style.visibility = '';
+      const input = document.getElementById('listJumpInput');
+      input.focus();
+      input.select();
+    });
+  }
+}
+
+function toggleJumpPopover() {
+  const popover = document.getElementById('jumpPopover');
+  const trigger = popover.parentElement;
+  const willShow = !popover.classList.contains('show');
+  popover.classList.toggle('show');
+  if (willShow) {
+    popover.style.visibility = 'hidden';
+    requestAnimationFrame(() => {
+      positionPopover(trigger, popover);
+      popover.style.visibility = '';
+      const input = document.getElementById('quoteJumpInput');
+      input.focus();
+      input.select();
+    });
+  }
+}
+
+function jumpToQuote(value) {
+  const popover = document.getElementById('jumpPopover');
+  const input = document.getElementById('quoteJumpInput');
+  const num = parseInt(value, 10);
+  if (!isNaN(num) && num >= 1 && num < total) {
+    if (num !== current) {
+      showQuote(num);
+      popover.classList.remove('show');
+    }
+  } else {
+    if (input) input.value = current >= 1 ? current : '';
   }
 }
 
@@ -1150,6 +1311,7 @@ function readHash() {
 
 document.addEventListener('keydown', (e) => {
   if (!quoteView.classList.contains('show')) return;
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
   if (e.key === 'ArrowRight') nextPage();
   if (e.key === 'ArrowLeft') prevPage();
 });
