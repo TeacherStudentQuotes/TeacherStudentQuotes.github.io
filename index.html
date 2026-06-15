@@ -54,7 +54,7 @@ body {
   z-index: 10;
 }
 
-.list-header {
+.list-header-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -637,31 +637,31 @@ rt {
 <!-- 列表视图 -->
 <div class="list-view" id="listView">
   <div class="list-header">
-    <div>
+    <div class="list-header-top">
       <h1>名言</h1>
-      <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="list-jump-wrap" id="listJumpWrap">
-        <button class="filter-btn" onclick="toggleListJumpPopover()" title="跳转至"><i class="fas fa-hashtag"></i></button>
-        <div class="popover popover-list" id="listJumpPopover">
-          <div class="popover-row">
-            <span class="popover-label">跳转至</span>
-            <input type="number" id="listJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value)">
-            <span class="popover-total">/ <span id="listJumpTotal"></span></span>
+      <div class="list-header-actions" style="display:flex;align-items:center;gap:10px;">
+        <div class="list-jump-wrap" id="listJumpWrap">
+          <button class="filter-btn" onclick="toggleListJumpPopover()" title="跳转至"><i class="fas fa-hashtag"></i></button>
+          <div class="popover popover-list" id="listJumpPopover">
+            <div class="popover-row">
+              <span class="popover-label">跳转至</span>
+              <input type="number" id="listJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value)">
+              <span class="popover-total">/ <span id="listJumpTotal"></span></span>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="search-wrap">
-        <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="applySearch()">
-        <i class="fas fa-search search-icon"></i>
-        <span class="search-count" id="searchCount"></span>
-      </div>
-      <div class="filter-wrap">
-        <button class="filter-btn" onclick="toggleFilter()" title="筛选作者"><i class="fas fa-filter"></i></button>
-        <div class="filter-dropdown" id="filterDropdown"></div>
+        <div class="search-wrap">
+          <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="applySearch()">
+          <i class="fas fa-search search-icon"></i>
+          <span class="search-count" id="searchCount"></span>
+        </div>
+        <div class="filter-wrap">
+          <button class="filter-btn" onclick="toggleFilter()" title="筛选作者"><i class="fas fa-filter"></i></button>
+          <div class="filter-dropdown" id="filterDropdown"></div>
+        </div>
       </div>
     </div>
+    <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
   </div>
   <div class="list-body" id="listBody"></div>
 </div>
