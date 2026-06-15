@@ -255,6 +255,15 @@ body {
   border-color: #d5cfc4;
 }
 
+@keyframes flashItem {
+  0%, 100% { background-color: #fffef8; }
+  50% { background-color: #ffe082; }
+}
+
+.list-item.flash {
+  animation: flashItem 1s ease-in-out 2;
+}
+
 .list-item-index {
   font-size: 1rem;
   color: #666;
@@ -986,6 +995,31 @@ function prevPage() {
   if (current > 1) showQuote(current - 1);
 }
 
+function runFlashAfterScroll(item) {
+  const listBody = document.getElementById('listBody');
+  let scrollTimer;
+  let fallbackTimer;
+  const cleanup = () => {
+    listBody.removeEventListener('scroll', onScroll);
+    clearTimeout(fallbackTimer);
+    clearTimeout(scrollTimer);
+  };
+  const flash = () => {
+    cleanup();
+    item.classList.remove('flash');
+    void item.offsetWidth;
+    item.classList.add('flash');
+    setTimeout(() => item.classList.remove('flash'), 2000);
+  };
+  const onScroll = () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(flash, 80);
+  };
+  listBody.addEventListener('scroll', onScroll);
+  fallbackTimer = setTimeout(flash, 2000);
+  onScroll();
+}
+
 function jumpToList(value) {
   const num = parseInt(value, 10);
   if (isNaN(num) || num < 1 || num > quotes.length) return;
@@ -999,8 +1033,7 @@ function jumpToList(value) {
   const item = allItems.find(el => parseInt(el.dataset.index, 10) === num);
   if (item) {
     item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    item.style.backgroundColor = '#ffe082';
-    setTimeout(() => { item.style.backgroundColor = ''; }, 800);
+    runFlashAfterScroll(item);
   }
 }
 
