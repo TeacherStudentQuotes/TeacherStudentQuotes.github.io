@@ -19,11 +19,35 @@
 /* STZhongsong 字体由 JS 手动加载以显示进度 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* 隐藏所有滚动条 */
+/* 默认隐藏滚动条 */
 ::-webkit-scrollbar { display: none; }
-html, body, .list-body, .filter-dropdown, .quote-view {
+html, body, .filter-dropdown, .quote-view {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* 列表视图滚动条（低调样式） */
+.list-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.15) transparent;
+}
+
+.list-body::-webkit-scrollbar {
+  display: block;
+  width: 5px;
+}
+
+.list-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.list-body::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 3px;
+}
+
+.list-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.25);
 }
 
 html, body {
