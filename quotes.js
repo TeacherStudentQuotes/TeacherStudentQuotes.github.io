@@ -620,4 +620,10 @@ const quotes = [
   { author: '邓婉晴', content: '假设你现在在外网和一个支持台独的吵架' },
   { author: '邓婉晴', content: '马上来逮你' },
   { author: '邓婉晴', content: '陈知行你根本没有做到知行合一' },
+  { author: '欧阳璟', content: 'This is what?' },
+  { author: '欧阳璟', content: 'Let me see your branches!（指fingers）' },
+  { author: '欧阳璟', content: 'What do you do?' },
+  { author: '叶枫', content: '你们（课后服务1,2班同学）坐着干嘛，快夸我（作业布置得少）啊！' },
+  { author: '叶枫', content: '明天，早上，8点钟以前，（潘言嘉、崔家康）不要在我眼前出现' },
+  { author: '叶枫', content: '你说，像这两个傻屌（潘言嘉、崔家康）' },
 ];
