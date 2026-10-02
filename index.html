@@ -1538,8 +1538,11 @@ const EXPORT_H = 1920;
 // 装饰元素固定尺寸（rem 始终相对 <html> 根，不受父元素字号影响，
 // 故用显式 px 控制，且不随正文自适应字号缩放，避免被等比放大到撑满海报）。
 const EXPORT_MARK_PX = 400;
-const EXPORT_AUTHOR_PX = 26;
-const EXPORT_INDICATOR_FONT_PX = 16;
+// 以下尺寸按手机端各元素与引号(5.5rem)的相对比例，随引号放大
+const EXPORT_AUTHOR_PX = 72;
+const EXPORT_INDICATOR_W = 220;
+const EXPORT_INDICATOR_H = 147;
+const EXPORT_INDICATOR_FONT_PX = 62;
 
 function fitExportFontSize(contentEl, maxHeight) {
   let lo = 20, hi = 64, best = lo;
@@ -1623,7 +1626,7 @@ async function exportQuoteImage() {
   // page-indicator 在网页中为 position:fixed（贴视口右下），海报中改为 absolute 贴海报右下角
   const indicator = document.createElement('div');
   indicator.className = 'page-indicator';
-  indicator.style.cssText = `position:absolute;bottom:0;right:0;font-size:${EXPORT_INDICATOR_FONT_PX}px;`;
+  indicator.style.cssText = `position:absolute;bottom:0;right:0;width:${EXPORT_INDICATOR_W}px;height:${EXPORT_INDICATOR_H}px;font-size:${EXPORT_INDICATOR_FONT_PX}px;`;
   indicator.textContent = String(current);
 
   page.append(markTL, markBR, content, author, indicator);
