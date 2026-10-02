@@ -551,7 +551,7 @@ const quotes = [
     { author: tea('叶子'), content: `你现在变成自爆卡车啦`, tags: ["日常"] },
     { author: tea('高子'), content: `你（${stu(2, 21)}）手真好玩`, tags: ["日常"] },
     { author: tea('叶子'), content: `带分数去死掉`, tags: ["暴言", "作业考试"] },
-    { author: tea('叶子'), content: `π和22/7他娘的什么关系都没有`, tags: ["脏话", "学科"] },
+    { author: tea('叶子'), content: `$\pi$和$\frac{22}7$他娘的什么关系都没有`, tags: ["脏话", "学科"] },
     { author: tea('叶子'), content: `好了，你（${tea('叶子')}的数学老师）今天死掉（超重音）了！`, tags: ["暴言", "学科"] },
     { author: tea('叶子'), content: `哇什么情况`, tags: ["日常"] },
     { author: tea('余子'), content: `我们班谁是拉`, tags: ["日常"] },
