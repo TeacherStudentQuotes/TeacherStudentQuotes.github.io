@@ -9,7 +9,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
-/* Computer Modern、STZhongsong 均由 JS 运行时加载并注入 data URL，确保导出时可内联 */
+@font-face {
+  font-family: 'Computer Modern';
+  src: url('cmu.serif-roman.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+/* STZhongsong 字体由 JS 手动加载以显示进度 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* 默认隐藏滚动条 */
@@ -50,7 +57,7 @@ html, body {
 
 body {
   background: #f5f0e8;
-  font-family: 'STZhongsong', "SimSun", "宋体", serif;
+  font-family: 'Computer Modern', 'STZhongsong', "SimSun", "宋体", serif;
   overflow: hidden;
 }
 
@@ -131,7 +138,7 @@ body {
   transform: translateY(-50%);
   font-size: 0.8rem;
   color: #999;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   pointer-events: none;
 }
 
@@ -311,7 +318,7 @@ body {
 .filter-option-count {
   font-size: 0.8rem;
   color: #999;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   flex-shrink: 0;
 }
 
@@ -460,7 +467,7 @@ body {
 .list-item-index {
   font-size: 1rem;
   color: #666;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   min-width: 42px;
   text-align: right;
   flex-shrink: 0;
@@ -513,7 +520,7 @@ ruby {
 rt {
   font-size: 0.65em;
   color: #888;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   line-height: 1.1;
 }
 
@@ -558,7 +565,7 @@ rt {
   position: absolute;
   font-size: 8rem;
   color: #ddd;
-  font-family: 'STZhongsong', Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Georgia, serif;
   line-height: 1;
   user-select: none;
   z-index: 0;
@@ -668,7 +675,7 @@ rt {
   background: #fff;
   color: #333;
   border-radius: 6px;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   font-size: 0.95rem;
   text-align: center;
   outline: none;
@@ -681,7 +688,7 @@ rt {
 .popover-total {
   font-size: 0.85rem;
   color: #888;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
 }
 
 .page-indicator {
@@ -697,7 +704,7 @@ rt {
   align-items: center;
   justify-content: center;
   font-size: 0.9rem;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 0% 100%);
   user-select: none;
 }
@@ -840,7 +847,7 @@ rt {
   transform: translate(-50%, -50%);
   font-size: 1.4rem;
   color: #333;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   z-index: 2;
 }
 
@@ -903,7 +910,6 @@ rt {
 <div class="quote-view" id="quoteView">
   <div class="action-bar" id="actionBar">
     <button onclick="showList()" title="返回列表"><i class="fas fa-arrow-left"></i></button>
-    <button onclick="exportQuoteImage()" title="导出图片"><i class="fas fa-image"></i></button>
     <div class="popover-trigger">
       <button onclick="toggleJumpPopover()" title="跳转至"><i class="fas fa-hashtag"></i></button>
       <div class="popover popover-quote" id="jumpPopover">
@@ -929,7 +935,6 @@ rt {
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.7.0/dist/index.js"></script>
 <script src="quotes.js"></script>
 <script>
 let current = 0;
@@ -1537,74 +1542,6 @@ function updateHash() {
   history.replaceState(null, '', location.search + '#page=' + current);
 }
 
-// 导出：直接截取当前屏幕上的单页视图（.page），所见即所得，
-// 不再做离屏排版或尺寸缩放，公式/拼音/字体与网页完全一致。
-async function ensureFontsLoaded(root) {
-  if (!document.fonts) return;
-  const families = new Set();
-  root.querySelectorAll('*').forEach(el => {
-    const ff = getComputedStyle(el).fontFamily;
-    if (!ff) return;
-    ff.split(',').forEach(f => {
-      const name = f.trim().replace(/^["']|["']$/g, '');
-      if (name) families.add(name);
-    });
-  });
-  const tasks = [...families].map(name => {
-    const specs = [`16px "${name}"`, `italic 16px "${name}"`, `700 16px "${name}"`];
-    return Promise.all(specs.map(spec => {
-      try { return document.fonts.load(spec); } catch (e) { return Promise.resolve(); }
-    }));
-  });
-  await Promise.all(tasks);
-  try { await document.fonts.ready; } catch (e) {}
-}
-
-async function exportQuoteImage() {
-  const q = quotes[current - 1];
-  if (!q) return;
-  if (typeof modernScreenshot === 'undefined') {
-    alert('导出组件未就绪，请稍后再试');
-    return;
-  }
-
-  const quoteView = document.getElementById('quoteView');
-  if (!quoteView) return;
-
-  // 隐藏右上角按钮栏，导出后恢复
-  const actionBar = quoteView.querySelector('.action-bar');
-  const savedBarDisplay = actionBar ? actionBar.style.display : '';
-  if (actionBar) actionBar.style.display = 'none';
-
-  // 确保字体就绪，避免首次导出公式/拼音回退
-  await ensureFontsLoaded(quoteView);
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-  let blob;
-  try {
-    blob = await modernScreenshot.domToBlob(quoteView, {
-      backgroundColor: '#fffef8',
-      scale: 2,
-      font: { preferredFormat: 'woff2' }
-    });
-  } catch (e) {
-    console.error('导出失败', e);
-    if (actionBar) actionBar.style.display = savedBarDisplay;
-    alert('导出失败');
-    return;
-  }
-
-  if (actionBar) actionBar.style.display = savedBarDisplay;
-
-  if (!blob) return;
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.download = `名言-${current}-${q.author}.png`;
-  link.href = url;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-}
-
 function readHash() {
   const hash = location.hash;
   if (!hash) return 0;
@@ -1682,8 +1619,7 @@ async function loadFontWithProgress() {
       pos += chunk.length;
     }
 
-    // 以 data URL 注入 @font-face：modern-screenshot 导出时可直接从 stylesheet 读取并内联，
-    // 避免 blob URL 在序列化时失效导致华文中宋回退。
+    // 以 data URL 注入 @font-face，确保华文中宋可用
     const blob = new Blob([allChunks], { type: 'font/woff2' });
     const dataUrl = await new Promise((res, rej) => {
       const reader = new FileReader();
@@ -1694,24 +1630,6 @@ async function loadFontWithProgress() {
     const fontFaceStyle = document.createElement('style');
     fontFaceStyle.textContent = `@font-face{font-family:'STZhongsong';src:url('${dataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
     document.head.appendChild(fontFaceStyle);
-
-    // Computer Modern 同样转 data URL 注入：modern-screenshot 导出时可直接内联，
-    // 避免相对路径 fetch 失败导致拼音字体回退。
-    try {
-      const cmuRes = await fetch('cmu.serif-roman.woff2');
-      const cmuBlob = await cmuRes.blob();
-      const cmuDataUrl = await new Promise((res, rej) => {
-        const reader = new FileReader();
-        reader.onload = () => res(reader.result);
-        reader.onerror = rej;
-        reader.readAsDataURL(cmuBlob);
-      });
-      const cmuStyle = document.createElement('style');
-      cmuStyle.textContent = `@font-face{font-family:'Computer Modern';src:url('${cmuDataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
-      document.head.appendChild(cmuStyle);
-    } catch (e) {
-      console.error('CMU 字体加载失败', e);
-    }
 
     setProgress(100);
   } catch (err) {
@@ -1724,17 +1642,6 @@ async function loadFontWithProgress() {
 }
 
 loadFontWithProgress();
-
-// 预热 KaTeX 字体：在离屏元素里渲染一段含分数/根号/π 的公式，
-// 让浏览器提前请求并缓存 KaTeX 字体，避免首次导出时公式字体缺失或斜体回退。
-(function preloadKatexFonts() {
-  const s = document.createElement('span');
-  s.textContent = '$\\dfrac{a}{b}\\sqrt{x}\\pi$';
-  s.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;';
-  document.body.appendChild(s);
-  renderMath(s);
-  setTimeout(() => s.remove(), 4000);
-})();
 
 createList();
 
