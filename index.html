@@ -9,14 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
-@font-face {
-  font-family: 'Computer Modern';
-  src: url('cmu.serif-roman.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-/* STZhongsong 字体由 JS 手动加载以显示进度 */
+/* Computer Modern、STZhongsong 均由 JS 运行时加载并注入 data URL，确保导出时可内联 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* 默认隐藏滚动条 */
@@ -1570,6 +1563,10 @@ async function ensureFontsLoaded(root) {
 async function exportQuoteImage() {
   const q = quotes[current - 1];
   if (!q) return;
+  if (typeof modernScreenshot === 'undefined') {
+    alert('导出组件未就绪，请稍后再试');
+    return;
+  }
 
   const quoteView = document.getElementById('quoteView');
   if (!quoteView) return;
@@ -1579,57 +1576,7 @@ async function exportQuoteImage() {
   const savedBarDisplay = actionBar ? actionBar.style.display : '';
   if (actionBar) actionBar.style.display = 'none';
 
-  const restore = () => { if (actionBar) actionBar.style.display = savedBarDisplay; };
-
-  try {
-    // 优先使用 getDisplayMedia 真截屏：像素与屏幕完全一致，无字体内嵌问题
-    if (navigator.mediaDevices?.getDisplayMedia) {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: 'never' },
-        preferCurrentTab: true
-      });
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      video.muted = true;
-      await video.play();
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-      const rect = quoteView.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(rect.width * dpr);
-      canvas.height = Math.round(rect.height * dpr);
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video,
-        rect.left * dpr, rect.top * dpr,
-        rect.width * dpr, rect.height * dpr,
-        0, 0, canvas.width, canvas.height
-      );
-      stream.getTracks().forEach(t => t.stop());
-      restore();
-
-      canvas.toBlob(blob => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = `名言-${current}-${q.author}.png`;
-        link.href = url;
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 4000);
-      }, 'image/png');
-      return;
-    }
-  } catch (e) {
-    // 用户取消授权或不支持，回退到 modern-screenshot
-  }
-
-  // 回退方案：modern-screenshot（DOM 重绘，需要字体内嵌）
-  if (typeof modernScreenshot === 'undefined') {
-    restore();
-    alert('导出组件未就绪，请稍后再试');
-    return;
-  }
-
+  // 确保字体就绪，避免首次导出公式/拼音回退
   await ensureFontsLoaded(quoteView);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
@@ -1642,11 +1589,12 @@ async function exportQuoteImage() {
     });
   } catch (e) {
     console.error('导出失败', e);
-    restore();
+    if (actionBar) actionBar.style.display = savedBarDisplay;
     alert('导出失败');
     return;
   }
-  restore();
+
+  if (actionBar) actionBar.style.display = savedBarDisplay;
 
   if (!blob) return;
   const url = URL.createObjectURL(blob);
@@ -1746,6 +1694,24 @@ async function loadFontWithProgress() {
     const fontFaceStyle = document.createElement('style');
     fontFaceStyle.textContent = `@font-face{font-family:'STZhongsong';src:url('${dataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
     document.head.appendChild(fontFaceStyle);
+
+    // Computer Modern 同样转 data URL 注入：modern-screenshot 导出时可直接内联，
+    // 避免相对路径 fetch 失败导致拼音字体回退。
+    try {
+      const cmuRes = await fetch('cmu.serif-roman.woff2');
+      const cmuBlob = await cmuRes.blob();
+      const cmuDataUrl = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result);
+        reader.onerror = rej;
+        reader.readAsDataURL(cmuBlob);
+      });
+      const cmuStyle = document.createElement('style');
+      cmuStyle.textContent = `@font-face{font-family:'Computer Modern';src:url('${cmuDataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
+      document.head.appendChild(cmuStyle);
+    } catch (e) {
+      console.error('CMU 字体加载失败', e);
+    }
 
     setProgress(100);
   } catch (err) {
