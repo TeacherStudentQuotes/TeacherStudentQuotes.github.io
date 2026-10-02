@@ -9,15 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
-@font-face {
-  font-family: 'Computer Modern';
-  src: url('cmu.serif-roman.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* STZhongsong 字体由 JS 手动加载以显示进度 */
+/* Computer Modern、STZhongsong 均由 JS 运行时加载并注入 data URL，确保导出时可内联 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* 默认隐藏滚动条 */
@@ -1703,6 +1695,24 @@ async function loadFontWithProgress() {
     const fontFaceStyle = document.createElement('style');
     fontFaceStyle.textContent = `@font-face{font-family:'STZhongsong';src:url('${dataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
     document.head.appendChild(fontFaceStyle);
+
+    // 同样把 Computer Modern 转成 data URL，确保导出时能内联
+    try {
+      const cmuRes = await fetch('cmu.serif-roman.woff2');
+      const cmuBlob = await cmuRes.blob();
+      const cmuDataUrl = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result);
+        reader.onerror = rej;
+        reader.readAsDataURL(cmuBlob);
+      });
+      const cmuStyle = document.createElement('style');
+      cmuStyle.textContent = `@font-face{font-family:'Computer Modern';src:url('${cmuDataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
+      document.head.appendChild(cmuStyle);
+    } catch (e) {
+      console.error('CMU 字体加载失败', e);
+    }
+
     setProgress(100);
   } catch (err) {
     console.error('字体加载失败', err);
