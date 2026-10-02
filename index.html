@@ -1535,17 +1535,9 @@ function updateHash() {
 // 通过 modern-screenshot 将真实 DOM 栅格化为 PNG，保证与网页视觉完全一致。
 const EXPORT_W = 1080;
 const EXPORT_H = 1920;
-// 装饰元素固定尺寸（rem 始终相对 <html> 根，不受父元素字号影响，
-// 故用显式 px 控制，且不随正文自适应字号缩放，避免被等比放大到撑满海报）。
-const EXPORT_MARK_PX = 400;
-// 以下尺寸按手机端各元素与引号(5.5rem)的相对比例，随引号放大
-const EXPORT_AUTHOR_PX = 72;
-const EXPORT_INDICATOR_W = 220;
-const EXPORT_INDICATOR_H = 147;
-const EXPORT_INDICATOR_FONT_PX = 62;
 
 function fitExportFontSize(contentEl, maxHeight) {
-  let lo = 20, hi = 64, best = lo;
+  let lo = 24, hi = 80, best = lo;
   contentEl.style.fontSize = lo + 'px';
   if (contentEl.scrollHeight > maxHeight) return lo;
   while (lo <= hi) {
@@ -1589,51 +1581,23 @@ async function exportQuoteImage() {
     return;
   }
 
-  // 离屏容器：1080×1920，复用 .page 样式以保持与网页一致的视觉
+  // 直接克隆页面上已排好版的 .page，复用全部现有 CSS（位置/颜色/梯形 clip-path/flex 等），
+  // 不再从零搭建 DOM。
+  const page = document.querySelector('#quoteView .page').cloneNode(true);
+
+  // 离屏容器：1080×1920
   const wrapper = document.createElement('div');
   wrapper.style.cssText = `position:fixed;left:-10000px;top:0;width:${EXPORT_W}px;height:${EXPORT_H}px;overflow:hidden;pointer-events:none;z-index:-1;`;
-
-  const page = document.createElement('div');
-  page.className = 'page';
-  // 内联锁定桌面端布局值，避免移动端媒体查询干扰海报排版
-  page.style.padding = '60px';
+  page.style.width = '100%';
   page.style.height = '100%';
-
-  const markTL = document.createElement('div');
-  markTL.className = 'quote-mark top-left';
-  markTL.textContent = '\u201c';
-  markTL.style.top = '30px';
-  markTL.style.left = '40px';
-  markTL.style.fontSize = EXPORT_MARK_PX + 'px';
-  const markBR = document.createElement('div');
-  markBR.className = 'quote-mark bottom-right';
-  markBR.textContent = '\u201d';
-  markBR.style.bottom = '30px';
-  markBR.style.right = '40px';
-  markBR.style.fontSize = EXPORT_MARK_PX + 'px';
-
-  const content = document.createElement('div');
-  content.className = 'quote-content';
-  content.style.lineHeight = '2.4';
-  content.style.maxWidth = '82%';
-
-  const author = document.createElement('div');
-  author.className = 'quote-author';
-  author.style.bottom = '80px';
-  author.style.right = '80px';
-  author.style.fontSize = EXPORT_AUTHOR_PX + 'px';
-
-  // page-indicator 在网页中为 position:fixed（贴视口右下），海报中改为 absolute 贴海报右下角
-  const indicator = document.createElement('div');
-  indicator.className = 'page-indicator';
-  indicator.style.cssText = `position:absolute;bottom:0;right:0;width:${EXPORT_INDICATOR_W}px;height:${EXPORT_INDICATOR_H}px;font-size:${EXPORT_INDICATOR_FONT_PX}px;`;
-  indicator.textContent = String(current);
-
-  page.append(markTL, markBR, content, author, indicator);
+  page.style.padding = '60px';
   wrapper.appendChild(page);
   document.body.appendChild(wrapper);
 
-  // 用与单页视图完全相同的管线渲染正文（含拼音 ruby、KaTeX 公式、搜索高亮等）
+  // 用与单页视图相同的管线渲染正文（拼音 ruby + KaTeX）
+  const content = page.querySelector('.quote-content');
+  const author = page.querySelector('.quote-author');
+  const indicator = page.querySelector('.page-indicator');
   const trimmed = q.content.trim();
   const isImage = trimmed.startsWith('<img') || trimmed.startsWith('<svg');
   if (isImage) {
@@ -1643,23 +1607,34 @@ async function exportQuoteImage() {
     renderMath(content);
   }
   author.innerHTML = escapeHtml(q.author);
+  indicator.textContent = String(current);
+  // 梯形页码框原为 position:fixed（贴视口），海报中贴海报右下角
+  indicator.style.position = 'absolute';
 
-  // 先等所有字体加载完成，再做自适应字号，
-  // 否则回退字体度量可能导致字号偏大、字体就绪后重排溢出。
-  await ensureFontsLoaded(page);
-  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  // 临时放大根字号：让所有 rem 单位（引号 8rem / 作者 1.3rem / 页码字 0.9rem）
+  // 随根字号等比放大到海报尺寸。引号目标 ~300px → 1rem ≈ 37.5px。
+  const html = document.documentElement;
+  const savedRootFs = html.style.fontSize;
+  html.style.fontSize = '37.5px';
 
-  // 正文自适应字号：在可用高度内尽量放大，但不超过上限，装饰元素不参与缩放
+  // 梯形宽高是 px 单位（不随 rem），手动放大到与引号协调的尺寸
+  indicator.style.width = '150px';
+  indicator.style.height = '90px';
+
+  // 正文行高对齐手机端，并自适应字号
+  content.style.lineHeight = '1.7';
+  content.style.maxWidth = '82%';
   if (!isImage) {
-    const availH = EXPORT_H - 60 * 2 - 160; // padding + 作者/页码预留
+    const availH = EXPORT_H - 60 * 2 - 160;
     fitExportFontSize(content, availH);
   }
 
+  // 字体就绪后再栅格化
+  await ensureFontsLoaded(page);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
   let blob;
   try {
-    // domToBlob 比 domToPng 少一次 base64 编码，导出更快
     blob = await modernScreenshot.domToBlob(page, {
       width: EXPORT_W,
       height: EXPORT_H,
@@ -1669,12 +1644,13 @@ async function exportQuoteImage() {
     });
   } catch (e) {
     console.error('导出失败', e);
-    wrapper.remove();
-    return;
   }
 
+  // 恢复根字号并清理
+  html.style.fontSize = savedRootFs;
   wrapper.remove();
 
+  if (!blob) return;
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = `名言-${current}-${q.author}.png`;
