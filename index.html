@@ -1535,12 +1535,14 @@ function updateHash() {
 // 通过 modern-screenshot 将真实 DOM 栅格化为 PNG，保证与网页视觉完全一致。
 const EXPORT_W = 1080;
 const EXPORT_H = 1920;
-// 网页单页视图 CSS 中正文 .quote-content 为 1.8rem，据此等比放大装饰元素
-const REM_CONTENT = 1.8;
-const EXPORT_CONTENT_BASE = 16 * REM_CONTENT;
+// 装饰元素固定尺寸（rem 始终相对 <html> 根，不受父元素字号影响，
+// 故用显式 px 控制，且不随正文自适应字号缩放，避免被等比放大到撑满海报）。
+const EXPORT_MARK_PX = 128;
+const EXPORT_AUTHOR_PX = 26;
+const EXPORT_INDICATOR_FONT_PX = 16;
 
 function fitExportFontSize(contentEl, maxHeight) {
-  let lo = 24, hi = 120, best = lo;
+  let lo = 20, hi = 64, best = lo;
   contentEl.style.fontSize = lo + 'px';
   if (contentEl.scrollHeight > maxHeight) return lo;
   while (lo <= hi) {
@@ -1551,6 +1553,29 @@ function fitExportFontSize(contentEl, maxHeight) {
   }
   contentEl.style.fontSize = best + 'px';
   return best;
+}
+
+// 显式加载海报中用到的所有字体族（常规/斜体/粗体），
+// 解决首次导出时 KaTeX 字体尚未就绪、公式回退为斜体的问题。
+async function ensureFontsLoaded(root) {
+  if (!document.fonts) return;
+  const families = new Set();
+  root.querySelectorAll('*').forEach(el => {
+    const ff = getComputedStyle(el).fontFamily;
+    if (!ff) return;
+    ff.split(',').forEach(f => {
+      const name = f.trim().replace(/^["']|["']$/g, '');
+      if (name) families.add(name);
+    });
+  });
+  const tasks = [...families].map(name => {
+    const specs = [`16px "${name}"`, `italic 16px "${name}"`, `700 16px "${name}"`];
+    return Promise.all(specs.map(spec => {
+      try { return document.fonts.load(spec); } catch (e) { return Promise.resolve(); }
+    }));
+  });
+  await Promise.all(tasks);
+  try { await document.fonts.ready; } catch (e) {}
 }
 
 async function exportQuoteImage() {
@@ -1567,7 +1592,7 @@ async function exportQuoteImage() {
 
   const page = document.createElement('div');
   page.className = 'page';
-  // 内联锁定桌面端布局值，避免移动端媒体查询改变海报的 padding/位置导致不同设备导出不一致
+  // 内联锁定桌面端布局值，避免移动端媒体查询干扰海报排版
   page.style.padding = '60px';
   page.style.height = '100%';
 
@@ -1576,26 +1601,29 @@ async function exportQuoteImage() {
   markTL.textContent = '\u201c';
   markTL.style.top = '30px';
   markTL.style.left = '40px';
+  markTL.style.fontSize = EXPORT_MARK_PX + 'px';
   const markBR = document.createElement('div');
   markBR.className = 'quote-mark bottom-right';
   markBR.textContent = '\u201d';
   markBR.style.bottom = '30px';
   markBR.style.right = '40px';
+  markBR.style.fontSize = EXPORT_MARK_PX + 'px';
 
   const content = document.createElement('div');
   content.className = 'quote-content';
   content.style.lineHeight = '2.4';
-  content.style.maxWidth = '90%';
+  content.style.maxWidth = '82%';
 
   const author = document.createElement('div');
   author.className = 'quote-author';
   author.style.bottom = '80px';
   author.style.right = '80px';
+  author.style.fontSize = EXPORT_AUTHOR_PX + 'px';
 
   // page-indicator 在网页中为 position:fixed（贴视口右下），海报中改为 absolute 贴海报右下角
   const indicator = document.createElement('div');
   indicator.className = 'page-indicator';
-  indicator.style.cssText = 'position:absolute;bottom:0;right:0;';
+  indicator.style.cssText = `position:absolute;bottom:0;right:0;font-size:${EXPORT_INDICATOR_FONT_PX}px;`;
   indicator.textContent = String(current);
 
   page.append(markTL, markBR, content, author, indicator);
@@ -1613,32 +1641,23 @@ async function exportQuoteImage() {
   }
   author.innerHTML = escapeHtml(q.author);
 
-  // 等待字体（STZhongsong / Computer Modern / KaTeX）与 KaTeX 布局就绪
-  if (document.fonts && document.fonts.ready) {
-    try { await document.fonts.ready; } catch (e) {}
-  }
+  // 先等所有字体加载完成，再做自适应字号，
+  // 否则回退字体度量可能导致字号偏大、字体就绪后重排溢出。
+  await ensureFontsLoaded(page);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-  // 按正文 rem 比例放大装饰元素，使海报呈网页视图的等比放大效果
-  let contentSize = EXPORT_CONTENT_BASE;
+  // 正文自适应字号：在可用高度内尽量放大，但不超过上限，装饰元素不参与缩放
   if (!isImage) {
-    const availH = EXPORT_H - 60 * 2 - 200; // 减去 padding 与作者/页码预留
-    contentSize = fitExportFontSize(content, availH);
+    const availH = EXPORT_H - 60 * 2 - 160; // padding + 作者/页码预留
+    fitExportFontSize(content, availH);
   }
-  const rootScale = contentSize / EXPORT_CONTENT_BASE;
-  const markSize = (8 / REM_CONTENT) * contentSize;
-  markTL.style.fontSize = markSize + 'px';
-  markBR.style.fontSize = markSize + 'px';
-  author.style.fontSize = (1.3 / REM_CONTENT) * contentSize + 'px';
-  indicator.style.width = (60 * rootScale) + 'px';
-  indicator.style.height = (36 * rootScale) + 'px';
-  indicator.style.fontSize = (0.9 * 16 * rootScale) + 'px';
 
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-  let dataUrl;
+  let blob;
   try {
-    dataUrl = await modernScreenshot.domToPng(page, {
+    // domToBlob 比 domToPng 少一次 base64 编码，导出更快
+    blob = await modernScreenshot.domToBlob(page, {
       width: EXPORT_W,
       height: EXPORT_H,
       pixelRatio: 1,
@@ -1653,10 +1672,12 @@ async function exportQuoteImage() {
 
   wrapper.remove();
 
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = `名言-${current}-${q.author}.png`;
-  link.href = dataUrl;
+  link.href = url;
   link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
 function readHash() {
@@ -1754,6 +1775,17 @@ async function loadFontWithProgress() {
 }
 
 loadFontWithProgress();
+
+// 预热 KaTeX 字体：在离屏元素里渲染一段含分数/根号/π 的公式，
+// 让浏览器提前请求并缓存 KaTeX 字体，避免首次导出时公式字体缺失或斜体回退。
+(function preloadKatexFonts() {
+  const s = document.createElement('span');
+  s.textContent = '$\\dfrac{a}{b}\\sqrt{x}\\pi$';
+  s.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;';
+  document.body.appendChild(s);
+  renderMath(s);
+  setTimeout(() => s.remove(), 4000);
+})();
 
 createList();
 
