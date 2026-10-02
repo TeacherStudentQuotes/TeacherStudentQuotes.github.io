@@ -551,7 +551,7 @@ const quotes = [
     { author: tea('叶子'), content: `你现在变成自爆卡车啦`, tags: ["日常"] },
     { author: tea('高子'), content: `你（${stu(2, 21)}）手真好玩`, tags: ["日常"] },
     { author: tea('叶子'), content: `带分数去死掉`, tags: ["暴言", "作业考试"] },
-    { author: tea('叶子'), content: `$\\pi$和$\\frac{22}7$他娘的什么关系都没有`, tags: ["脏话", "学科"] },
+    { author: tea('叶子'), content: `$\\pi$和$\\dfrac{22}7$他娘的什么关系都没有`, tags: ["脏话", "学科"] },
     { author: tea('叶子'), content: `好了，你（${tea('叶子')}的数学老师）今天死掉（超重音）了！`, tags: ["暴言", "学科"] },
     { author: tea('叶子'), content: `哇什么情况`, tags: ["日常"] },
     { author: tea('余子'), content: `我们班谁是拉`, tags: ["日常"] },
@@ -803,7 +803,7 @@ const quotes = [
     { author: tea('叶子'), content: `hi↷hi↷hi↷`, tags: ["日常"] },
     // 8
     { author: tea('邓子'), content: `你们怎么都死死的`, tags: ["暴言"] },
-    { author: tea('郎子'), content: `他（${tea('郎子')}的好兄弟）大概是叶老师的$\\frac{1}{3}$`, tags: ["学科"] },
+    { author: tea('郎子'), content: `他（${tea('郎子')}的好兄弟）大概是叶老师的$\\dfrac{1}{3}$`, tags: ["学科"] },
     { author: tea('郎子'), content: `傻叉`, tags: ["脏话"] },
     { author: tea('郎子'), content: `这是一个番茄（${stu(2, 16)}）`, tags: ["吃的"] },
     { author: tea('高子'), content: `哎哟我好怕你们哟，我怕的我马上就要走了(?)`, tags: ["日常"] },
