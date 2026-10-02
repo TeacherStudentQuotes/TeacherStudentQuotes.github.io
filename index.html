@@ -7,7 +7,7 @@
 
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
 @font-face {
   font-family: 'Computer Modern';
@@ -525,44 +525,6 @@ rt {
   line-height: 1.1;
 }
 
-/* 列表视图：悬停拼音 tooltip，始终不占空间 */
-.pinyin-tip {
-  position: relative;
-  display: inline-block;
-}
-
-.pinyin-rt {
-  position: absolute;
-  bottom: calc(100% - 7px);
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 0;
-  padding: 0;
-  font-size: 0.75em;
-  color: #888;
-  font-family: 'Computer Modern', Cambria, Georgia, serif;
-  white-space: nowrap;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.pinyin-tip:hover .pinyin-rt {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* 单名言视图：拼音始终显示 */
-.quote-content ruby rt {
-  visibility: visible;
-  opacity: 1;
-}
-
 .list-item {
   overflow: visible;
 }
@@ -963,6 +925,7 @@ rt {
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/modern-screenshot@4.7.0/dist/index.js"></script>
 <script src="quotes.js"></script>
 <script>
 let current = 0;
@@ -1036,7 +999,7 @@ function renderMath(el) {
     renderMathInElement(el, {
       delimiters: [
         { left: '$$', right: '$$', display: true },
-        { left: '$', right: '$', display: true },
+        { left: '$', right: '$', display: false },
         { left: '\\(', right: '\\)', display: false }
       ],
       throwOnError: false
@@ -1044,14 +1007,6 @@ function renderMath(el) {
   } catch (e) {
     console.error('KaTeX 渲染失败', e);
   }
-}
-
-// 导出图片等纯文本场景：把行内公式降级为可读文本
-function latexToPlain(text) {
-  return text
-    .replace(/\$\\sqrt\{([^}]*)\}\$/g, '√$1')
-    .replace(/\$\\frac\{([^}]*)\}\{([^}]*)\}\$/g, '($1/$2)')
-    .replace(/\$([^$]+)\$/g, '$1');
 }
 
 const pinyinRegex = /([\u4e00-\u9fa5])\(([a-zA-Zāáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜüńňǹ\s]+?)\)/g;
@@ -1078,7 +1033,7 @@ function tokenizeContent(content) {
   return tokens;
 }
 
-function renderContentWithPinyin(content, query = '', mode = 'list') {
+function renderContentWithPinyin(content, query = '') {
   const trimmed = content.trim();
   if (trimmed.startsWith('<img') || trimmed.startsWith('<svg')) {
     return content;
@@ -1091,24 +1046,21 @@ function renderContentWithPinyin(content, query = '', mode = 'list') {
     if (query) {
       const slice = tokens.slice(i, i + query.length).map(t => t.type === 'ruby' ? t.char : t.value).join('');
       if (slice.toLowerCase() === lowerQuery) {
-        const matched = tokens.slice(i, i + query.length).map(t => renderToken(t, mode)).join('');
+        const matched = tokens.slice(i, i + query.length).map(t => renderToken(t)).join('');
         html += `<span class="search-highlight">${matched}</span>`;
         i += query.length;
         continue;
       }
     }
-    html += renderToken(tokens[i], mode);
+    html += renderToken(tokens[i]);
     i++;
   }
   return html;
 }
 
-function renderToken(t, mode) {
+function renderToken(t) {
   if (t.type === 'char') return escapeHtml(t.value);
-  if (mode === 'quote') {
-    return `<ruby>${escapeHtml(t.char)}<rt>${escapeHtml(t.pinyin)}</rt></ruby>`;
-  }
-  return `<span class="pinyin-tip"><span class="pinyin-base">${escapeHtml(t.char)}</span><span class="pinyin-rt">${escapeHtml(t.pinyin)}</span></span>`;
+  return `<ruby>${escapeHtml(t.char)}<rt>${escapeHtml(t.pinyin)}</rt></ruby>`;
 }
 
 let allItems = [];
@@ -1132,7 +1084,7 @@ function createList() {
     const preview = q.content;
     item.innerHTML = `
       <span class="list-item-index">${i + 1}</span>
-      <span class="list-item-content">${renderContentWithPinyin(preview, '', 'list')}</span>
+      <span class="list-item-content">${renderContentWithPinyin(preview, '')}</span>
       <span class="list-item-tags">${(q.tags || []).map(tagPillHtml).join('')}</span>
       <span class="list-item-author">${escapeHtml(q.author)}</span>
     `;
@@ -1369,7 +1321,7 @@ function applySearch() {
       const contentSpan = item.querySelector('.list-item-content');
       const authorSpan = item.querySelector('.list-item-author');
       if (contentSpan) {
-        contentSpan.innerHTML = renderContentWithPinyin(content, currentSearch, 'list');
+        contentSpan.innerHTML = renderContentWithPinyin(content, currentSearch);
         renderMath(contentSpan);
       }
       if (authorSpan) authorSpan.innerHTML = highlightText(author, currentSearch);
@@ -1427,7 +1379,7 @@ function renderQuote(index) {
   authorEl.style.opacity = '0';
 
   setTimeout(() => {
-    contentEl.innerHTML = renderContentWithPinyin(q.content, '', 'quote');
+    contentEl.innerHTML = renderContentWithPinyin(q.content, '');
     renderMath(contentEl);
     authorEl.innerHTML = escapeHtml(q.author);
     const quoteJumpInput = document.getElementById('quoteJumpInput');
@@ -1579,249 +1531,131 @@ function updateHash() {
   history.replaceState(null, '', location.search + '#page=' + current);
 }
 
-function wrapTextForCanvas(ctx, text, maxWidth) {
-  const lines = [];
-  let currentLine = '';
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const testLine = currentLine + char;
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && currentLine !== '') {
-      lines.push(currentLine);
-      currentLine = char;
-    } else {
-      currentLine = testLine;
-    }
-  }
-  if (currentLine) lines.push(currentLine);
-  return lines;
-}
+// 导出 1080×1920 海报：复用网页单页视图的渲染管线（拼音 ruby + KaTeX），
+// 通过 modern-screenshot 将真实 DOM 栅格化为 PNG，保证与网页视觉完全一致。
+const EXPORT_W = 1080;
+const EXPORT_H = 1920;
+// 网页单页视图 CSS 中正文 .quote-content 为 1.8rem，据此等比放大装饰元素
+const REM_CONTENT = 1.8;
+const EXPORT_CONTENT_BASE = 16 * REM_CONTENT;
 
-function parsePinyinUnits(content) {
-  const units = [];
-  let lastIndex = 0;
-  let match;
-  pinyinRegex.lastIndex = 0;
-  while ((match = pinyinRegex.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      for (const char of content.slice(lastIndex, match.index)) {
-        units.push({ type: 'text', value: char });
-      }
-    }
-    units.push({ type: 'ruby', char: match[1], pinyin: match[2] });
-    lastIndex = pinyinRegex.lastIndex;
+function fitExportFontSize(contentEl, maxHeight) {
+  let lo = 24, hi = 120, best = lo;
+  contentEl.style.fontSize = lo + 'px';
+  if (contentEl.scrollHeight > maxHeight) return lo;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    contentEl.style.fontSize = mid + 'px';
+    if (contentEl.scrollHeight <= maxHeight) { best = mid; lo = mid + 1; }
+    else hi = mid - 1;
   }
-  if (lastIndex < content.length) {
-    for (const char of content.slice(lastIndex)) {
-      units.push({ type: 'text', value: char });
-    }
-  }
-  return units;
-}
-
-function measureUnits(ctx, units, fontSize, pinyinFontSize) {
-  return units.map(unit => {
-    if (unit.type === 'text') {
-      ctx.font = `400 ${fontSize}px "STZhongsong", "SimSun", serif`;
-      return { ...unit, width: ctx.measureText(unit.value).width };
-    }
-    ctx.font = `400 ${fontSize}px "STZhongsong", "SimSun", serif`;
-    const charWidth = ctx.measureText(unit.char).width;
-    ctx.font = `400 ${pinyinFontSize}px "Computer Modern", Cambria, Georgia, serif`;
-    const pyWidth = ctx.measureText(unit.pinyin).width;
-    return { ...unit, width: Math.max(charWidth, pyWidth) };
-  });
-}
-
-function wrapUnitsForCanvas(units, maxWidth) {
-  const lines = [];
-  let currentLine = [];
-  let currentWidth = 0;
-  for (const unit of units) {
-    if (currentWidth + unit.width > maxWidth && currentLine.length > 0) {
-      lines.push(currentLine);
-      currentLine = [unit];
-      currentWidth = unit.width;
-    } else {
-      currentLine.push(unit);
-      currentWidth += unit.width;
-    }
-  }
-  if (currentLine.length) lines.push(currentLine);
-  return lines;
-}
-
-function calculateBestFontSize(ctx, units, maxWidth, maxHeight) {
-  let min = 24;
-  let max = 80;
-  let best = min;
-  while (min <= max) {
-    const mid = Math.floor((min + max) / 2);
-    const pinyinFontSize = mid * 0.5;
-    const measured = measureUnits(ctx, units, mid, pinyinFontSize);
-    const lines = wrapUnitsForCanvas(measured, maxWidth);
-    const lineHeight = mid * 1.3 + pinyinFontSize;
-    const totalHeight = lines.length * lineHeight;
-    if (totalHeight <= maxHeight) {
-      best = mid;
-      min = mid + 1;
-    } else {
-      max = mid - 1;
-    }
-  }
+  contentEl.style.fontSize = best + 'px';
   return best;
-}
-
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
 }
 
 async function exportQuoteImage() {
   const q = quotes[current - 1];
   if (!q) return;
-
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  const width = 1080;
-  const height = 1920;
-  canvas.width = width;
-  canvas.height = height;
-
-  // 背景
-  ctx.fillStyle = '#f5f0e8';
-  ctx.fillRect(0, 0, width, height);
-
-  // 装饰性引号
-  ctx.fillStyle = 'rgba(200, 195, 185, 0.35)';
-  ctx.font = '400 300px "STZhongsong", Georgia, serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.fillText('“', 70, 140);
-  ctx.fillText('”', width - 200, height - 420);
-
-  // 正文区域
-  const paddingX = 110;
-  const paddingY = 320;
-  const maxWidth = width - paddingX * 2;
-  const maxHeight = height - paddingY * 2 - 220;
-
-  const trimmed = q.content.trim();
-  const isImageContent = trimmed.startsWith('<img') || trimmed.startsWith('<svg');
-  let fontSize = 80;
-
-  if (isImageContent) {
-    let src = '';
-    if (trimmed.startsWith('<img')) {
-      const match = trimmed.match(/src=["']([^"']+)["']/);
-      if (match) src = match[1];
-    } else {
-      const blob = new Blob([trimmed], { type: 'image/svg+xml' });
-      src = URL.createObjectURL(blob);
-    }
-
-    if (src) {
-      try {
-        const img = await loadImage(src);
-        let imgW = img.width;
-        let imgH = img.height;
-        const targetHeight = fontSize * 2.8;
-        const scale = Math.min(targetHeight / imgH, maxWidth / imgW);
-        imgW *= scale;
-        imgH *= scale;
-        const x = (width - imgW) / 2;
-        const y = (height - imgH) / 2;
-        ctx.drawImage(img, x, y, imgW, imgH);
-      } catch (e) {
-        console.error('图片加载失败', e);
-      }
-    }
-  } else {
-    const units = parsePinyinUnits(latexToPlain(q.content));
-    fontSize = calculateBestFontSize(ctx, units, maxWidth, maxHeight);
-    const pinyinFontSize = fontSize * 0.5;
-    const lineHeight = fontSize * 1.3 + pinyinFontSize;
-
-    const measured = measureUnits(ctx, units, fontSize, pinyinFontSize);
-    const lines = wrapUnitsForCanvas(measured, maxWidth);
-    const totalHeight = lines.length * lineHeight;
-    const startY = (height - totalHeight) / 2;
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-
-    lines.forEach((line, lineIndex) => {
-      const lineWidth = line.reduce((sum, u) => sum + u.width, 0);
-      let x = (width - lineWidth) / 2;
-      const pyY = startY + lineIndex * lineHeight;
-      const charY = pyY + pinyinFontSize + fontSize * 0.12;
-
-      // 拼音
-      ctx.font = `400 ${pinyinFontSize}px "Computer Modern", Cambria, Georgia, serif`;
-      ctx.fillStyle = '#888';
-      line.forEach(unit => {
-        if (unit.type === 'ruby') {
-          ctx.fillText(unit.pinyin, x + unit.width / 2, pyY);
-        }
-        x += unit.width;
-      });
-
-      // 汉字
-      x = (width - lineWidth) / 2;
-      ctx.font = `400 ${fontSize}px "STZhongsong", "SimSun", serif`;
-      ctx.fillStyle = '#2c2c2c';
-      line.forEach(unit => {
-        const text = unit.type === 'text' ? unit.value : unit.char;
-        ctx.fillText(text, x + unit.width / 2, charY);
-        x += unit.width;
-      });
-    });
+  if (typeof modernScreenshot === 'undefined') {
+    alert('导出组件未就绪，请稍后再试');
+    return;
   }
 
-  // 作者
-  const authorFontSize = isImageContent ? 48 : Math.max(32, fontSize * 0.6);
-  ctx.font = `italic 400 ${authorFontSize}px "STZhongsong", "SimSun", serif`;
-  ctx.fillStyle = '#555';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'top';
-  ctx.fillText(`—— ${q.author}`, width - paddingX, height - 260);
+  // 离屏容器：1080×1920，复用 .page 样式以保持与网页一致的视觉
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = `position:fixed;left:-10000px;top:0;width:${EXPORT_W}px;height:${EXPORT_H}px;overflow:hidden;pointer-events:none;z-index:-1;`;
 
-  // 底部小字
-  ctx.font = '400 24px "Computer Modern", Cambria, Georgia, serif';
-  ctx.fillStyle = '#999';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  const imageUrl = location.origin + location.pathname + location.hash;
-  ctx.fillText(imageUrl, width / 2, height - 80);
+  const page = document.createElement('div');
+  page.className = 'page';
+  // 内联锁定桌面端布局值，避免移动端媒体查询改变海报的 padding/位置导致不同设备导出不一致
+  page.style.padding = '60px';
+  page.style.height = '100%';
 
-  // 黑色梯形页码
-  const jumpW = 120;
-  const jumpH = 72;
-  const jumpX = width - jumpW;
-  const jumpY = height - jumpH;
-  ctx.fillStyle = '#2c2c2c';
-  ctx.beginPath();
-  ctx.moveTo(jumpX + jumpW * 0.25, jumpY);
-  ctx.lineTo(jumpX + jumpW, jumpY);
-  ctx.lineTo(jumpX + jumpW, jumpY + jumpH);
-  ctx.lineTo(jumpX, jumpY + jumpH);
-  ctx.closePath();
-  ctx.fill();
+  const markTL = document.createElement('div');
+  markTL.className = 'quote-mark top-left';
+  markTL.textContent = '\u201c';
+  markTL.style.top = '30px';
+  markTL.style.left = '40px';
+  const markBR = document.createElement('div');
+  markBR.className = 'quote-mark bottom-right';
+  markBR.textContent = '\u201d';
+  markBR.style.bottom = '30px';
+  markBR.style.right = '40px';
 
-  ctx.fillStyle = '#f5f0e8';
-  ctx.font = '400 38px "Computer Modern", Cambria, Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(String(current), jumpX + jumpW * 0.625, jumpY + jumpH / 2);
+  const content = document.createElement('div');
+  content.className = 'quote-content';
+  content.style.lineHeight = '2.4';
+  content.style.maxWidth = '90%';
 
-  // 下载
+  const author = document.createElement('div');
+  author.className = 'quote-author';
+  author.style.bottom = '80px';
+  author.style.right = '80px';
+
+  // page-indicator 在网页中为 position:fixed（贴视口右下），海报中改为 absolute 贴海报右下角
+  const indicator = document.createElement('div');
+  indicator.className = 'page-indicator';
+  indicator.style.cssText = 'position:absolute;bottom:0;right:0;';
+  indicator.textContent = String(current);
+
+  page.append(markTL, markBR, content, author, indicator);
+  wrapper.appendChild(page);
+  document.body.appendChild(wrapper);
+
+  // 用与单页视图完全相同的管线渲染正文（含拼音 ruby、KaTeX 公式、搜索高亮等）
+  const trimmed = q.content.trim();
+  const isImage = trimmed.startsWith('<img') || trimmed.startsWith('<svg');
+  if (isImage) {
+    content.innerHTML = trimmed;
+  } else {
+    content.innerHTML = renderContentWithPinyin(q.content, '');
+    renderMath(content);
+  }
+  author.innerHTML = escapeHtml(q.author);
+
+  // 等待字体（STZhongsong / Computer Modern / KaTeX）与 KaTeX 布局就绪
+  if (document.fonts && document.fonts.ready) {
+    try { await document.fonts.ready; } catch (e) {}
+  }
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  // 按正文 rem 比例放大装饰元素，使海报呈网页视图的等比放大效果
+  let contentSize = EXPORT_CONTENT_BASE;
+  if (!isImage) {
+    const availH = EXPORT_H - 60 * 2 - 200; // 减去 padding 与作者/页码预留
+    contentSize = fitExportFontSize(content, availH);
+  }
+  const rootScale = contentSize / EXPORT_CONTENT_BASE;
+  const markSize = (8 / REM_CONTENT) * contentSize;
+  markTL.style.fontSize = markSize + 'px';
+  markBR.style.fontSize = markSize + 'px';
+  author.style.fontSize = (1.3 / REM_CONTENT) * contentSize + 'px';
+  indicator.style.width = (60 * rootScale) + 'px';
+  indicator.style.height = (36 * rootScale) + 'px';
+  indicator.style.fontSize = (0.9 * 16 * rootScale) + 'px';
+
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  let dataUrl;
+  try {
+    dataUrl = await modernScreenshot.domToPng(page, {
+      width: EXPORT_W,
+      height: EXPORT_H,
+      pixelRatio: 1,
+      backgroundColor: '#fffef8',
+      font: { preferredFormat: 'woff2' }
+    });
+  } catch (e) {
+    console.error('导出失败', e);
+    wrapper.remove();
+    return;
+  }
+
+  wrapper.remove();
+
   const link = document.createElement('a');
   link.download = `名言-${current}-${q.author}.png`;
-  link.href = canvas.toDataURL('image/png');
+  link.href = dataUrl;
   link.click();
 }
 
@@ -1902,9 +1736,13 @@ async function loadFontWithProgress() {
       pos += chunk.length;
     }
 
-    const font = new FontFace('STZhongsong', allChunks.buffer);
-    await font.load();
-    document.fonts.add(font);
+    // 以 blob URL 注入 @font-face：既供网页使用，也供 modern-screenshot 在导出时内联为 data URL
+    // （modern-screenshot 只读取 document.styleSheets 中的 @font-face，不识别 document.fonts API 注册的字体）
+    const blob = new Blob([allChunks], { type: 'font/woff2' });
+    const fontUrl = URL.createObjectURL(blob);
+    const fontFaceStyle = document.createElement('style');
+    fontFaceStyle.textContent = `@font-face{font-family:'STZhongsong';src:url('${fontUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
+    document.head.appendChild(fontFaceStyle);
     setProgress(100);
   } catch (err) {
     console.error('字体加载失败', err);
