@@ -1531,27 +1531,8 @@ function updateHash() {
   history.replaceState(null, '', location.search + '#page=' + current);
 }
 
-// 导出 1080×1920 海报：复用网页单页视图的渲染管线（拼音 ruby + KaTeX），
-// 通过 modern-screenshot 将真实 DOM 栅格化为 PNG，保证与网页视觉完全一致。
-const EXPORT_W = 1080;
-const EXPORT_H = 1920;
-
-function fitExportFontSize(contentEl, maxHeight) {
-  let lo = 24, hi = 80, best = lo;
-  contentEl.style.fontSize = lo + 'px';
-  if (contentEl.scrollHeight > maxHeight) return lo;
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1;
-    contentEl.style.fontSize = mid + 'px';
-    if (contentEl.scrollHeight <= maxHeight) { best = mid; lo = mid + 1; }
-    else hi = mid - 1;
-  }
-  contentEl.style.fontSize = best + 'px';
-  return best;
-}
-
-// 显式加载海报中用到的所有字体族（常规/斜体/粗体），
-// 解决首次导出时 KaTeX 字体尚未就绪、公式回退为斜体的问题。
+// 导出：直接截取当前屏幕上的单页视图（.page），所见即所得，
+// 不再做离屏排版或尺寸缩放，公式/拼音/字体与网页完全一致。
 async function ensureFontsLoaded(root) {
   if (!document.fonts) return;
   const families = new Set();
@@ -1581,76 +1562,27 @@ async function exportQuoteImage() {
     return;
   }
 
-  // 直接克隆页面上已排好版的 .page，复用全部现有 CSS（位置/颜色/梯形 clip-path/flex 等），
-  // 不再从零搭建 DOM。
-  const page = document.querySelector('#quoteView .page').cloneNode(true);
+  // 截取当前屏幕上正在显示的单页视图（含所有元素）
+  const quoteView = document.getElementById('quoteView');
+  if (!quoteView) return;
 
-  // 离屏容器：1080×1920
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = `position:fixed;left:-10000px;top:0;width:${EXPORT_W}px;height:${EXPORT_H}px;overflow:hidden;pointer-events:none;z-index:-1;`;
-  page.style.width = '100%';
-  page.style.height = '100%';
-  page.style.padding = '60px';
-  wrapper.appendChild(page);
-  document.body.appendChild(wrapper);
-
-  // 用与单页视图相同的管线渲染正文（拼音 ruby + KaTeX）
-  const content = page.querySelector('.quote-content');
-  const author = page.querySelector('.quote-author');
-  const indicator = page.querySelector('.page-indicator');
-  const trimmed = q.content.trim();
-  const isImage = trimmed.startsWith('<img') || trimmed.startsWith('<svg');
-  if (isImage) {
-    content.innerHTML = trimmed;
-  } else {
-    content.innerHTML = renderContentWithPinyin(q.content, '');
-    renderMath(content);
-  }
-  author.innerHTML = escapeHtml(q.author);
-  indicator.textContent = String(current);
-  // 梯形页码框原为 position:fixed（贴视口），海报中贴海报右下角
-  indicator.style.position = 'absolute';
-
-  // 临时放大根字号：让所有 rem 单位（引号 8rem / 作者 1.3rem / 页码字 0.9rem）
-  // 随根字号等比放大到海报尺寸。引号目标 ~300px → 1rem ≈ 37.5px。
-  const html = document.documentElement;
-  const savedRootFs = html.style.fontSize;
-  html.style.fontSize = '37.5px';
-
-  // 梯形宽高是 px 单位（不随 rem），手动放大到与引号协调的尺寸
-  indicator.style.width = '150px';
-  indicator.style.height = '90px';
-
-  // 正文行高对齐手机端，并自适应字号
-  content.style.lineHeight = '1.7';
-  content.style.maxWidth = '82%';
-  if (!isImage) {
-    const availH = EXPORT_H - 60 * 2 - 160;
-    fitExportFontSize(content, availH);
-  }
-
-  // 字体就绪后再栅格化
-  await ensureFontsLoaded(page);
+  // 确保 KaTeX 等字体就绪，避免首次导出公式回退
+  await ensureFontsLoaded(quoteView);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
   let blob;
   try {
-    blob = await modernScreenshot.domToBlob(page, {
-      width: EXPORT_W,
-      height: EXPORT_H,
-      pixelRatio: 1,
+    blob = await modernScreenshot.domToBlob(quoteView, {
       backgroundColor: '#fffef8',
+      scale: 2,
       font: { preferredFormat: 'woff2' }
     });
   } catch (e) {
     console.error('导出失败', e);
+    alert('导出失败');
+    return;
   }
 
-  // 恢复根字号并清理
-  html.style.fontSize = savedRootFs;
-  wrapper.remove();
-
-  if (!blob) return;
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = `名言-${current}-${q.author}.png`;
