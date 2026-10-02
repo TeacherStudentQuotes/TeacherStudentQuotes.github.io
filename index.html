@@ -1563,12 +1563,7 @@ async function ensureFontsLoaded(root) {
 async function exportQuoteImage() {
   const q = quotes[current - 1];
   if (!q) return;
-  if (typeof modernScreenshot === 'undefined') {
-    alert('导出组件未就绪，请稍后再试');
-    return;
-  }
 
-  // 截取当前屏幕上正在显示的单页视图
   const quoteView = document.getElementById('quoteView');
   if (!quoteView) return;
 
@@ -1577,7 +1572,57 @@ async function exportQuoteImage() {
   const savedBarDisplay = actionBar ? actionBar.style.display : '';
   if (actionBar) actionBar.style.display = 'none';
 
-  // 确保 KaTeX 等字体就绪，避免首次导出公式回退
+  const restore = () => { if (actionBar) actionBar.style.display = savedBarDisplay; };
+
+  try {
+    // 优先使用 getDisplayMedia 真截屏：像素与屏幕完全一致，无字体内嵌问题
+    if (navigator.mediaDevices?.getDisplayMedia) {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: 'never' },
+        preferCurrentTab: true
+      });
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.muted = true;
+      await video.play();
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      const rect = quoteView.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video,
+        rect.left * dpr, rect.top * dpr,
+        rect.width * dpr, rect.height * dpr,
+        0, 0, canvas.width, canvas.height
+      );
+      stream.getTracks().forEach(t => t.stop());
+      restore();
+
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `名言-${current}-${q.author}.png`;
+        link.href = url;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }, 'image/png');
+      return;
+    }
+  } catch (e) {
+    // 用户取消授权或不支持，回退到 modern-screenshot
+  }
+
+  // 回退方案：modern-screenshot（DOM 重绘，需要字体内嵌）
+  if (typeof modernScreenshot === 'undefined') {
+    restore();
+    alert('导出组件未就绪，请稍后再试');
+    return;
+  }
+
   await ensureFontsLoaded(quoteView);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
@@ -1590,14 +1635,13 @@ async function exportQuoteImage() {
     });
   } catch (e) {
     console.error('导出失败', e);
+    restore();
     alert('导出失败');
+    return;
   }
-
-  // 恢复按钮栏
-  if (actionBar) actionBar.style.display = savedBarDisplay;
+  restore();
 
   if (!blob) return;
-
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = `名言-${current}-${q.author}.png`;
@@ -1696,27 +1740,18 @@ async function loadFontWithProgress() {
     fontFaceStyle.textContent = `@font-face{font-family:'STZhongsong';src:url('${dataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
     document.head.appendChild(fontFaceStyle);
 
-    // 同样把 Computer Modern 转成 data URL，确保导出时能内联
-    try {
-      const cmuRes = await fetch('cmu.serif-roman.woff2');
-      const cmuBlob = await cmuRes.blob();
-      const cmuDataUrl = await new Promise((res, rej) => {
-        const reader = new FileReader();
-        reader.onload = () => res(reader.result);
-        reader.onerror = rej;
-        reader.readAsDataURL(cmuBlob);
-      });
-      const cmuStyle = document.createElement('style');
-      cmuStyle.textContent = `@font-face{font-family:'Computer Modern';src:url('${cmuDataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
-      document.head.appendChild(cmuStyle);
-    } catch (e) {
-      console.error('CMU 字体加载失败', e);
-    }
-
     setProgress(100);
   } catch (err) {
     console.error('字体加载失败', err);
   } finally {
+    // 启动画面结束后再加载 CMU（拼音用），不占用启动进度
+    (function loadCMU() {
+      const cmuStyle = document.createElement('style');
+      cmuStyle.textContent = `@font-face{font-family:'Computer Modern';src:url('cmu.serif-roman.woff2') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
+      document.head.appendChild(cmuStyle);
+      // 触发字体加载
+      document.fonts?.load('16px "Computer Modern"').catch(() => {});
+    })();
     setTimeout(() => {
       document.getElementById('loadingOverlay').classList.add('hide');
     }, 200);
