@@ -9,7 +9,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
-/* Computer Modern、STZhongsong 均由 JS 运行时加载并注入 data URL，确保导出时可内联 */
+@font-face {
+  font-family: 'Computer Modern';
+  src: url('cmu.serif-roman.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+/* STZhongsong 字体由 JS 手动加载以显示进度 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* 默认隐藏滚动条 */
@@ -1744,14 +1751,6 @@ async function loadFontWithProgress() {
   } catch (err) {
     console.error('字体加载失败', err);
   } finally {
-    // 启动画面结束后再加载 CMU（拼音用），不占用启动进度
-    (function loadCMU() {
-      const cmuStyle = document.createElement('style');
-      cmuStyle.textContent = `@font-face{font-family:'Computer Modern';src:url('cmu.serif-roman.woff2') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
-      document.head.appendChild(cmuStyle);
-      // 触发字体加载
-      document.fonts?.load('16px "Computer Modern"').catch(() => {});
-    })();
     setTimeout(() => {
       document.getElementById('loadingOverlay').classList.add('hide');
     }, 200);
