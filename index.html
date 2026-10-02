@@ -609,6 +609,17 @@ rt {
   content: "—— ";
 }
 
+.quote-tags {
+  position: absolute;
+  bottom: 80px;
+  left: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 50%;
+  z-index: 5;
+}
+
 .popover-trigger {
   position: relative;
   display: inline-block;
@@ -917,6 +928,7 @@ rt {
   <div class="page">
     <div class="quote-mark top-left">“</div>
     <div class="quote-content" id="qContent"></div>
+    <div class="quote-tags" id="qTags"></div>
     <div class="quote-author" id="qAuthor"></div>
     <div class="quote-mark bottom-right">”</div>
     <div class="page-indicator" id="pageIndicator"><span id="pageIndicatorNum"></span></div>
@@ -1382,6 +1394,8 @@ function renderQuote(index) {
     contentEl.innerHTML = renderContentWithPinyin(q.content, '');
     renderMath(contentEl);
     authorEl.innerHTML = escapeHtml(q.author);
+    const tagsEl = document.getElementById('qTags');
+    if (tagsEl) tagsEl.innerHTML = (q.tags || []).map(tagPillHtml).join('');
     const quoteJumpInput = document.getElementById('quoteJumpInput');
     if (quoteJumpInput) quoteJumpInput.value = index;
     const pageIndicatorNum = document.getElementById('pageIndicatorNum');
@@ -1562,9 +1576,14 @@ async function exportQuoteImage() {
     return;
   }
 
-  // 截取当前屏幕上正在显示的单页视图（含所有元素）
+  // 截取当前屏幕上正在显示的单页视图
   const quoteView = document.getElementById('quoteView');
   if (!quoteView) return;
+
+  // 隐藏右上角按钮栏，导出后恢复
+  const actionBar = quoteView.querySelector('.action-bar');
+  const savedBarDisplay = actionBar ? actionBar.style.display : '';
+  if (actionBar) actionBar.style.display = 'none';
 
   // 确保 KaTeX 等字体就绪，避免首次导出公式回退
   await ensureFontsLoaded(quoteView);
@@ -1580,8 +1599,12 @@ async function exportQuoteImage() {
   } catch (e) {
     console.error('导出失败', e);
     alert('导出失败');
-    return;
   }
+
+  // 恢复按钮栏
+  if (actionBar) actionBar.style.display = savedBarDisplay;
+
+  if (!blob) return;
 
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -1668,12 +1691,17 @@ async function loadFontWithProgress() {
       pos += chunk.length;
     }
 
-    // 以 blob URL 注入 @font-face：既供网页使用，也供 modern-screenshot 在导出时内联为 data URL
-    // （modern-screenshot 只读取 document.styleSheets 中的 @font-face，不识别 document.fonts API 注册的字体）
+    // 以 data URL 注入 @font-face：modern-screenshot 导出时可直接从 stylesheet 读取并内联，
+    // 避免 blob URL 在序列化时失效导致华文中宋回退。
     const blob = new Blob([allChunks], { type: 'font/woff2' });
-    const fontUrl = URL.createObjectURL(blob);
+    const dataUrl = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = () => res(reader.result);
+      reader.onerror = rej;
+      reader.readAsDataURL(blob);
+    });
     const fontFaceStyle = document.createElement('style');
-    fontFaceStyle.textContent = `@font-face{font-family:'STZhongsong';src:url('${fontUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
+    fontFaceStyle.textContent = `@font-face{font-family:'STZhongsong';src:url('${dataUrl}') format('woff2');font-weight:normal;font-style:normal;font-display:swap;}`;
     document.head.appendChild(fontFaceStyle);
     setProgress(100);
   } catch (err) {
