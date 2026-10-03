@@ -6,7 +6,7 @@ on:
     paths:
       - 'quotes.js'
       - 'index.html'
-      - 'source/regen_font.py'
+      - 'tools/regen_font.py'
 
 permissions:
   contents: write
@@ -27,7 +27,7 @@ jobs:
         run: pip install fonttools brotli
 
       - name: Rebuild subset
-        run: python3 source/regen_font.py
+        run: python3 tools/regen_font.py
 
       - name: Amend font into triggering commit
         run: |

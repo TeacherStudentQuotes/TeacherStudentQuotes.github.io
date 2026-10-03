@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """重新生成 STZHONGS.subset.woff2 — 添加新名言后运行此脚本。
 
-用法: python3 source/regen_font.py
+用法: python3 tools/regen_font.py
 依赖: pip install fonttools brotli
 """
 import subprocess
