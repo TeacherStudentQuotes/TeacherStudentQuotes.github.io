@@ -1029,6 +1029,22 @@ rt {
   }
 }
 
+/* 单页悬浮工具栏：同款居中短竖线分隔 */
+.action-bar > * {
+  position: relative;
+}
+
+.action-bar > *:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 18px;
+  background: var(--glass-divider);
+}
+
 .action-bar button:active {
   background: var(--hover-3);
 }
