@@ -816,6 +816,7 @@ rt {
   padding: 0 2px;
   flex-shrink: 0;
   border: none;
+  border-bottom: 1px solid var(--glass-border);
   border-radius: 0;
   outline: none;
   background: transparent;
@@ -2418,7 +2419,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v34').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v35').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
