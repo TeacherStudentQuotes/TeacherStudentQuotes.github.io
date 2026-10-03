@@ -845,7 +845,7 @@ rt {
   font-size: 0.8rem;
   color: var(--text-3);
   opacity: 1;
-  padding-right: 12px;
+  padding-right: 4px;
 }
 
 
@@ -853,7 +853,7 @@ rt {
 .action-bar .jump-expand {
   height: 42px;
   width: max-content;
-  padding-left: 10px;
+  padding-left: 3px;
   justify-content: flex-start;
 }
 
@@ -919,7 +919,7 @@ rt {
 /* 跳转永远展开，宽度自适应内容 */
 .list-header-actions .jump-expand {
   width: max-content;
-  padding-left: 8px;
+  padding-left: 3px;
   justify-content: flex-start;
 }
 
@@ -2428,7 +2428,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     __swRefreshing = true;
     location.reload();
   });
-  navigator.serviceWorker.register('sw.js?v=tsq-v25').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v26').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
