@@ -1129,7 +1129,6 @@ rt {
     <button class="desktop-only" onclick="showList()" title="返回列表"><i class="fas fa-arrow-left"></i></button>
     <button class="mobile-only" onclick="toggleActionMenu('quote')" title="菜单"><i class="fas fa-ellipsis-vertical"></i></button>
   </div>
-  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeActionMenu()"></div>
   <div class="action-drawer mobile-only" id="actionDrawer">
     <button class="drawer-item" onclick="closeActionMenu();showList()"><i class="fas fa-arrow-left"></i><span>返回列表</span></button>
     <button class="drawer-item" onclick="closeActionMenu();shareQuote()"><i class="fas fa-share-nodes"></i><span>分享</span></button>
@@ -1160,6 +1159,7 @@ rt {
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script src="quotes.js"></script>
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeActionMenu()"></div>
 <div class="filter-backdrop" id="filterBackdrop" onclick="closeFilter()"></div>
 <div class="filter-dropdown" id="filterDropdown"></div>
 <script>
@@ -1711,6 +1711,7 @@ function renderQuote(index) {
 }
 
 function showList() {
+  closeActionMenu();
   listView.style.display = 'flex';
   quoteView.classList.remove('show');
   document.title = '名言';
@@ -1720,6 +1721,7 @@ function showList() {
 
 function showQuote(index) {
   if (index < 1 || index >= total) return;
+  closeActionMenu();
   current = index;
   listView.style.display = 'none';
   quoteView.classList.add('show');
