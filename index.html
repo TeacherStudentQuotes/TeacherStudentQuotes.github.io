@@ -825,6 +825,105 @@ rt {
   background: var(--hover-3);
 }
 
+/* 汉堡抽屉菜单 */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--backdrop);
+  z-index: 290;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.action-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 210px;
+  background: var(--paper);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px var(--shadow);
+  z-index: 300;
+  padding: 64px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transform: translateX(105%);
+  transition: transform 0.22s ease;
+}
+.action-drawer.open {
+  transform: none;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.drawer-item:hover {
+  background: var(--hover);
+}
+.drawer-item:active {
+  background: var(--hover-3);
+}
+.drawer-item i {
+  width: 18px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+/* 抽屉内跳转 popover 向左弹出 */
+.drawer-jump-wrap {
+  position: relative;
+}
+.drawer-popover {
+  top: 50%;
+  left: auto;
+  right: calc(100% + 12px);
+  transform: translateY(-50%);
+}
+.drawer-popover::before {
+  top: 50%;
+  left: auto;
+  right: -7px;
+  border: none;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+/* 窄屏时 popover 改居中弹层，避免超出左边缘 */
+@media (max-width: 480px) {
+  .drawer-popover {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    z-index: 310;
+  }
+  .drawer-popover::before {
+    display: none;
+  }
+}
+
 @media (max-width: 600px) {
   .action-bar {
     top: 12px;
@@ -833,12 +932,10 @@ rt {
     gap: 2px;
   }
   .action-bar button {
-    width: 34px;
-    height: 34px;
-    font-size: 0.9rem;
+    width: 38px;
+    height: 38px;
+    font-size: 0.95rem;
   }
-  /* 手机端空间紧张：暗色切换走列表页入口 */
-  #themeBtnQuote { display: none; }
 }
 
 .click-zone {
@@ -992,22 +1089,26 @@ rt {
 <!-- 名言单页视图 -->
 <div class="quote-view" id="quoteView">
   <div class="action-bar" id="actionBar">
-    <button onclick="showList()" title="返回列表"><i class="fas fa-arrow-left"></i></button>
-    <button onclick="randomQuote()" title="随机一条"><i class="fas fa-dice"></i></button>
-    <button onclick="shareQuote()" title="分享"><i class="fas fa-share-nodes"></i></button>
-    <button onclick="exportQuoteImage()" title="导出图片"><i class="fas fa-image"></i></button>
-    <button onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><i class="fas fa-moon"></i></button>
-    <div class="popover-trigger">
-      <button onclick="toggleJumpPopover()" title="跳转至"><i class="fas fa-hashtag"></i></button>
-      <div class="popover popover-quote" id="jumpPopover">
-      <div class="popover-row">
-        <span class="popover-label">跳转至</span>
-        <input type="number" id="quoteJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToQuote(this.value)">
-        <span class="popover-total">/ <span id="quoteJumpTotal"></span></span>
+    <button onclick="toggleActionMenu()" title="菜单"><i class="fas fa-bars"></i></button>
+  </div>
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeActionMenu()"></div>
+  <div class="action-drawer" id="actionDrawer">
+    <button class="drawer-item" onclick="closeActionMenu();showList()"><i class="fas fa-arrow-left"></i><span>返回列表</span></button>
+    <button class="drawer-item" onclick="closeActionMenu();randomQuote()"><i class="fas fa-dice"></i><span>随机一条</span></button>
+    <button class="drawer-item" onclick="closeActionMenu();shareQuote()"><i class="fas fa-share-nodes"></i><span>分享</span></button>
+    <button class="drawer-item" onclick="closeActionMenu();exportQuoteImage()"><i class="fas fa-image"></i><span>导出图片</span></button>
+    <div class="drawer-jump-wrap">
+      <button class="drawer-item" onclick="toggleDrawerJump()"><i class="fas fa-hashtag"></i><span>跳转至</span></button>
+      <div class="popover drawer-popover" id="drawerJumpPopover">
+        <div class="popover-row">
+          <span class="popover-label">跳转至</span>
+          <input type="number" id="drawerJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToQuote(this.value);closeActionMenu()">
+          <span class="popover-total">/ <span id="drawerJumpTotal"></span></span>
+        </div>
       </div>
     </div>
+    <button class="drawer-item" id="drawerThemeBtn" onclick="closeActionMenu();toggleTheme()"><i class="fas fa-moon"></i><span>暗色模式</span></button>
   </div>
-</div>
 <div class="click-zone left" onclick="prevPage()"></div>
   <div class="click-zone right" onclick="nextPage()"></div>
   <div class="page">
@@ -1046,11 +1147,21 @@ function toggleTheme() {
 
 function updateThemeIcons() {
   const isDark = document.documentElement.dataset.theme === 'dark';
-  ['themeBtnList', 'themeBtnQuote'].forEach(id => {
+  ['themeBtnList'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) btn.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'}"></i>`;
   });
+  const drawerBtn = document.getElementById('drawerThemeBtn');
+  if (drawerBtn) {
+    drawerBtn.querySelector('i').className = `fas ${isDark ? 'fa-sun' : 'fa-moon'}`;
+    drawerBtn.querySelector('span').textContent = isDark ? '亮色模式' : '暗色模式';
+  }
 }
+
+// ESC 关闭抽屉
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeActionMenu();
+});
 
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -1259,8 +1370,8 @@ function createList() {
   document.getElementById('listJumpInput').max = quotes.length;
   document.getElementById('listJumpInput').placeholder = `1-${quotes.length}`;
   document.getElementById('listJumpTotal').textContent = quotes.length;
-  document.getElementById('quoteJumpInput').max = quotes.length;
-  document.getElementById('quoteJumpTotal').textContent = quotes.length;
+  document.getElementById('drawerJumpInput').max = quotes.length;
+  document.getElementById('drawerJumpTotal').textContent = quotes.length;
 }
 
 function createFilter() {
@@ -1428,7 +1539,7 @@ function showFilterToast(message) {
 }
 
 function studentInfo(name) {
-  for (const [cls, list] of [[1, students1], [2, students2]]) {
+  for (const [cls, list] of [[1, students[1]], [2, students[2]]]) {
     for (const entry of list) {
       for (const num in entry) {
         if (entry[num] === name) return { cls, num };
@@ -1516,9 +1627,9 @@ document.addEventListener('click', (e) => {
   if (wrap && !wrap.contains(e.target)) {
     closeFilter();
   }
-  const actionBar = document.getElementById('actionBar');
-  if (actionBar && !actionBar.contains(e.target)) {
-    document.getElementById('jumpPopover').classList.remove('show');
+  const drawerJumpWrap = document.querySelector('.drawer-jump-wrap');
+  if (drawerJumpWrap && !drawerJumpWrap.contains(e.target)) {
+    document.getElementById('drawerJumpPopover').classList.remove('show');
   }
   const listJumpWrap = document.getElementById('listJumpWrap');
   if (listJumpWrap && !listJumpWrap.contains(e.target)) {
@@ -1528,7 +1639,6 @@ document.addEventListener('click', (e) => {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    document.getElementById('jumpPopover').classList.remove('show');
     document.getElementById('listJumpPopover').classList.remove('show');
   }
 });
@@ -1547,8 +1657,8 @@ function renderQuote(index) {
     authorEl.innerHTML = escapeHtml(q.author);
     const tagsEl = document.getElementById('qTags');
     if (tagsEl) tagsEl.innerHTML = (q.tags || []).map(tagPillHtml).join('');
-    const quoteJumpInput = document.getElementById('quoteJumpInput');
-    if (quoteJumpInput) quoteJumpInput.value = index;
+    const drawerJumpInput = document.getElementById('drawerJumpInput');
+    if (drawerJumpInput) drawerJumpInput.value = index;
     const pageIndicatorNum = document.getElementById('pageIndicatorNum');
     if (pageIndicatorNum) pageIndicatorNum.textContent = index;
     contentEl.style.opacity = '1';
@@ -1661,32 +1771,11 @@ function toggleListJumpPopover() {
   }
 }
 
-function toggleJumpPopover() {
-  const popover = document.getElementById('jumpPopover');
-  const trigger = popover.parentElement;
-  const willShow = !popover.classList.contains('show');
-  popover.classList.toggle('show');
-  if (willShow) {
-    popover.style.visibility = 'hidden';
-    requestAnimationFrame(() => {
-      positionPopover(trigger, popover);
-      popover.style.visibility = '';
-      const input = document.getElementById('quoteJumpInput');
-      input.focus();
-      input.select();
-    });
-  }
-}
-
 function jumpToQuote(value) {
-  const popover = document.getElementById('jumpPopover');
-  const input = document.getElementById('quoteJumpInput');
+  const input = document.getElementById('drawerJumpInput');
   const num = parseInt(value, 10);
   if (!isNaN(num) && num >= 1 && num < total) {
-    if (num !== current) {
-      showQuote(num);
-      popover.classList.remove('show');
-    }
+    if (num !== current) showQuote(num);
   } else {
     if (input) input.value = current >= 1 ? current : '';
   }
@@ -2193,6 +2282,34 @@ function randomQuote() {
     next = 1 + Math.floor(Math.random() * quotes.length);
   } while (next === current);
   showQuote(next);
+}
+
+function toggleActionMenu() {
+  const drawer = document.getElementById('actionDrawer');
+  const backdrop = document.getElementById('drawerBackdrop');
+  const opening = !drawer.classList.contains('open');
+  drawer.classList.toggle('open');
+  backdrop.classList.toggle('open');
+  if (!opening) {
+    document.getElementById('drawerJumpPopover').classList.remove('show');
+  }
+}
+
+function closeActionMenu() {
+  document.getElementById('actionDrawer').classList.remove('open');
+  document.getElementById('drawerBackdrop').classList.remove('open');
+  document.getElementById('drawerJumpPopover').classList.remove('show');
+}
+
+function toggleDrawerJump() {
+  const popover = document.getElementById('drawerJumpPopover');
+  const willShow = !popover.classList.contains('show');
+  popover.classList.toggle('show');
+  if (willShow) {
+    const input = document.getElementById('drawerJumpInput');
+    input.focus();
+    input.select();
+  }
 }
 
 async function shareQuote() {
