@@ -829,7 +829,8 @@ rt {
   color: var(--text);
   font-family: inherit;
   font-size: 0.9rem;
-  text-align: center;
+  text-align: right;
+  padding-right: 2px;
   opacity: 1;
 }
 
@@ -2427,7 +2428,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     __swRefreshing = true;
     location.reload();
   });
-  navigator.serviceWorker.register('sw.js?v=tsq-v24').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v25').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
