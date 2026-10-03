@@ -1485,6 +1485,7 @@ function createList() {
   });
   createFilter();
   fillJumpTotals();
+  applySearch(); /* 启动时应用localStorage恢复的筛选（首次渲染默认全显） */
 }
 
 function fillJumpTotals() {
@@ -2526,7 +2527,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v46').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v47').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });

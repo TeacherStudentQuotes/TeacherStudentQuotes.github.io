@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head><body>
+<iframe src="index.html?r=1" style="width:1100px;height:600px;border:none"></iframe>
+<div id="out" style="position:fixed;top:0;left:0;background:#fff;z-index:999;font:14px monospace;padding:6px"></div>
+<script>
+const f = document.querySelector('iframe');
+let phase = 0;
+f.addEventListener('load', () => {
+  phase++;
+  const w = f.contentWindow;
+  if (phase === 1) {
+    w.localStorage.setItem('filterState', JSON.stringify({a:['史铁生'], x:['毒鸡汤'], p:true}));
+    f.src = 'index.html?r=2';
+  } else {
+    const probe = w.eval(`(() => ({
+      loadFilterType: typeof loadFilter,
+      aaAfterAuto: activeAuthors.size,
+      exAfterAuto: excludedTags.size,
+      appliedAuto: authorFilterApplied
+    }))()`);
+    const afterManual = w.eval(`(() => { loadFilter(); applySearch(); return { aa: activeAuthors.size, ex: excludedTags.size }; })()`);
+    const sub = w.document.getElementById('listSub');
+    document.getElementById('out').textContent =
+      'AUTO=' + JSON.stringify(probe) +
+      ' | MANUAL=' + JSON.stringify(afterManual) +
+      ' | SUB=[' + (sub ? sub.textContent.slice(-30) : 'null') + ']';
+  }
+});
+</script>
+</body></html>
