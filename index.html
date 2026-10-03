@@ -240,6 +240,7 @@ body {
 
 .search-input:focus {
   border-color: var(--text-3);
+  background: var(--glass-bg-hover);
 }
 
 .search-icon {
@@ -798,14 +799,13 @@ rt {
   overflow: hidden;
   cursor: pointer;
   flex-shrink: 0;
-  transition: width 0.22s ease, background 0.15s;
+  transition: background 0.15s;
 }
 
 .jump-expand:hover {
   background: var(--glass-bg-hover);
 }
 
-.jump-expand.open { width: 152px; }
 
 .jump-expand > .bi {
   width: 34px;
@@ -826,54 +826,33 @@ rt {
   font-family: inherit;
   font-size: 0.9rem;
   text-align: center;
-  opacity: 0;
-  transition: opacity 0.15s;
+  opacity: 1;
 }
 
 .jump-expand-input::-webkit-outer-spin-button,
 .jump-expand-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .jump-expand-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
-.jump-expand.open .jump-expand-input { opacity: 1; }
 
 .jump-expand-total {
   flex-shrink: 0;
   white-space: nowrap;
   font-size: 0.8rem;
   color: var(--text-3);
-  opacity: 0;
-  transition: opacity 0.15s;
+  opacity: 1;
+  padding-right: 12px;
 }
 
-.jump-expand.open .jump-expand-total { opacity: 1; padding-right: 12px; }
 
-/* 单页 action-bar 版：清干净基础类残留的玻璃blur/shadow，收起居中融入，展开item提亮 */
+/* 单页跳转永远展开 */
 .action-bar .jump-expand {
   height: 42px;
-  width: 42px;
-  border: none;
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  box-shadow: none;
-  justify-content: center;
-  padding-left: 0;
-  transition: width 0.22s ease, background 0.15s;
-}
-
-.action-bar .jump-expand:not(.open) .jump-expand-input,
-.action-bar .jump-expand:not(.open) .jump-expand-total {
-  display: none;
-}
-
-.action-bar .jump-expand.open {
   width: 150px;
-  justify-content: flex-start;
   padding-left: 10px;
-  background: var(--glass-item-hover);
+  justify-content: flex-start;
 }
 
-.action-bar .jump-expand.open .jump-expand-input {
+.action-bar .jump-expand .jump-expand-input {
   flex: 1;
   min-width: 0;
 }
@@ -901,9 +880,9 @@ rt {
   color: var(--text);
 }
 
-.jump-expand-menu .jump-expand-input { display: none; width: 54px; }
+.jump-expand-menu .jump-expand-input { flex: 1; min-width: 0; }
 .jump-expand-menu .jump-expand-total { opacity: 1; padding-right: 0; }
-.jump-expand-menu.open .jump-expand-label { display: none; }
+.jump-expand-menu .jump-expand-label { display: none; }
 .jump-expand-menu.open .jump-expand-input { display: block; opacity: 1; }
 
 .page-indicator {
@@ -933,64 +912,19 @@ rt {
 .list-header-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 4px;
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  border-radius: 999px;
+  gap: 10px;
 }
 
-.list-header-actions .search-input,
-.list-header-actions .filter-btn,
+/* 跳转永远展开 */
 .list-header-actions .jump-expand {
-  background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border: none;
-  box-shadow: none;
-}
-
-/* 独立居中短竖线分隔（不用border-left：圆角按钮上border会像阴影带） */
-.list-header-actions > * {
-  position: relative;
-}
-
-/* 收起态图标居中；展开态靠左当输入框前缀，宽度收紧，输入框吃掉空隙 */
-.list-header-actions .jump-expand {
-  justify-content: center;
-  padding-left: 0;
-}
-
-/* 收起态input/span不占位（否则center布局把图标挤出overflow裁掉） */
-.list-header-actions .jump-expand:not(.open) .jump-expand-input,
-.list-header-actions .jump-expand:not(.open) .jump-expand-total {
-  display: none;
-}
-
-.list-header-actions .jump-expand.open {
-  justify-content: flex-start;
   width: 146px;
   padding-left: 8px;
+  justify-content: flex-start;
 }
 
-.list-header-actions .jump-expand.open .jump-expand-input {
+.list-header-actions .jump-expand .jump-expand-input {
   flex: 1;
   min-width: 0;
-}
-
-/* 线挂前元素右缘（后元素overflow:hidden+圆角会裁切自己左缘的线） */
-.list-header-actions > *:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
-  height: 16px;
-  background: var(--glass-divider);
 }
 
 .list-header-actions .filter-btn {
@@ -998,24 +932,10 @@ rt {
 }
 
 .list-header-actions .jump-expand {
-  transition: width 0.22s ease, background 0.15s;
+  transition: background 0.15s;
 }
 
-.list-header-actions .jump-expand.open {
-  background: var(--glass-item-hover);
-}
 
-@media (hover: hover) {
-  .list-header-actions .filter-btn:hover,
-  .list-header-actions .jump-expand:hover {
-    background: var(--glass-item-hover);
-  }
-}
-
-.list-header-actions .search-input:focus {
-  border: none;
-  background: var(--glass-item-hover);
-}
 
 .action-bar {
   position: fixed;
@@ -1023,53 +943,16 @@ rt {
   right: 20px;
   display: flex;
   align-items: center;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  gap: 10px;
   z-index: 200;
 }
 
-.action-bar button {
+.action-bar .filter-btn {
   width: 42px;
   height: 42px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text-2);
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
 }
 
-@media (hover: hover) {
-  .action-bar button:hover {
-    background: var(--glass-item-hover);
-  }
-}
 
-/* 单页悬浮工具栏：同款居中短竖线分隔 */
-.action-bar > * {
-  position: relative;
-}
-
-.action-bar > *:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
-  height: 18px;
-  background: var(--glass-divider);
-}
 
 .action-bar button:active {
   background: var(--hover-3);
@@ -1312,27 +1195,13 @@ rt {
 <!-- 名言单页视图 -->
 <div class="quote-view" id="quoteView">
   <div class="action-bar" id="actionBar">
-    <button onclick="randomQuote()" title="随机一条"><i class="bi bi-dice-5-fill"></i></button>
-    <button class="desktop-only" onclick="shareQuote()" title="分享"><i class="bi bi-share-fill"></i></button>
-    <button class="desktop-only" onclick="exportQuoteImage()" title="导出图片"><i class="bi bi-image-fill"></i></button>
-    <div class="jump-expand desktop-only" onclick="toggleJumpExpand(this)" title="跳转至">
+    <button class="filter-btn" onclick="showList()" title="返回列表"><i class="bi bi-arrow-left"></i></button>
+    <div class="jump-expand" onclick="toggleJumpExpand(this)" title="跳转至">
       <i class="bi bi-pin-fill"></i>
-      <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);closeActionMenu();}window.__jumpEsc=false;">
+      <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);}window.__jumpEsc=false;">
       <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
     </div>
-    <button onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><i class="bi bi-moon-fill"></i></button>
-    <button class="desktop-only" onclick="showList()" title="返回列表"><i class="bi bi-arrow-left"></i></button>
-    <button class="mobile-only" onclick="toggleActionMenu('quote')" title="菜单"><i class="bi bi-three-dots-vertical"></i></button>
-  </div>
-  <div class="action-drawer mobile-only" id="actionDrawer">
-    <button class="drawer-item" onclick="closeActionMenu();showList()"><i class="bi bi-arrow-left"></i><span>返回列表</span></button>
-    <button class="drawer-item" onclick="closeActionMenu();shareQuote()"><i class="bi bi-share-fill"></i><span>分享</span></button>
-    <button class="drawer-item" onclick="closeActionMenu();exportQuoteImage()"><i class="bi bi-image-fill"></i><span>导出图片</span></button>
-    <div class="jump-expand jump-expand-menu" onclick="toggleJumpExpand(this)">
-      <i class="bi bi-pin-fill"></i><span class="jump-expand-label">跳转至</span>
-      <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);}window.__jumpEsc=false;collapseJumpAll();">
-      <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
-    </div>
+    <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><i class="bi bi-moon-fill"></i></button>
   </div>
 <div class="click-zone left" onclick="prevPage()"></div>
   <div class="click-zone right" onclick="nextPage()"></div>
@@ -2507,7 +2376,7 @@ function randomQuote() {
 }
 
 function toggleActionMenu(which) {
-  const target = document.getElementById(which === 'list' ? 'listDrawer' : 'actionDrawer');
+  const target = document.getElementById('listDrawer');
   const backdrop = document.getElementById('drawerBackdrop');
   const opening = !target.classList.contains('open');
   closeActionMenu();
@@ -2518,18 +2387,14 @@ function toggleActionMenu(which) {
 }
 
 function closeActionMenu() {
-  document.getElementById('actionDrawer').classList.remove('open');
   document.getElementById('listDrawer').classList.remove('open');
   document.getElementById('drawerBackdrop').classList.remove('open');
   collapseJumpAll();
 }
 
 function toggleJumpExpand(el) {
-  if (el.classList.contains('open')) return;
-  collapseJumpAll();
-  el.classList.add('open');
-  const input = el.querySelector('input');
-  if (input) { input.focus({ preventScroll: true }); input.select(); }
+  const input = el.querySelector('.jump-expand-input');
+  if (input) { input.focus(); input.select(); }
 }
 
 function collapseJumpAll() {
