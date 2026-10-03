@@ -1740,19 +1740,6 @@ function closeFilter() {
 }
 
 let filterToastTimer = null;
-function showFilterToast(message) {
-  const dropdown = document.getElementById('filterDropdown');
-  let toast = dropdown.querySelector('.filter-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.className = 'filter-toast';
-    dropdown.appendChild(toast);
-  }
-  toast.textContent = message;
-  toast.classList.add('show');
-  clearTimeout(filterToastTimer);
-  filterToastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
-}
 
 function studentInfo(name) {
   for (const [cls, list] of [[1, students[1]], [2, students[2]]]) {
@@ -2487,32 +2474,7 @@ async function renderQuoteCanvas(index) {
   return canvas;
 }
 
-async function exportQuoteImage() {
-  showToast('正在生成图片…', 60000);
-  try {
-    const canvas = await renderQuoteCanvas(current);
-    if (!canvas) return;
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `quote-${current}.png`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showToast('已导出 quote-' + current + '.png');
-  } catch (e) {
-    console.error(e);
-    showToast('导出失败：' + e.message);
-  }
-}
 
-function randomQuote() {
-  if (quotes.length < 2) return;
-  let next;
-  do {
-    next = 1 + Math.floor(Math.random() * quotes.length);
-  } while (next === current);
-  showQuote(next);
-}
 
 function toggleActionMenu(which) {
   const target = document.getElementById('listDrawer');
@@ -2540,25 +2502,6 @@ function collapseJumpAll() {
   document.querySelectorAll('.jump-expand.open').forEach(j => j.classList.remove('open'));
 }
 
-async function shareQuote() {
-  const url = location.origin + location.pathname + '#page=' + current;
-  const q = quotes[current - 1];
-  try {
-    if (navigator.share) {
-      await navigator.share({ title: '师生名言 #' + current, text: q.content.replace(/<[^>]+>/g, '').slice(0, 100), url });
-    } else {
-      await navigator.clipboard.writeText(url);
-      showToast('链接已复制');
-    }
-  } catch (e) {
-    if (e.name !== 'AbortError') {
-      try {
-        await navigator.clipboard.writeText(url);
-        showToast('链接已复制');
-      } catch (_) { showToast('分享失败'); }
-    }
-  }
-}
 
 updateThemeIcons();
 loadFontWithProgress();
@@ -2580,7 +2523,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v55').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v56').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
