@@ -822,20 +822,23 @@ rt {
 }
 
 .action-bar button:active {
-  background: #e0e0e0;
+  background: var(--hover-3);
 }
 
 @media (max-width: 600px) {
   .action-bar {
-    top: 14px;
-    right: 14px;
-    padding: 3px;
+    top: 12px;
+    right: 12px;
+    padding: 2px;
+    gap: 2px;
   }
   .action-bar button {
-    width: 40px;
-    height: 40px;
-    font-size: 0.95rem;
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
   }
+  /* 手机端空间紧张：暗色切换走列表页入口 */
+  #themeBtnQuote { display: none; }
 }
 
 .click-zone {
