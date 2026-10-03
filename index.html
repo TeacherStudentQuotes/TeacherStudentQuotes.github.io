@@ -24,6 +24,11 @@
   --border: #ddd8ce;
   --border-2: #e8e2d4;
   --border-3: #ccc;
+  --glass-bg: rgba(255, 253, 247, 0.55);
+  --glass-bg-hover: rgba(255, 253, 247, 0.78);
+  --glass-blur: blur(14px) saturate(1.35);
+  --glass-border: rgba(140, 122, 90, 0.28);
+  --glass-shadow: 0 4px 14px rgba(96, 82, 54, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.75);
   --accent: #8a7d5e;
   --accent-hover: #756a4e;
   --hover: #eee;
@@ -55,6 +60,11 @@
   --border: #3a342a;
   --border-2: #2e2921;
   --border-3: #4a4436;
+  --glass-bg: rgba(46, 40, 31, 0.5);
+  --glass-bg-hover: rgba(46, 40, 31, 0.68);
+  --glass-blur: blur(14px) saturate(1.2);
+  --glass-border: rgba(255, 244, 224, 0.16);
+  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 244, 224, 0.14);
   --accent: #b5a27a;
   --accent-hover: #c9b68d;
   --hover: #2e2921;
@@ -202,8 +212,11 @@ body {
   width: 180px;
   height: 36px;
   padding: 0 44px 0 32px;
-  border: 1px solid var(--border-3);
-  background: var(--paper);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
   color: var(--text);
   border-radius: 999px;
   font-family: inherit;
@@ -258,8 +271,11 @@ body {
 .filter-btn {
   width: 36px;
   height: 36px;
-  border: 1px solid var(--border-3);
-  background: var(--paper);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
   color: var(--text-2);
   border-radius: 999px;
   cursor: pointer;
@@ -267,10 +283,11 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 0.95rem;
+  transition: background 0.15s, transform 0.1s;
 }
 
 .filter-btn:hover {
-  background: var(--hover);
+  background: var(--glass-bg-hover);
 }
 
 .filter-dropdown {
@@ -757,14 +774,21 @@ rt {
   align-items: center;
   height: 36px;
   width: 36px;
-  border: 1px solid var(--border-3);
+  border: 1px solid var(--glass-border);
   border-radius: 999px;
-  background: var(--paper);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
   color: var(--text-2);
   overflow: hidden;
   cursor: pointer;
   flex-shrink: 0;
-  transition: width 0.22s ease;
+  transition: width 0.22s ease, background 0.15s;
+}
+
+.jump-expand:hover {
+  background: var(--glass-bg-hover);
 }
 
 .jump-expand.open { width: 152px; }
