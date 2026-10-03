@@ -99,12 +99,19 @@ html, body, .filter-dropdown, .quote-view {
 
 /* 列表视图滚动条（低调样式） */
 .list-empty {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: var(--text-3);
-  padding: 48px 20px;
-  font-size: 0.95rem;
-  letter-spacing: 0.05em;
+  padding: 20px;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  pointer-events: none;
 }
+.list-empty[hidden] { display: none; }
 
 .list-body {
   scrollbar-width: thin;
