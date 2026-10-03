@@ -1203,7 +1203,7 @@ function updateThemeIcons() {
   const isDark = document.documentElement.dataset.theme === 'dark';
   ['themeBtnList', 'themeBtnQuote'].forEach(id => {
     const btn = document.getElementById(id);
-    if (btn) btn.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'}"></i>`;
+    if (btn) btn.innerHTML = `<i class="fas ${isDark ? 'fa-lightbulb' : 'fa-moon'}"></i>`;
   });
 }
 
