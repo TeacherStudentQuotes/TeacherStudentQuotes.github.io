@@ -1156,7 +1156,7 @@ rt {
         <button class="filter-btn mobile-only" onclick="toggleActionMenu('list')" title="菜单"><i class="bi bi-three-dots-vertical"></i></button>
       </div>
     </div>
-    <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
+    <p id="listSub">师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
   </div>
   <div class="list-body" id="listBody"></div>
   <div class="list-empty" id="listEmpty" hidden>没有符合条件的名言</div>
@@ -1433,6 +1433,7 @@ function renderToken(t) {
 }
 
 let allItems = [];
+const allAuthorsSet = new Set(quotes.map(q => q.author));
 const activeAuthors = new Set();
 const excludedTags = new Set();
 let authorFilterApplied = false; /* true=用户确认过筛选；作者全不选=刻意空结果 */
@@ -1746,6 +1747,23 @@ function applySearch() {
   if (countEl) countEl.textContent = currentSearch ? visibleCount : '';
   const emptyEl = document.getElementById('listEmpty');
   if (emptyEl) emptyEl.hidden = visibleCount !== 0;
+
+  // 副标题：有实际过滤效果时追加“符合条件xxx”，全选则不显示
+  const subP = document.getElementById('listSub');
+  if (subP) {
+    const hasFilter = (authorFilterApplied && activeAuthors.size < allAuthorsSet.size) || excludedTags.size > 0;
+    let html = `师生名言“精选”，共 <span id="totalCount">${quotes.length}</span> 条`;
+    if (hasFilter) {
+      let fc = 0;
+      allItems.forEach(item => {
+        const author = item.dataset.author;
+        const itemTags = item.dataset.tags ? item.dataset.tags.split(',') : [];
+        if ((!authorFilterApplied || activeAuthors.has(author)) && itemTags.every(t => !excludedTags.has(t))) fc++;
+      });
+      html += `，符合条件 ${fc}`;
+    }
+    subP.innerHTML = html;
+  }
 }
 
 function updateSearchParam(search) {
@@ -2484,7 +2502,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v43').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v44').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
