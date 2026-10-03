@@ -1554,12 +1554,20 @@ function updateSelectAllBtn(kind) {
 function toggleSelectAll(kind) {
   const boxes = sectionBoxes(kind);
   const allChecked = boxes.length > 0 && boxes.every(cb => cb.checked);
-  boxes.forEach(cb => { cb.checked = !allChecked; });
+  boxes.forEach(cb => {
+    cb.checked = !allChecked;
+    const tagLabel = cb.closest('.filter-tag-option');
+    if (tagLabel) tagLabel.classList.toggle('off', !cb.checked);
+  });
   updateSelectAllBtn(kind);
 }
 
 function invertSelection(kind) {
-  sectionBoxes(kind).forEach(cb => { cb.checked = !cb.checked; });
+  sectionBoxes(kind).forEach(cb => {
+    cb.checked = !cb.checked;
+    const tagLabel = cb.closest('.filter-tag-option');
+    if (tagLabel) tagLabel.classList.toggle('off', !cb.checked);
+  });
   updateSelectAllBtn(kind);
 }
 
