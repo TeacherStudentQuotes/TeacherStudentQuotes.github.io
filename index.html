@@ -1897,6 +1897,23 @@ async function getRealSize() {
 }
 
 async function loadFontWithProgress() {
+  // 网页渲染与CMU字体就绪前，进度条保持隐藏
+  const box = document.querySelector('.spinner-wrap');
+  box.style.visibility = 'hidden';
+  try {
+    if (document.readyState === 'loading') {
+      await new Promise((res) => document.addEventListener('DOMContentLoaded', res, { once: true }));
+    }
+    await Promise.race([
+      Promise.all([
+        document.fonts.load('16px "Computer Modern"'),
+        document.fonts.load('italic 16px "Computer Modern"'),
+      ]),
+      new Promise((res) => setTimeout(res, 3000)),
+    ]);
+  } catch (e) {}
+  box.style.visibility = '';
+
   const progressInt = document.getElementById('progressInt');
   const progressDecimal = document.getElementById('progressDecimal');
   const progressRing = document.getElementById('progressRing');
@@ -2414,7 +2431,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v38').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v39').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
