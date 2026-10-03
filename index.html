@@ -577,27 +577,7 @@ body {
   background: var(--hover-3);
 }
 
-.filter-toast {
-  position: absolute;
-  bottom: 76px;
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  background: var(--toast-bg);
-  color: var(--paper);
-  padding: 10px 22px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  box-shadow: 0 6px 20px var(--scroll-hover);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  z-index: 110;
-}
 
-.filter-toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
 
 .filter-footer .spacer {
   flex: 1;
@@ -1739,7 +1719,6 @@ function closeFilter() {
   document.getElementById('filterBackdrop').classList.remove('show');
 }
 
-let filterToastTimer = null;
 
 function studentInfo(name) {
   for (const [cls, list] of [[1, students[1]], [2, students[2]]]) {
@@ -2523,7 +2502,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v56').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v57').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
