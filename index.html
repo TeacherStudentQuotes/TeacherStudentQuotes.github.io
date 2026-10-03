@@ -848,17 +848,12 @@ rt {
 }
 
 
-/* 单页跳转永远展开 */
+/* 单页跳转永远展开，宽度自适应内容 */
 .action-bar .jump-expand {
   height: 42px;
-  width: 150px;
+  width: max-content;
   padding-left: 10px;
   justify-content: flex-start;
-}
-
-.action-bar .jump-expand .jump-expand-input {
-  flex: 1;
-  min-width: 0;
 }
 
 /* 菜单内版：整行菜单项，展开时整行变输入框 */
@@ -920,16 +915,11 @@ rt {
   gap: 10px;
 }
 
-/* 跳转永远展开 */
+/* 跳转永远展开，宽度自适应内容 */
 .list-header-actions .jump-expand {
-  width: 146px;
+  width: max-content;
   padding-left: 8px;
   justify-content: flex-start;
-}
-
-.list-header-actions .jump-expand .jump-expand-input {
-  flex: 1;
-  min-width: 0;
 }
 
 .list-header-actions .filter-btn {
