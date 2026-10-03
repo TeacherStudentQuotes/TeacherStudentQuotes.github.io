@@ -1576,7 +1576,7 @@ document.addEventListener('keydown', (e) => {
 
 async function getRealSize() {
   try {
-    const res = await fetch('STZHONGS.woff2', { headers: { 'Range': 'bytes=0-0' }, cache: 'no-store' });
+    const res = await fetch('STZHONGS.subset.woff2', { headers: { 'Range': 'bytes=0-0' }, cache: 'no-store' });
     if (res.status === 206) {
       const range = res.headers.get('Content-Range'); // bytes 0-0/12582912
       if (range) {
@@ -1604,7 +1604,7 @@ async function loadFontWithProgress() {
   }
   try {
     let total = await getRealSize();
-    const response = await fetch('STZHONGS.woff2');
+    const response = await fetch('STZHONGS.subset.woff2');
     if (!total) {
       total = parseInt(response.headers.get('Content-Length') || '0', 10);
     }
