@@ -2427,7 +2427,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     __swRefreshing = true;
     location.reload();
   });
-  navigator.serviceWorker.register('sw.js?v=tsq-v22').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v23').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });

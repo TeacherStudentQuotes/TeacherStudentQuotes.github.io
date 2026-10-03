@@ -1,4 +1,4 @@
-const CACHE = 'tsq-v22';
+const CACHE = 'tsq-v23';
 const CORE = [
   '.',
   'index.html',
@@ -39,8 +39,11 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(e.request)
         .then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, clone));
+          // 只缓存完整响应（206 Range等partial response不支持put）
+          if (res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
+            const clone = res.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, clone)).catch(() => {});
+          }
           return res;
         })
         .catch(() => caches.match(e.request))
