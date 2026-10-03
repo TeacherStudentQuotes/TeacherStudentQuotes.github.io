@@ -825,12 +825,13 @@ rt {
 }
 
 .jump-expand-input {
-  width: 46px;
+  width: 44px;
   height: 26px;
-  padding: 0;
+  padding: 0 2px;
   flex-shrink: 0;
-  border: 1px solid var(--glass-border);
-  border-radius: 999px;
+  border: none;
+  border-bottom: 1px solid var(--glass-border);
+  border-radius: 0;
   outline: none;
   background: transparent;
   color: var(--text);
@@ -843,16 +844,6 @@ rt {
 .jump-expand-input::-webkit-outer-spin-button,
 .jump-expand-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .jump-expand-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
-
-
-.jump-expand-total {
-  flex-shrink: 0;
-  white-space: nowrap;
-  font-size: 0.8rem;
-  color: var(--text-3);
-  opacity: 1;
-  padding-right: 4px;
-}
 
 
 /* 单页跳转永远展开，宽度自适应内容 */
@@ -888,7 +879,6 @@ rt {
 }
 
 .jump-expand-menu .jump-expand-input { flex: 0 0 auto; }
-.jump-expand-menu .jump-expand-total { opacity: 1; padding-right: 0; }
 .jump-expand-menu .jump-expand-label { display: none; }
 .jump-expand-menu.open .jump-expand-input { display: block; opacity: 1; }
 
@@ -1171,7 +1161,7 @@ rt {
         <div class="jump-expand desktop-only" onclick="toggleJumpExpand(this)" title="跳转至">
           <i class="bi bi-pin-fill"></i>
           <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToList(this.value);closeActionMenu();}window.__jumpEsc=false;">
-          <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
+         
         </div>
         <span class="sw-version desktop-only" aria-hidden="true"></span>
         <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnList"><i class="bi bi-moon-fill"></i></button>
@@ -1190,7 +1180,7 @@ rt {
     <div class="jump-expand jump-expand-menu" onclick="toggleJumpExpand(this)">
       <i class="bi bi-pin-fill"></i><span class="jump-expand-label">跳转至</span>
       <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToList(this.value);}window.__jumpEsc=false;collapseJumpAll();">
-      <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
+     
     </div>
   </div>
 </div>
@@ -1202,7 +1192,7 @@ rt {
     <div class="jump-expand" onclick="toggleJumpExpand(this)" title="跳转至">
       <i class="bi bi-pin-fill"></i>
       <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);}window.__jumpEsc=false;">
-      <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
+     
     </div>
     <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnQuote">
       <span class="sw-version" aria-hidden="true"></span><i class="bi bi-moon-fill"></i></button>
@@ -1473,7 +1463,6 @@ function fillJumpTotals() {
     inp.max = quotes.length;
     inp.placeholder = `1-${quotes.length}`;
   });
-  document.querySelectorAll('.jump-total-num').forEach(s => s.textContent = quotes.length);
 }
 
 function createFilter() {
@@ -2445,7 +2434,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v29').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v30').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
