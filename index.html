@@ -808,36 +808,14 @@ rt {
   height: 36px;
   width: 36px;
   padding: 0 12px;
-  border: 1px solid var(--glass-border);
-  border-radius: 999px;
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow);
-  color: var(--text-2);
-  overflow: hidden;
-  cursor: pointer;
-  flex-shrink: 0;
-  gap: 3px;
-  transition: background 0.15s;
-}
-
-.jump-expand:hover {
-  background: var(--glass-bg-hover);
-}
-
-
-.jump-expand > .bi {
-  font-size: 1rem;
 }
 
 .jump-expand-input {
-  width: 44px;
+  width: 54px;
   height: 26px;
   padding: 0 2px;
   flex-shrink: 0;
   border: none;
-  border-bottom: 1px solid var(--glass-border);
   border-radius: 0;
   outline: none;
   background: transparent;
@@ -1164,7 +1142,7 @@ rt {
         </div>
         <button class="filter-btn filter-wrap desktop-only" onclick="toggleFilter()" title="筛选作者/标签"><i class="bi bi-funnel-fill"></i></button>
         <div class="jump-expand desktop-only" onclick="toggleJumpExpand(this)" title="跳转至">
-          <i class="bi bi-pin-fill"></i>
+          
           <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToList(this.value);closeActionMenu();}window.__jumpEsc=false;">
          
         </div>
@@ -1182,7 +1160,7 @@ rt {
       <button class="drawer-item" onclick="toggleFilter()"><i class="bi bi-funnel-fill"></i><span>筛选作者/标签</span></button>
     </div>
     <div class="jump-expand jump-expand-menu" onclick="toggleJumpExpand(this)">
-      <i class="bi bi-pin-fill"></i><span class="jump-expand-label">跳转至</span>
+      <span class="jump-expand-label">跳转至</span>
       <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToList(this.value);}window.__jumpEsc=false;collapseJumpAll();">
      
     </div>
@@ -1194,7 +1172,7 @@ rt {
   <div class="action-bar" id="actionBar">
     <button class="filter-btn" onclick="showList()" title="返回列表"><i class="bi bi-arrow-left"></i></button>
     <div class="jump-expand" onclick="toggleJumpExpand(this)" title="跳转至">
-      <i class="bi bi-pin-fill"></i>
+      
       <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);}window.__jumpEsc=false;">
      
     </div>
@@ -1465,7 +1443,7 @@ function createList() {
 function fillJumpTotals() {
   document.querySelectorAll('.jump-expand-input').forEach(inp => {
     inp.max = quotes.length;
-    inp.placeholder = `1-${quotes.length}`;
+    inp.placeholder = '跳转至';
   });
 }
 
@@ -2438,7 +2416,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v32').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v33').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
