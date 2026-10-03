@@ -786,6 +786,16 @@ rt {
   z-index: 5;
 }
 
+.sw-version {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.68rem;
+  color: var(--text-3);
+  opacity: 0.55;
+  align-self: center;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+
 .jump-expand {
   display: flex;
   align-items: center;
@@ -1163,6 +1173,7 @@ rt {
           <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToList(this.value);closeActionMenu();}window.__jumpEsc=false;">
           <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
         </div>
+        <span class="sw-version desktop-only" aria-hidden="true"></span>
         <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnList"><i class="bi bi-moon-fill"></i></button>
         <button class="filter-btn mobile-only" onclick="toggleActionMenu('list')" title="菜单"><i class="bi bi-three-dots-vertical"></i></button>
       </div>
@@ -1193,7 +1204,8 @@ rt {
       <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);}window.__jumpEsc=false;">
       <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
     </div>
-    <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><i class="bi bi-moon-fill"></i></button>
+    <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnQuote">
+      <span class="sw-version" aria-hidden="true"></span><i class="bi bi-moon-fill"></i></button>
   </div>
 <div class="click-zone left" onclick="prevPage()"></div>
   <div class="click-zone right" onclick="nextPage()"></div>
@@ -2419,12 +2431,21 @@ loadFontWithProgress();
 // PWA Service Worker：检测到新版本立即激活并自动刷新一次
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   let __swRefreshing = false;
+  const __refreshVer = () => {
+    const m = (navigator.serviceWorker.controller?.scriptURL || '').match(/tsq-(v\d+)/);
+    document.querySelectorAll('.sw-version').forEach((el) => {
+      el.textContent = m ? m[1] : '';
+      el.style.display = m ? '' : 'none';
+    });
+  };
   navigator.serviceWorker.addEventListener('controllerchange', () => {
+    __refreshVer();
     if (__swRefreshing) return;
     __swRefreshing = true;
     location.reload();
   });
-  navigator.serviceWorker.register('sw.js?v=tsq-v28').then((reg) => {
+  __refreshVer();
+  navigator.serviceWorker.register('sw.js?v=tsq-v29').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
