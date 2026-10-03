@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>名言</title>
 
-<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="icon" href="img/favicon.ico" type="image/x-icon">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
 @font-face {
   font-family: 'Computer Modern';
-  src: url('cmu.serif-roman.woff2') format('woff2');
+  src: url('fonts/cmu.serif-roman.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -1576,7 +1576,7 @@ document.addEventListener('keydown', (e) => {
 
 async function getRealSize() {
   try {
-    const res = await fetch('STZHONGS.subset.woff2', { headers: { 'Range': 'bytes=0-0' }, cache: 'no-store' });
+    const res = await fetch('fonts/STZHONGS.subset.woff2', { headers: { 'Range': 'bytes=0-0' }, cache: 'no-store' });
     if (res.status === 206) {
       const range = res.headers.get('Content-Range'); // bytes 0-0/12582912
       if (range) {
@@ -1604,7 +1604,7 @@ async function loadFontWithProgress() {
   }
   try {
     let total = await getRealSize();
-    const response = await fetch('STZHONGS.subset.woff2');
+    const response = await fetch('fonts/STZHONGS.subset.woff2');
     if (!total) {
       total = parseInt(response.headers.get('Content-Length') || '0', 10);
     }

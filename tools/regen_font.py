@@ -9,8 +9,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC_FONT = ROOT / "STZHONGS.woff2"
-OUT_FONT = ROOT / "STZHONGS.subset.woff2"
+SRC_FONT = ROOT / "fonts" / "STZHONGS.woff2"
+OUT_FONT = ROOT / "fonts" / "STZHONGS.subset.woff2"
 CHARS_FILE = "/tmp/subset_chars.txt"
 
 # 收集网站所有非 ASCII 字符

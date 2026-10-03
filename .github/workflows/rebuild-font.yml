@@ -31,12 +31,12 @@ jobs:
 
       - name: Amend font into triggering commit
         run: |
-          if git diff --quiet -- STZHONGS.subset.woff2; then
+          if git diff --quiet -- fonts/STZHONGS.subset.woff2; then
             echo "字体无变化，跳过"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add STZHONGS.subset.woff2
+          git add fonts/STZHONGS.subset.woff2
           git commit --amend --no-edit
           git push --force-with-lease origin HEAD:main

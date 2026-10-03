@@ -603,7 +603,7 @@ const quotes = [
     new Quote('许子', `动人家头干什么`, ["日常"]),
     new Quote('余子', `还有那个蔬菜啥 蔬菜人`, ["吃的"]),
     new Quote('余子', `谁？谁？啥？嗯。啊？`, ["日常"]),
-    new Quote('余子', `<img src="cry.png" alt="哭脸" style="height:2.8em;vertical-align:middle;">`, ["日常"]),
+    new Quote('余子', `<img src="img/cry.png" alt="哭脸" style="height:2.8em;vertical-align:middle;">`, ["日常"]),
     // 15
     new Quote('余子', `你根呢`, ["日常"]),
     new Quote('余子', `啊啊啊（恶龙咆哮）屎后面去□□去`, ["屎尿屁"]),
