@@ -1556,6 +1556,7 @@ function createFilter() {
       cb.addEventListener('click', (e) => {
         syncOff();
         updateSelectAllBtn('tag');
+        syncAuthorVisibilityPreview();
         e.stopPropagation();
       });
       tagWrap.appendChild(label);
@@ -1604,6 +1605,20 @@ function allFilterCheckboxes() {
     .filter(cb => cb.closest('.filter-option').style.display !== 'none');
 }
 
+// 面板内预览版：按当前勾选状态（未点确定）即时收缩作者区
+function syncAuthorVisibilityPreview() {
+  const excluded = new Set();
+  allTagCheckboxes().forEach(cb => { if (!cb.checked) excluded.add(cb.dataset.tag); });
+  const eligible = new Set();
+  quotes.forEach(q => {
+    const tags = q.tags || [];
+    if (tags.every(t => !excluded.has(t))) eligible.add(q.author);
+  });
+  document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]').forEach(cb => {
+    cb.closest('.filter-option').style.display = eligible.has(cb.dataset.author) ? '' : 'none';
+  });
+}
+
 // 作者区跟随标签选择：只显示拥有“当前未被排除标签”名言的作者
 function syncAuthorVisibility() {
   const eligible = new Set();
@@ -1640,6 +1655,7 @@ function toggleSelectAll(kind) {
     if (tagLabel) tagLabel.classList.toggle('off', !cb.checked);
   });
   updateSelectAllBtn(kind);
+  if (kind === 'tag') syncAuthorVisibilityPreview();
 }
 
 function invertSelection(kind) {
@@ -1649,6 +1665,7 @@ function invertSelection(kind) {
     if (tagLabel) tagLabel.classList.toggle('off', !cb.checked);
   });
   updateSelectAllBtn(kind);
+  if (kind === 'tag') syncAuthorVisibilityPreview();
 }
 
 function confirmFilter(stay) {
@@ -2523,7 +2540,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v52').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v53').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
