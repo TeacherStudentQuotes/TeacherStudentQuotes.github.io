@@ -26,6 +26,8 @@
   --border-3: #ccc;
   --glass-bg: rgba(255, 253, 247, 0.55);
   --glass-bg-hover: rgba(255, 253, 247, 0.78);
+  --glass-item-hover: rgba(255, 255, 255, 0.42);
+  --glass-divider: rgba(140, 122, 90, 0.22);
   --glass-blur: blur(14px) saturate(1.35);
   --glass-border: rgba(140, 122, 90, 0.28);
   --glass-shadow:
@@ -67,6 +69,8 @@
   --border-3: #4a4436;
   --glass-bg: rgba(46, 40, 31, 0.5);
   --glass-bg-hover: rgba(46, 40, 31, 0.68);
+  --glass-item-hover: rgba(255, 244, 224, 0.09);
+  --glass-divider: rgba(255, 244, 224, 0.12);
   --glass-blur: blur(14px) saturate(1.2);
   --glass-border: rgba(255, 244, 224, 0.16);
   --glass-shadow:
@@ -906,6 +910,50 @@ rt {
   margin-left: 6px;
 }
 
+/* 列表页一体玻璃工具栏：共享一条玻璃底，个体去框，竖线分隔 */
+.list-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 999px;
+}
+
+.list-header-actions .search-input,
+.list-header-actions .filter-btn,
+.list-header-actions .jump-expand {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: none;
+}
+
+.list-header-actions > *:not(:first-child) {
+  border-left: 1px solid var(--glass-divider);
+}
+
+.list-header-actions .filter-btn,
+.list-header-actions .jump-expand {
+  transition: background 0.15s;
+}
+
+.list-header-actions .filter-btn:hover,
+.list-header-actions .jump-expand:hover,
+.list-header-actions .jump-expand.open {
+  background: var(--glass-item-hover);
+}
+
+.list-header-actions .search-input:focus {
+  border: none;
+  background: var(--glass-item-hover);
+}
+
 .action-bar {
   position: fixed;
   top: 16px;
@@ -939,7 +987,7 @@ rt {
 }
 
 .action-bar button:hover {
-  background: var(--glass-bg-hover);
+  background: var(--glass-item-hover);
 }
 
 .action-bar button:active {
@@ -1147,7 +1195,7 @@ rt {
   <div class="list-header">
     <div class="list-header-top">
       <h1>名言</h1>
-      <div class="list-header-actions" style="display:flex;align-items:center;gap:10px;">
+      <div class="list-header-actions">
         <div class="search-wrap">
           <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="applySearch()">
           <i class="bi bi-search search-icon"></i>
