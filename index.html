@@ -435,12 +435,12 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  overflow: hidden;
   max-height: 140px;
   transition: max-height .26s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .26s cubic-bezier(.4,0,.2,1), margin .26s cubic-bezier(.4,0,.2,1), border-color .26s ease, transform .26s cubic-bezier(.4,0,.2,1);
 }
 /* 作者跟随标签的收起过渡：负margin吞掉grid gap，收缩到零后JS再display:none */
 .filter-option.f-hiding {
+  overflow: hidden;
   max-height: 0;
   opacity: 0;
   padding-top: 0;
@@ -2527,7 +2527,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v61').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v62').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
