@@ -262,7 +262,7 @@ body {
   box-shadow: 0 12px 40px var(--shadow);
   display: none;
   flex-direction: column;
-  z-index: 100;
+  z-index: 320;
   overflow: hidden;
 }
 
@@ -275,7 +275,7 @@ body {
   inset: 0;
   background: var(--backdrop);
   display: none;
-  z-index: 90;
+  z-index: 315;
 }
 
 .filter-backdrop.show {
@@ -1101,8 +1101,8 @@ rt {
   <!-- 列表页抽屉 -->
   <div class="action-drawer" id="listDrawer">
     <div class="filter-wrap">
-      <button class="drawer-item" onclick="closeActionMenu();toggleFilter()"><i class="fas fa-filter"></i><span>筛选作者</span></button>
-      <div class="filter-backdrop" id="filterBackdrop"></div>
+      <button class="drawer-item" onclick="toggleFilter()"><i class="fas fa-filter"></i><span>筛选作者</span></button>
+      <div class="filter-backdrop" id="filterBackdrop" onclick="closeFilter()"></div>
       <div class="filter-dropdown" id="filterDropdown"></div>
     </div>
     <div class="drawer-jump-wrap">
@@ -1655,6 +1655,7 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     document.querySelectorAll('.drawer-popover').forEach(p => p.classList.remove('show'));
+    closeFilter();
   }
 });
 
