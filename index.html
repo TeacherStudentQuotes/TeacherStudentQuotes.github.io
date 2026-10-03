@@ -1597,10 +1597,24 @@ function createFilter() {
   dropdown.appendChild(footer);
   updateSelectAllBtn('author');
   updateSelectAllBtn('tag');
+  syncAuthorVisibility();
 }
 
 function allFilterCheckboxes() {
-  return [...document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]')];
+  return [...document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]')]
+    .filter(cb => cb.closest('.filter-option').style.display !== 'none');
+}
+
+// 作者区跟随标签选择：只显示拥有“当前未被排除标签”名言的作者
+function syncAuthorVisibility() {
+  const eligible = new Set();
+  quotes.forEach(q => {
+    const tags = q.tags || [];
+    if (tags.every(t => !excludedTags.has(t))) eligible.add(q.author);
+  });
+  document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]').forEach(cb => {
+    cb.closest('.filter-option').style.display = eligible.has(cb.dataset.author) ? '' : 'none';
+  });
 }
 
 function allTagCheckboxes() {
@@ -1641,9 +1655,18 @@ function invertSelection(kind) {
 }
 
 function confirmFilter(stay) {
+  const prevAuthors = new Set(activeAuthors);
   activeAuthors.clear();
   allFilterCheckboxes().forEach(cb => {
     if (cb.checked) activeAuthors.add(cb.dataset.author);
+  });
+  // 被标签隐藏的作者：勾选状态冻结，不参与本次重建
+  prevAuthors.forEach(a => {
+    if (!activeAuthors.has(a) &&
+        ![...document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]')]
+          .some(cb => cb.dataset.author === a && cb.closest('.filter-option').style.display !== 'none')) {
+      activeAuthors.add(a);
+    }
   });
   authorFilterApplied = true;
   excludedTags.clear();
@@ -1652,6 +1675,7 @@ function confirmFilter(stay) {
   });
   saveFilter();
   applySearch();
+  syncAuthorVisibility();
   if (!stay) closeFilter();
 }
 
@@ -2502,7 +2526,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v45').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v46').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
