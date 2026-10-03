@@ -1201,9 +1201,11 @@ function toggleTheme() {
 
 function updateThemeIcons() {
   const isDark = document.documentElement.dataset.theme === 'dark';
-  ['themeBtnList', 'themeBtnQuote'].forEach(id => {
+  const THEME_SUN_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" style="vertical-align:-0.12em" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v4.3M12 17.2v4.3M2.5 12h4.3M17.2 12h4.3M18.7 5.3 16.8 7.2M7.2 16.8 5.3 18.7M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9"/></svg>';
+const THEME_MOON_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.12em" aria-hidden="true"><path d="M20.8 14.2A9 9 0 1 1 9.8 3.2a7.3 7.3 0 0 0 11 11z"/></svg>';
+['themeBtnList', 'themeBtnQuote'].forEach(id => {
     const btn = document.getElementById(id);
-    if (btn) btn.innerHTML = `<i class="far ${isDark ? 'fa-sun' : 'fa-moon'}"></i>`;
+    if (btn) btn.innerHTML = isDark ? THEME_SUN_ICON : THEME_MOON_ICON;
   });
 }
 
