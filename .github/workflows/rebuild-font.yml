@@ -29,14 +29,27 @@ jobs:
       - name: Rebuild subset
         run: python3 tools/regen_font.py
 
-      - name: Amend font into triggering commit
+      - name: Sync OG quote count
         run: |
-          if git diff --quiet -- fonts/STZHONGS.subset.woff2; then
-            echo "字体无变化，跳过"
+          COUNT=$(grep -c 'new Quote(' quotes.js)
+          sed -i -E "s/共 [0-9]+ 条师生名言/共 ${COUNT} 条师生名言/" index.html
+
+      - name: Amend into triggering commit
+        run: |
+          CHANGED=0
+          if ! git diff --quiet -- fonts/STZHONGS.subset.woff2; then
+            git add fonts/STZHONGS.subset.woff2
+            CHANGED=1
+          fi
+          if ! git diff --quiet -- index.html; then
+            git add index.html
+            CHANGED=1
+          fi
+          if [ "$CHANGED" = "0" ]; then
+            echo "字体与OG均无变化，跳过"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add fonts/STZHONGS.subset.woff2
           git commit --amend --no-edit
           git push --force-with-lease origin HEAD:main

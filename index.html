@@ -853,8 +853,9 @@ rt {
 
 .action-bar .jump-expand.open {
   width: 162px;
-  border: 1px solid var(--border-3);
-  background: var(--paper);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  box-shadow: none;
 }
 
 /* 菜单内版：整行菜单项，展开时整行变输入框 */
@@ -913,8 +914,11 @@ rt {
   align-items: center;
   padding: 4px;
   border-radius: 999px;
-  background: var(--paper);
-  border: 1px solid var(--border-3);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   z-index: 200;
 }
 
@@ -935,7 +939,7 @@ rt {
 }
 
 .action-bar button:hover {
-  background: var(--hover);
+  background: var(--glass-bg-hover);
 }
 
 .action-bar button:active {
