@@ -807,6 +807,7 @@ rt {
   align-items: center;
   height: 36px;
   width: 36px;
+  padding: 0 12px;
   border: 1px solid var(--glass-border);
   border-radius: 999px;
   background: var(--glass-bg);
@@ -856,7 +857,6 @@ rt {
 .action-bar .jump-expand {
   height: 42px;
   width: max-content;
-  padding-left: 3px;
   justify-content: flex-start;
 }
 
@@ -921,7 +921,6 @@ rt {
 /* 跳转永远展开，宽度自适应内容 */
 .list-header-actions .jump-expand {
   width: max-content;
-  padding-left: 3px;
   justify-content: flex-start;
 }
 
@@ -2439,7 +2438,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v31').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v32').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
