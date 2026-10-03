@@ -719,15 +719,22 @@ rt {
 }
 
 .page {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  position: relative;
+  width: 100%;
+  min-height: 100%;
   background: var(--paper);
   padding: 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
+}
+/* 内容超出一屏时：顶部对齐留白，页面向下生长可滚动，不再挤压遮挡 */
+.page.tall {
+  justify-content: flex-start;
+  padding-top: 48px;
+  padding-bottom: 180px;
 }
 
 .quote-mark {
@@ -1272,6 +1279,8 @@ const total = quotes.length + 1;
 
 const listView = document.getElementById('listView');
 const quoteView = document.getElementById('quoteView');
+document.fonts.ready.then(fitQuotePage);
+window.addEventListener('resize', fitQuotePage);
 
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -1873,7 +1882,16 @@ function renderQuote(index) {
     if (pageIndicatorNum) pageIndicatorNum.textContent = index;
     contentEl.style.opacity = '1';
     authorEl.style.opacity = '1';
+    fitQuotePage();
   }, 150);
+}
+
+// 内容超出一屏则切 tall 布局（可滚动），否则保持居中构图
+function fitQuotePage() {
+  const view = document.getElementById('quoteView');
+  if (!view || !view.classList.contains('show')) return;
+  const page = view.querySelector('.page');
+  if (page) page.classList.toggle('tall', view.scrollHeight > view.clientHeight + 4);
 }
 
 function showList() {
@@ -2509,7 +2527,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v60').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v61').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
