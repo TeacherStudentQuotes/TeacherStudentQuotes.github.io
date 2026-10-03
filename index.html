@@ -1746,9 +1746,6 @@ function renderQuote(index) {
     authorEl.innerHTML = escapeHtml(q.author);
     const tagsEl = document.getElementById('qTags');
     if (tagsEl) tagsEl.innerHTML = (q.tags || []).map(tagPillHtml).join('');
-    document.querySelectorAll('.jump-expand-input').forEach(inp => {
-      inp.value = index;
-    });
     const pageIndicatorNum = document.getElementById('pageIndicatorNum');
     if (pageIndicatorNum) pageIndicatorNum.textContent = index;
     contentEl.style.opacity = '1';
@@ -1840,9 +1837,7 @@ function jumpToQuote(value) {
     if (num !== current) showQuote(num);
     document.querySelectorAll('.jump-expand-input').forEach(inp => { inp.value = ''; });
   } else {
-    document.querySelectorAll('.jump-expand-input').forEach(inp => {
-      inp.value = current >= 1 ? current : '';
-    });
+    document.querySelectorAll('.jump-expand-input').forEach(inp => { inp.value = ''; });
   }
 }
 
@@ -2419,7 +2414,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v37').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v38').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
