@@ -1116,6 +1116,11 @@ rt {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
 </style>
 </head>
 <body>
@@ -1147,7 +1152,7 @@ rt {
           <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToList(this.value);closeActionMenu();}window.__jumpEsc=false;">
          
         </div>
-        <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnList"><i class="bi bi-moon-fill"></i></button>
+        <button class="filter-btn" onclick="toggleTheme(event)" title="切换主题" id="themeBtnList"><i class="bi bi-moon-fill"></i></button>
         <button class="filter-btn mobile-only" onclick="toggleActionMenu('list')" title="菜单"><i class="bi bi-three-dots-vertical"></i></button>
       </div>
     </div>
@@ -1177,7 +1182,7 @@ rt {
       <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);}window.__jumpEsc=false;">
      
     </div>
-    <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnQuote">
+    <button class="filter-btn" onclick="toggleTheme(event)" title="切换主题" id="themeBtnQuote">
 <i class="bi bi-moon-fill"></i></button>
   </div>
 <div class="click-zone left" onclick="prevPage()"></div>
@@ -1206,17 +1211,35 @@ rt {
   if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
 })();
 
-function toggleTheme() {
+function toggleTheme(evt) {
   const isDark = document.documentElement.dataset.theme === 'dark';
-  if (isDark) {
-    delete document.documentElement.dataset.theme;
-    localStorage.setItem('theme', 'light');
-  } else {
-    document.documentElement.dataset.theme = 'dark';
-    localStorage.setItem('theme', 'dark');
-  }
-  updateThemeIcons();
-  refreshTagPills();
+  const apply = () => {
+    if (isDark) {
+      delete document.documentElement.dataset.theme;
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.dataset.theme = 'dark';
+      localStorage.setItem('theme', 'dark');
+    }
+    updateThemeIcons();
+    refreshTagPills();
+  };
+
+  // View Transitions：以点击处为圆心波纹扩散揭示新模式；不支持则直接切
+  if (!document.startViewTransition) { apply(); return; }
+  const x = (evt && evt.clientX) || innerWidth / 2;
+  const y = (evt && evt.clientY) || innerHeight / 2;
+  const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const vt = document.startViewTransition(apply);
+  vt.ready.then(() => {
+    document.documentElement.animate(
+      [
+        { clipPath: `circle(0px at ${x}px ${y}px)` },
+        { clipPath: `circle(${r}px at ${x}px ${y}px)` },
+      ],
+      { duration: 450, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' }
+    );
+  }).catch(() => {});
 }
 
 function updateThemeIcons() {
@@ -2434,7 +2457,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v40').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v41').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
