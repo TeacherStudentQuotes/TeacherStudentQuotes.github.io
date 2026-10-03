@@ -12,7 +12,7 @@
 <meta property="og:description" content="共 689 条师生名言">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://teacherstudentquotes.github.io/">
-<script src="https://cdn.jsdelivr.net/npm/lucide@1.51.0/dist/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
 :root {
@@ -98,10 +98,8 @@ html, body, .filter-dropdown, .quote-view {
 }
 
 /* 列表视图滚动条（低调样式） */
-svg.lucide {
-  width: 1.15em;
-  height: 1.15em;
-  flex-shrink: 0;
+.bi {
+  vertical-align: -0.125em;
 }
 
 .list-empty {
@@ -1096,12 +1094,12 @@ rt {
       <div class="list-header-actions" style="display:flex;align-items:center;gap:10px;">
         <div class="search-wrap">
           <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="applySearch()">
-          <i data-lucide="search" class="search-icon"></i>
+          <i class="bi bi-search search-icon"></i>
           <span class="search-count" id="searchCount"></span>
         </div>
-        <button class="filter-btn filter-wrap desktop-only" onclick="toggleFilter()" title="筛选作者/标签"><i data-lucide="filter"></i></button>
+        <button class="filter-btn filter-wrap desktop-only" onclick="toggleFilter()" title="筛选作者/标签"><i class="bi bi-funnel-fill"></i></button>
         <div class="drawer-jump-wrap desktop-only">
-          <button class="filter-btn" onclick="toggleDrawerJump(this)" title="跳转至"><i data-lucide="hash"></i></button>
+          <button class="filter-btn" onclick="toggleDrawerJump(this)" title="跳转至"><i class="bi bi-hash"></i></button>
           <div class="popover">
             <div class="popover-row">
               <span class="popover-label">跳转至</span>
@@ -1110,8 +1108,8 @@ rt {
             </div>
           </div>
         </div>
-        <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnList"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.12em" aria-hidden="true"><path d="M20.8 14.2A9 9 0 1 1 9.8 3.2a7.3 7.3 0 0 0 11 11z"/></svg></button>
-        <button class="filter-btn mobile-only" onclick="toggleActionMenu('list')" title="菜单"><i data-lucide="ellipsis-vertical"></i></button>
+        <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnList"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><path d="M20.6 14.5A9 9 0 1 1 9.4 3.4 7.1 7.1 0 0 0 20.6 14.5Z"/></svg></button>
+        <button class="filter-btn mobile-only" onclick="toggleActionMenu('list')" title="菜单"><i class="bi bi-three-dots-vertical"></i></button>
       </div>
     </div>
     <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
@@ -1121,10 +1119,10 @@ rt {
   <!-- 列表页抽屉 -->
   <div class="action-drawer mobile-only" id="listDrawer">
     <div class="filter-wrap">
-      <button class="drawer-item" onclick="toggleFilter()"><i data-lucide="filter"></i><span>筛选作者/标签</span></button>
+      <button class="drawer-item" onclick="toggleFilter()"><i class="bi bi-funnel-fill"></i><span>筛选作者/标签</span></button>
     </div>
     <div class="drawer-jump-wrap">
-      <button class="drawer-item" onclick="toggleDrawerJump(this)"><i data-lucide="hash"></i><span>跳转至</span></button>
+      <button class="drawer-item" onclick="toggleDrawerJump(this)"><i class="bi bi-hash"></i><span>跳转至</span></button>
       <div class="popover">
         <div class="popover-row">
           <span class="popover-label">跳转至</span>
@@ -1139,11 +1137,11 @@ rt {
 <!-- 名言单页视图 -->
 <div class="quote-view" id="quoteView">
   <div class="action-bar" id="actionBar">
-    <button onclick="randomQuote()" title="随机一条"><i data-lucide="dice-5"></i></button>
-    <button class="desktop-only" onclick="shareQuote()" title="分享"><i data-lucide="share-2"></i></button>
-    <button class="desktop-only" onclick="exportQuoteImage()" title="导出图片"><i data-lucide="image"></i></button>
+    <button onclick="randomQuote()" title="随机一条"><i class="bi bi-dice-5-fill"></i></button>
+    <button class="desktop-only" onclick="shareQuote()" title="分享"><i class="bi bi-share-fill"></i></button>
+    <button class="desktop-only" onclick="exportQuoteImage()" title="导出图片"><i class="bi bi-image-fill"></i></button>
     <div class="drawer-jump-wrap desktop-only">
-      <button onclick="toggleDrawerJump(this)" title="跳转至"><i data-lucide="hash"></i></button>
+      <button onclick="toggleDrawerJump(this)" title="跳转至"><i class="bi bi-hash"></i></button>
       <div class="popover">
         <div class="popover-row">
           <span class="popover-label">跳转至</span>
@@ -1152,16 +1150,16 @@ rt {
         </div>
       </div>
     </div>
-    <button onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.12em" aria-hidden="true"><path d="M20.8 14.2A9 9 0 1 1 9.8 3.2a7.3 7.3 0 0 0 11 11z"/></svg></button>
-    <button class="desktop-only" onclick="showList()" title="返回列表"><i data-lucide="arrow-left"></i></button>
-    <button class="mobile-only" onclick="toggleActionMenu('quote')" title="菜单"><i data-lucide="ellipsis-vertical"></i></button>
+    <button onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><path d="M20.6 14.5A9 9 0 1 1 9.4 3.4 7.1 7.1 0 0 0 20.6 14.5Z"/></svg></button>
+    <button class="desktop-only" onclick="showList()" title="返回列表"><i class="bi bi-arrow-left"></i></button>
+    <button class="mobile-only" onclick="toggleActionMenu('quote')" title="菜单"><i class="bi bi-three-dots-vertical"></i></button>
   </div>
   <div class="action-drawer mobile-only" id="actionDrawer">
-    <button class="drawer-item" onclick="closeActionMenu();showList()"><i data-lucide="arrow-left"></i><span>返回列表</span></button>
-    <button class="drawer-item" onclick="closeActionMenu();shareQuote()"><i data-lucide="share-2"></i><span>分享</span></button>
-    <button class="drawer-item" onclick="closeActionMenu();exportQuoteImage()"><i data-lucide="image"></i><span>导出图片</span></button>
+    <button class="drawer-item" onclick="closeActionMenu();showList()"><i class="bi bi-arrow-left"></i><span>返回列表</span></button>
+    <button class="drawer-item" onclick="closeActionMenu();shareQuote()"><i class="bi bi-share-fill"></i><span>分享</span></button>
+    <button class="drawer-item" onclick="closeActionMenu();exportQuoteImage()"><i class="bi bi-image-fill"></i><span>导出图片</span></button>
     <div class="drawer-jump-wrap">
-      <button class="drawer-item" onclick="toggleDrawerJump(this)"><i data-lucide="hash"></i><span>跳转至</span></button>
+      <button class="drawer-item" onclick="toggleDrawerJump(this)"><i class="bi bi-hash"></i><span>跳转至</span></button>
       <div class="popover">
         <div class="popover-row">
           <span class="popover-label">跳转至</span>
@@ -1212,8 +1210,8 @@ function toggleTheme() {
 
 function updateThemeIcons() {
   const isDark = document.documentElement.dataset.theme === 'dark';
-  const THEME_SUN_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" style="vertical-align:-0.12em" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v4.3M12 17.2v4.3M2.5 12h4.3M17.2 12h4.3M18.7 5.3 16.8 7.2M7.2 16.8 5.3 18.7M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9"/></svg>';
-const THEME_MOON_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.12em" aria-hidden="true"><path d="M20.8 14.2A9 9 0 1 1 9.8 3.2a7.3 7.3 0 0 0 11 11z"/></svg>';
+  const THEME_SUN_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><circle cx="12" cy="12" r="5"/><path d="M12 2v6M12 22v-6M2 12h6M22 12h-6M19.07 4.93 15.6 8.4M4.93 4.93 8.4 8.4M19.07 19.07 15.6 15.6M4.93 19.07 8.4 15.6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>';
+const THEME_MOON_ICON = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.12em"><path d="M20.6 14.5A9 9 0 1 1 9.4 3.4 7.1 7.1 0 0 0 20.6 14.5Z"/></svg>';
 ['themeBtnList', 'themeBtnQuote'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) btn.innerHTML = isDark ? THEME_SUN_ICON : THEME_MOON_ICON;
@@ -1448,9 +1446,8 @@ function createFilter() {
   const header = document.createElement('div');
   header.className = 'filter-header';
   header.innerHTML = `<span class="filter-title">筛选</span>` +
-    `<button class="filter-close-btn" onclick="closeFilter()" title="关闭"><i data-lucide="x"></i></button>`;
+    `<button class="filter-close-btn" onclick="closeFilter()" title="关闭"><i class="bi bi-x-lg"></i></button>`;
   dropdown.appendChild(header);
-  lucide.createIcons({ icons: lucide.icons, root: header });
   const authorCounts = {};
   quotes.forEach(q => {
     authorCounts[q.author] = (authorCounts[q.author] || 0) + 1;
@@ -2389,7 +2386,6 @@ async function shareQuote() {
 }
 
 updateThemeIcons();
-lucide.createIcons({ icons: lucide.icons });
 loadFontWithProgress();
 
 // PWA Service Worker
