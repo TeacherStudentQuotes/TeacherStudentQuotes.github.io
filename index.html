@@ -938,9 +938,12 @@ rt {
   border-left: 1px solid var(--glass-divider);
 }
 
-.list-header-actions .filter-btn,
-.list-header-actions .jump-expand {
+.list-header-actions .filter-btn {
   transition: background 0.15s;
+}
+
+.list-header-actions .jump-expand {
+  transition: width 0.22s ease, background 0.15s;
 }
 
 .list-header-actions .filter-btn:hover,
