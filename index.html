@@ -6,6 +6,12 @@
 <title>名言</title>
 
 <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8a7d5e">
+<meta property="og:title" content="师生名言精选">
+<meta property="og:description" content="共 689 条师生名言">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://teacherstudentquotes.github.io/">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
@@ -984,6 +990,7 @@ rt {
 <div class="quote-view" id="quoteView">
   <div class="action-bar" id="actionBar">
     <button onclick="showList()" title="返回列表"><i class="fas fa-arrow-left"></i></button>
+    <button onclick="randomQuote()" title="随机一条"><i class="fas fa-dice"></i></button>
     <button onclick="shareQuote()" title="分享"><i class="fas fa-share-nodes"></i></button>
     <button onclick="exportQuoteImage()" title="导出图片"><i class="fas fa-image"></i></button>
     <button onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><i class="fas fa-moon"></i></button>
@@ -2176,6 +2183,15 @@ async function exportQuoteImage() {
   }
 }
 
+function randomQuote() {
+  if (quotes.length < 2) return;
+  let next;
+  do {
+    next = 1 + Math.floor(Math.random() * quotes.length);
+  } while (next === current);
+  showQuote(next);
+}
+
 async function shareQuote() {
   const url = location.origin + location.pathname + '#page=' + current;
   const q = quotes[current - 1];
@@ -2198,6 +2214,11 @@ async function shareQuote() {
 
 updateThemeIcons();
 loadFontWithProgress();
+
+// PWA Service Worker
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 
 createList();
 
