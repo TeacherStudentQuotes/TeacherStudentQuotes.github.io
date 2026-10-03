@@ -934,8 +934,20 @@ rt {
   box-shadow: none;
 }
 
-.list-header-actions > *:not(:first-child) {
-  border-left: 1px solid var(--glass-divider);
+/* 独立居中短竖线分隔（不用border-left：圆角按钮上border会像阴影带） */
+.list-header-actions > * {
+  position: relative;
+}
+
+.list-header-actions > *:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 16px;
+  background: var(--glass-divider);
 }
 
 .list-header-actions .filter-btn {
