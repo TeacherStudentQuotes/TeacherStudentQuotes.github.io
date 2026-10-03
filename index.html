@@ -27,7 +27,7 @@
   --glass-bg: rgba(255, 253, 247, 0.55);
   --glass-bg-hover: rgba(255, 253, 247, 0.78);
   --glass-item-hover: rgba(255, 255, 255, 0.42);
-  --glass-divider: rgba(140, 122, 90, 0.22);
+  --glass-divider: rgba(140, 122, 90, 0.38);
   --glass-blur: blur(14px) saturate(1.35);
   --glass-border: rgba(140, 122, 90, 0.28);
   --glass-shadow:
@@ -70,7 +70,7 @@
   --glass-bg: rgba(46, 40, 31, 0.5);
   --glass-bg-hover: rgba(46, 40, 31, 0.68);
   --glass-item-hover: rgba(255, 244, 224, 0.09);
-  --glass-divider: rgba(255, 244, 224, 0.12);
+  --glass-divider: rgba(255, 244, 224, 0.22);
   --glass-blur: blur(14px) saturate(1.2);
   --glass-border: rgba(255, 244, 224, 0.16);
   --glass-shadow:
@@ -946,10 +946,15 @@ rt {
   transition: width 0.22s ease, background 0.15s;
 }
 
-.list-header-actions .filter-btn:hover,
-.list-header-actions .jump-expand:hover,
 .list-header-actions .jump-expand.open {
   background: var(--glass-item-hover);
+}
+
+@media (hover: hover) {
+  .list-header-actions .filter-btn:hover,
+  .list-header-actions .jump-expand:hover {
+    background: var(--glass-item-hover);
+  }
 }
 
 .list-header-actions .search-input:focus {
@@ -989,8 +994,10 @@ rt {
   transition: background 0.15s;
 }
 
-.action-bar button:hover {
-  background: var(--glass-item-hover);
+@media (hover: hover) {
+  .action-bar button:hover {
+    background: var(--glass-item-hover);
+  }
 }
 
 .action-bar button:active {
