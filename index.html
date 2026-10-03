@@ -189,7 +189,7 @@ body {
 }
 
 .search-input:focus {
-  border-color: #999;
+  border-color: var(--text-3);
 }
 
 .search-icon {
@@ -197,7 +197,7 @@ body {
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  color: #999;
+  color: var(--text-3);
   font-size: 0.85rem;
   pointer-events: none;
 }
@@ -208,7 +208,7 @@ body {
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.8rem;
-  color: #999;
+  color: var(--text-3);
   font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   pointer-events: none;
 }
@@ -237,7 +237,7 @@ body {
   height: 36px;
   border: 1px solid var(--border-3);
   background: var(--paper);
-  color: #555;
+  color: var(--text-2);
   border-radius: 999px;
   cursor: pointer;
   display: flex;
@@ -300,7 +300,7 @@ body {
 .filter-close-btn {
   border: none;
   background: none;
-  color: #777;
+  color: var(--text-3);
   font-size: 1.1rem;
   width: 32px;
   height: 32px;
@@ -314,6 +314,40 @@ body {
 .filter-close-btn:hover {
   background: var(--hover-3);
   color: var(--text);
+}
+
+.filter-tags {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 2px 12px;
+}
+.filter-tag-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s ease;
+}
+.filter-tag-option input {
+  display: none;
+}
+.filter-tag-option.off {
+  opacity: 0.38;
+  filter: saturate(0.2);
+}
+.filter-tag-option:hover {
+  opacity: 1;
+}
+.filter-tag-count {
+  font-size: 0.75rem;
+  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
 }
 
 .filter-options {
@@ -334,7 +368,7 @@ body {
   font-size: 0.95rem;
   color: var(--text);
   cursor: pointer;
-  background: #fff;
+  background: var(--paper);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -388,7 +422,7 @@ body {
 
 .filter-option-count {
   font-size: 0.8rem;
-  color: #999;
+  color: var(--text-3);
   font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   flex-shrink: 0;
 }
@@ -423,7 +457,7 @@ body {
   padding: 8px 18px;
   border: 1px solid var(--border-3);
   background: var(--paper);
-  color: #555;
+  color: var(--text-2);
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.95rem;
@@ -746,7 +780,7 @@ rt {
   height: 34px;
   padding: 0 6px;
   border: 1px solid var(--border-3);
-  background: #fff;
+  background: var(--paper);
   color: var(--text);
   border-radius: 6px;
   font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
@@ -756,7 +790,7 @@ rt {
 }
 
 .popover-input:focus {
-  border-color: #999;
+  border-color: var(--text-3);
 }
 
 .popover-total {
@@ -808,7 +842,7 @@ rt {
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: #555;
+  color: var(--text-2);
   font-size: 1rem;
   cursor: pointer;
   display: flex;
@@ -894,10 +928,16 @@ rt {
   position: relative;
 }
 .drawer-popover {
-  top: 50%;
-  left: auto;
-  right: calc(100% + 12px);
+  position: fixed;
+  top: 0; /* JS 按按钮位置设置 */
+  right: 222px; /* 抽屉宽210 + 12 */
   transform: translateY(-50%);
+}
+.drawer-popover.centered {
+  top: 50% !important;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
 }
 .drawer-popover::before {
   top: 50%;
@@ -908,20 +948,8 @@ rt {
   border-bottom: 1px solid var(--border);
   transform: translateY(-50%) rotate(-45deg);
 }
-
-/* 窄屏时 popover 改居中弹层，避免超出左边缘 */
-@media (max-width: 480px) {
-  .drawer-popover {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    right: auto;
-    transform: translate(-50%, -50%);
-    z-index: 310;
-  }
-  .drawer-popover::before {
-    display: none;
-  }
+.drawer-popover.centered::before {
+  display: none;
 }
 
 @media (max-width: 600px) {
@@ -1079,13 +1107,6 @@ rt {
     </div>
     <div class="drawer-jump-wrap">
       <button class="drawer-item" onclick="toggleDrawerJump('list')"><i class="fas fa-hashtag"></i><span>跳转至</span></button>
-      <div class="popover drawer-popover" id="listDrawerJumpPopover">
-        <div class="popover-row">
-          <span class="popover-label">跳转至</span>
-          <input type="number" id="listDrawerJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value);closeActionMenu()">
-          <span class="popover-total">/ <span id="listDrawerJumpTotal"></span></span>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -1104,13 +1125,6 @@ rt {
     <button class="drawer-item" onclick="closeActionMenu();exportQuoteImage()"><i class="fas fa-image"></i><span>导出图片</span></button>
     <div class="drawer-jump-wrap">
       <button class="drawer-item" onclick="toggleDrawerJump('quote')"><i class="fas fa-hashtag"></i><span>跳转至</span></button>
-      <div class="popover drawer-popover" id="drawerJumpPopover">
-        <div class="popover-row">
-          <span class="popover-label">跳转至</span>
-          <input type="number" id="drawerJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToQuote(this.value);closeActionMenu()">
-          <span class="popover-total">/ <span id="drawerJumpTotal"></span></span>
-        </div>
-      </div>
     </div>
   </div>
 <div class="click-zone left" onclick="prevPage()"></div>
@@ -1416,22 +1430,29 @@ function createFilter() {
   };
   if (sortedTags.length > 0) {
     options.appendChild(makeSectionTitle('标签', 'tag'));
+    const tagWrap = document.createElement('div');
+    tagWrap.className = 'filter-tags';
     sortedTags.forEach(tag => {
       const label = document.createElement('label');
-      label.className = 'filter-option';
+      label.className = 'filter-tag-option';
       const c = tagColors(tag);
+      const checked = !excludedTags.has(tag);
       label.style.background = c[0];
       label.style.borderColor = c[1];
-      const checked = !excludedTags.has(tag);
       label.innerHTML = `<input type="checkbox" class="filter-checkbox" data-tag="${escapeHtml(tag)}"${checked ? ' checked' : ''}>` +
-        `<div class="filter-option-main"><span class="filter-option-name" style="color:${c[2]}">${escapeHtml(tag)}</span></div>` +
-        `<span class="filter-option-count">${tagCounts[tag]}</span>`;
-      label.querySelector('input').addEventListener('click', (e) => {
+        `<span class="filter-tag-name" style="color:${c[2]}">${escapeHtml(tag)}</span>` +
+        `<span class="filter-tag-count" style="color:${c[1]}">${tagCounts[tag]}</span>`;
+      const cb = label.querySelector('input');
+      const syncOff = () => label.classList.toggle('off', !cb.checked);
+      syncOff();
+      cb.addEventListener('click', (e) => {
+        syncOff();
         updateSelectAllBtn('tag');
         e.stopPropagation();
       });
-      options.appendChild(label);
+      tagWrap.appendChild(label);
     });
+    options.appendChild(tagWrap);
     options.appendChild(makeSectionTitle('作者', 'author'));
   }
   sortedAuthors.forEach(author => {
@@ -1626,17 +1647,14 @@ document.addEventListener('click', (e) => {
   if (wrap && !wrap.contains(e.target)) {
     closeFilter();
   }
-  document.querySelectorAll('.drawer-jump-wrap').forEach(wrap => {
-    if (!wrap.contains(e.target)) {
-      const pop = wrap.querySelector('.popover');
-      if (pop) pop.classList.remove('show');
-    }
-  });
+  if (!e.target.closest('.drawer-popover') && !e.target.closest('.drawer-jump-wrap')) {
+    document.querySelectorAll('.drawer-popover').forEach(p => p.classList.remove('show'));
+  }
 });
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    document.querySelectorAll('.drawer-jump-wrap .popover').forEach(p => p.classList.remove('show'));
+    document.querySelectorAll('.drawer-popover').forEach(p => p.classList.remove('show'));
   }
 });
 
@@ -2262,17 +2280,26 @@ function closeActionMenu() {
   document.getElementById('actionDrawer').classList.remove('open');
   document.getElementById('listDrawer').classList.remove('open');
   document.getElementById('drawerBackdrop').classList.remove('open');
-  document.querySelectorAll('.drawer-jump-wrap .popover').forEach(p => p.classList.remove('show'));
+  document.querySelectorAll('.drawer-popover').forEach(p => p.classList.remove('show'));
 }
 
 function toggleDrawerJump(which) {
-  const popover = document.getElementById(which === 'list' ? 'listDrawerJumpPopover' : 'drawerJumpPopover');
-  const input = document.getElementById(which === 'list' ? 'listDrawerJumpInput' : 'drawerJumpInput');
+  const isList = which === 'list';
+  const popover = document.getElementById(isList ? 'listDrawerJumpPopover' : 'drawerJumpPopover');
+  const input = document.getElementById(isList ? 'listDrawerJumpInput' : 'drawerJumpInput');
+  const drawer = document.getElementById(isList ? 'listDrawer' : 'actionDrawer');
   const willShow = !popover.classList.contains('show');
   popover.classList.toggle('show');
-  if (willShow && input) {
-    input.focus();
-    input.select();
+  if (willShow) {
+    const btn = drawer.querySelector('.drawer-jump-wrap .drawer-item');
+    const r = btn.getBoundingClientRect();
+    const narrow = window.innerWidth < 430; /* 屏窄则居中弹层 */
+    popover.classList.toggle('centered', narrow);
+    if (!narrow) popover.style.top = (r.top + r.height / 2) + 'px';
+    if (input) {
+      input.focus({ preventScroll: true });
+      input.select();
+    }
   }
 }
 
@@ -2318,5 +2345,19 @@ if (initialPage > 0) {
   showQuote(initialPage);
 }
 </script>
+<div class="popover drawer-popover" id="listDrawerJumpPopover">
+  <div class="popover-row">
+    <span class="popover-label">跳转至</span>
+    <input type="number" id="listDrawerJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value);closeActionMenu()">
+    <span class="popover-total">/ <span id="listDrawerJumpTotal"></span></span>
+  </div>
+</div>
+<div class="popover drawer-popover" id="drawerJumpPopover">
+  <div class="popover-row">
+    <span class="popover-label">跳转至</span>
+    <input type="number" id="drawerJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToQuote(this.value);closeActionMenu()">
+    <span class="popover-total">/ <span id="drawerJumpTotal"></span></span>
+  </div>
+</div>
 </body>
 </html>
