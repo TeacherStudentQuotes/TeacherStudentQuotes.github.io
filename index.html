@@ -1225,19 +1225,22 @@ function toggleTheme(evt) {
     refreshTagPills();
   };
 
-  // View Transitions：以点击处为圆心波纹扩散揭示新模式；不支持则直接切
+  // View Transitions：波纹圆心锚在主题按钮正中心，从按钮本体扩散揭示新模式
   if (!document.startViewTransition) { apply(); return; }
-  const x = (evt && evt.clientX) || innerWidth / 2;
-  const y = (evt && evt.clientY) || innerHeight / 2;
-  const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  const rect = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
+    ? evt.currentTarget.getBoundingClientRect() : null;
+  const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
+  const cy = rect ? rect.top + rect.height / 2 : 40;
+  const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
+  const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) + r0;
   const vt = document.startViewTransition(apply);
   vt.ready.then(() => {
     document.documentElement.animate(
       [
-        { clipPath: `circle(0px at ${x}px ${y}px)` },
-        { clipPath: `circle(${r}px at ${x}px ${y}px)` },
+        { clipPath: `circle(${r0}px at ${cx}px ${cy}px)` },
+        { clipPath: `circle(${r}px at ${cx}px ${cy}px)` },
       ],
-      { duration: 450, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' }
+      { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
     );
   }).catch(() => {});
 }
@@ -2457,7 +2460,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v41').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v42').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
