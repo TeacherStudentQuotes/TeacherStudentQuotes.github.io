@@ -2093,7 +2093,7 @@ async function loadFontWithProgress() {
 
 // ===== Canvas 导出图片 =====
 // 逻辑尺寸模拟桌面视口
-const EXPORT_W = 1440, EXPORT_H = 900, EXPORT_SCALE = 2;
+const EXPORT_SCALE = 2;
 const FONT_STACK = '"Computer Modern","STZhongsong",serif';
 
 function ensureFonts() {
@@ -2348,11 +2348,15 @@ async function renderQuoteCanvas(index) {
   const q = quotes[index - 1];
   if (!q) return null;
 
+  // 画布 = 当前视口 CSS 像素模型：与页面显示逐像素对应（所见即所得）
+  const vw = quoteView.clientWidth || 1100;
+  const vh = quoteView.clientHeight || 760;
   const canvas = document.createElement('canvas');
-  canvas.width = EXPORT_W * EXPORT_SCALE;
-  canvas.height = EXPORT_H * EXPORT_SCALE;
+  canvas.width = vw * EXPORT_SCALE;
+  canvas.height = vh * EXPORT_SCALE;
   const ctx = canvas.getContext('2d');
   ctx.scale(EXPORT_SCALE, EXPORT_SCALE);
+  const EXPORT_W = vw, EXPORT_H = vh;
 
   const paper = cssVar('--paper') || '#fffef8';
   const textColor = cssVar('--text') || '#333';
