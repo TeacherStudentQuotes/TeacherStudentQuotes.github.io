@@ -1556,7 +1556,6 @@ function createFilter() {
       cb.addEventListener('click', (e) => {
         syncOff();
         updateSelectAllBtn('tag');
-        confirmFilter(true);
         e.stopPropagation();
       });
       tagWrap.appendChild(label);
@@ -1586,7 +1585,6 @@ function createFilter() {
       `<span class="filter-option-count">${count}</span>`;
     label.querySelector('input').addEventListener('click', (e) => {
       updateSelectAllBtn('author');
-      confirmFilter(true);
       e.stopPropagation();
     });
     options.appendChild(label);
@@ -1642,7 +1640,6 @@ function toggleSelectAll(kind) {
     if (tagLabel) tagLabel.classList.toggle('off', !cb.checked);
   });
   updateSelectAllBtn(kind);
-  confirmFilter(true);
 }
 
 function invertSelection(kind) {
@@ -1652,7 +1649,6 @@ function invertSelection(kind) {
     if (tagLabel) tagLabel.classList.toggle('off', !cb.checked);
   });
   updateSelectAllBtn(kind);
-  confirmFilter(true);
 }
 
 function confirmFilter(stay) {
@@ -2527,7 +2523,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v51').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v52').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
