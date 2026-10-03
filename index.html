@@ -435,6 +435,20 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  overflow: hidden;
+  max-height: 140px;
+  transition: max-height .26s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .26s cubic-bezier(.4,0,.2,1), margin .26s cubic-bezier(.4,0,.2,1), border-color .26s ease, transform .26s cubic-bezier(.4,0,.2,1);
+}
+/* 作者跟随标签的收起过渡：负margin吞掉grid gap，收缩到零后JS再display:none */
+.filter-option.f-hiding {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: -4px;
+  border-color: transparent;
+  transform: scale(.95);
+  pointer-events: none;
 }
 
 .filter-option:hover {
@@ -1606,7 +1620,30 @@ function createFilter() {
 
 function allFilterCheckboxes() {
   return [...document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]')]
-    .filter(cb => cb.closest('.filter-option').style.display !== 'none');
+    .filter(cb => isAuthorOptionVisible(cb));
+}
+
+// 作者项可见性（带收起/展开过渡）
+function isAuthorOptionVisible(cb) {
+  const opt = cb.closest('.filter-option');
+  return opt.style.display !== 'none' && !opt.classList.contains('f-hiding');
+}
+function setAuthorOptionHidden(cb, hide) {
+  const opt = cb.closest('.filter-option');
+  clearTimeout(opt.__hideT);
+  if (hide) {
+    if (opt.style.display === 'none' || opt.classList.contains('f-hiding')) return;
+    opt.classList.add('f-hiding');
+    opt.__hideT = setTimeout(() => {
+      opt.classList.remove('f-hiding');
+      opt.style.display = 'none';
+    }, 280);
+  } else {
+    if (opt.style.display !== 'none' && !opt.classList.contains('f-hiding')) return;
+    opt.style.display = '';
+    opt.classList.add('f-hiding');
+    requestAnimationFrame(() => requestAnimationFrame(() => opt.classList.remove('f-hiding')));
+  }
 }
 
 // 面板内预览版：按当前勾选状态（未点确定）即时收缩作者区
@@ -1619,7 +1656,7 @@ function syncAuthorVisibilityPreview() {
     if (tags.every(t => !excluded.has(t))) eligible.add(q.author);
   });
   document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]').forEach(cb => {
-    cb.closest('.filter-option').style.display = eligible.has(cb.dataset.author) ? '' : 'none';
+    setAuthorOptionHidden(cb, !eligible.has(cb.dataset.author));
   });
 }
 
@@ -1631,7 +1668,7 @@ function syncAuthorVisibility() {
     if (tags.every(t => !excludedTags.has(t))) eligible.add(q.author);
   });
   document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]').forEach(cb => {
-    cb.closest('.filter-option').style.display = eligible.has(cb.dataset.author) ? '' : 'none';
+    setAuthorOptionHidden(cb, !eligible.has(cb.dataset.author));
   });
 }
 
@@ -1682,7 +1719,7 @@ function confirmFilter(stay) {
   prevAuthors.forEach(a => {
     if (!activeAuthors.has(a) &&
         ![...document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]')]
-          .some(cb => cb.dataset.author === a && cb.closest('.filter-option').style.display !== 'none')) {
+          .some(cb => cb.dataset.author === a && isAuthorOptionVisible(cb))) {
       activeAuthors.add(a);
     }
   });
@@ -2543,7 +2580,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v54').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v55').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
