@@ -1058,47 +1058,52 @@ rt {
     <div class="list-header-top">
       <h1>名言</h1>
       <div class="list-header-actions" style="display:flex;align-items:center;gap:10px;">
-        <div class="list-jump-wrap" id="listJumpWrap">
-          <button class="filter-btn" onclick="toggleListJumpPopover()" title="跳转至"><i class="fas fa-hashtag"></i></button>
-          <div class="popover popover-list" id="listJumpPopover">
-            <div class="popover-row">
-              <span class="popover-label">跳转至</span>
-              <input type="number" id="listJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value)">
-              <span class="popover-total">/ <span id="listJumpTotal"></span></span>
-            </div>
-          </div>
-        </div>
         <div class="search-wrap">
           <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="applySearch()">
           <i class="fas fa-search search-icon"></i>
           <span class="search-count" id="searchCount"></span>
         </div>
-        <div class="filter-wrap">
-          <button class="filter-btn" onclick="toggleFilter()" title="筛选作者"><i class="fas fa-filter"></i></button>
-          <div class="filter-backdrop" id="filterBackdrop"></div>
-          <div class="filter-dropdown" id="filterDropdown"></div>
-        </div>
         <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnList"><i class="fas fa-moon"></i></button>
+        <button class="filter-btn" onclick="toggleActionMenu('list')" title="菜单"><i class="fas fa-bars"></i></button>
       </div>
     </div>
     <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
   </div>
   <div class="list-body" id="listBody"></div>
+  <!-- 列表页抽屉 -->
+  <div class="action-drawer" id="listDrawer">
+    <div class="filter-wrap">
+      <button class="drawer-item" onclick="closeActionMenu();toggleFilter()"><i class="fas fa-filter"></i><span>筛选作者</span></button>
+      <div class="filter-backdrop" id="filterBackdrop"></div>
+      <div class="filter-dropdown" id="filterDropdown"></div>
+    </div>
+    <div class="drawer-jump-wrap">
+      <button class="drawer-item" onclick="toggleDrawerJump('list')"><i class="fas fa-hashtag"></i><span>跳转至</span></button>
+      <div class="popover drawer-popover" id="listDrawerJumpPopover">
+        <div class="popover-row">
+          <span class="popover-label">跳转至</span>
+          <input type="number" id="listDrawerJumpInput" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value);closeActionMenu()">
+          <span class="popover-total">/ <span id="listDrawerJumpTotal"></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 名言单页视图 -->
 <div class="quote-view" id="quoteView">
   <div class="action-bar" id="actionBar">
-    <button onclick="toggleActionMenu()" title="菜单"><i class="fas fa-bars"></i></button>
+    <button onclick="randomQuote()" title="随机一条"><i class="fas fa-dice"></i></button>
+    <button onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><i class="fas fa-moon"></i></button>
+    <button onclick="toggleActionMenu('quote')" title="菜单"><i class="fas fa-bars"></i></button>
   </div>
   <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeActionMenu()"></div>
   <div class="action-drawer" id="actionDrawer">
     <button class="drawer-item" onclick="closeActionMenu();showList()"><i class="fas fa-arrow-left"></i><span>返回列表</span></button>
-    <button class="drawer-item" onclick="closeActionMenu();randomQuote()"><i class="fas fa-dice"></i><span>随机一条</span></button>
     <button class="drawer-item" onclick="closeActionMenu();shareQuote()"><i class="fas fa-share-nodes"></i><span>分享</span></button>
     <button class="drawer-item" onclick="closeActionMenu();exportQuoteImage()"><i class="fas fa-image"></i><span>导出图片</span></button>
     <div class="drawer-jump-wrap">
-      <button class="drawer-item" onclick="toggleDrawerJump()"><i class="fas fa-hashtag"></i><span>跳转至</span></button>
+      <button class="drawer-item" onclick="toggleDrawerJump('quote')"><i class="fas fa-hashtag"></i><span>跳转至</span></button>
       <div class="popover drawer-popover" id="drawerJumpPopover">
         <div class="popover-row">
           <span class="popover-label">跳转至</span>
@@ -1107,7 +1112,6 @@ rt {
         </div>
       </div>
     </div>
-    <button class="drawer-item" id="drawerThemeBtn" onclick="closeActionMenu();toggleTheme()"><i class="fas fa-moon"></i><span>暗色模式</span></button>
   </div>
 <div class="click-zone left" onclick="prevPage()"></div>
   <div class="click-zone right" onclick="nextPage()"></div>
@@ -1147,15 +1151,10 @@ function toggleTheme() {
 
 function updateThemeIcons() {
   const isDark = document.documentElement.dataset.theme === 'dark';
-  ['themeBtnList'].forEach(id => {
+  ['themeBtnList', 'themeBtnQuote'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) btn.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'}"></i>`;
   });
-  const drawerBtn = document.getElementById('drawerThemeBtn');
-  if (drawerBtn) {
-    drawerBtn.querySelector('i').className = `fas ${isDark ? 'fa-sun' : 'fa-moon'}`;
-    drawerBtn.querySelector('span').textContent = isDark ? '亮色模式' : '暗色模式';
-  }
 }
 
 // ESC 关闭抽屉
@@ -1367,9 +1366,9 @@ function createList() {
     allItems.push(item);
   });
   createFilter();
-  document.getElementById('listJumpInput').max = quotes.length;
-  document.getElementById('listJumpInput').placeholder = `1-${quotes.length}`;
-  document.getElementById('listJumpTotal').textContent = quotes.length;
+  document.getElementById('listDrawerJumpInput').max = quotes.length;
+  document.getElementById('listDrawerJumpInput').placeholder = `1-${quotes.length}`;
+  document.getElementById('listDrawerJumpTotal').textContent = quotes.length;
   document.getElementById('drawerJumpInput').max = quotes.length;
   document.getElementById('drawerJumpTotal').textContent = quotes.length;
 }
@@ -1627,19 +1626,17 @@ document.addEventListener('click', (e) => {
   if (wrap && !wrap.contains(e.target)) {
     closeFilter();
   }
-  const drawerJumpWrap = document.querySelector('.drawer-jump-wrap');
-  if (drawerJumpWrap && !drawerJumpWrap.contains(e.target)) {
-    document.getElementById('drawerJumpPopover').classList.remove('show');
-  }
-  const listJumpWrap = document.getElementById('listJumpWrap');
-  if (listJumpWrap && !listJumpWrap.contains(e.target)) {
-    document.getElementById('listJumpPopover').classList.remove('show');
-  }
+  document.querySelectorAll('.drawer-jump-wrap').forEach(wrap => {
+    if (!wrap.contains(e.target)) {
+      const pop = wrap.querySelector('.popover');
+      if (pop) pop.classList.remove('show');
+    }
+  });
 });
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    document.getElementById('listJumpPopover').classList.remove('show');
+    document.querySelectorAll('.drawer-jump-wrap .popover').forEach(p => p.classList.remove('show'));
   }
 });
 
@@ -1723,7 +1720,6 @@ function runFlashAfterScroll(item) {
 function jumpToList(value) {
   const num = parseInt(value, 10);
   if (isNaN(num) || num < 1 || num > quotes.length) return;
-  document.getElementById('listJumpPopover').classList.remove('show');
   activeAuthors.clear();
   excludedTags.clear();
   currentSearch = '';
@@ -1735,39 +1731,6 @@ function jumpToList(value) {
   if (item) {
     item.scrollIntoView({ behavior: 'smooth', block: 'center' });
     runFlashAfterScroll(item);
-  }
-}
-
-function positionPopover(trigger, popover) {
-  const triggerRect = trigger.getBoundingClientRect();
-  const popoverRect = popover.getBoundingClientRect();
-  const viewportWidth = window.innerWidth;
-  const gap = 8;
-  const triggerCenter = triggerRect.left + triggerRect.width / 2;
-  let desiredLeft = triggerCenter - popoverRect.width / 2;
-  const maxLeft = viewportWidth - popoverRect.width - gap;
-  if (desiredLeft < gap) desiredLeft = gap;
-  if (desiredLeft > maxLeft) desiredLeft = maxLeft;
-  const relativeLeft = desiredLeft - triggerRect.left;
-  const arrowLeft = triggerCenter - desiredLeft;
-  popover.style.left = relativeLeft + 'px';
-  popover.style.setProperty('--arrow-left', arrowLeft + 'px');
-}
-
-function toggleListJumpPopover() {
-  const popover = document.getElementById('listJumpPopover');
-  const trigger = document.getElementById('listJumpWrap');
-  const willShow = !popover.classList.contains('show');
-  popover.classList.toggle('show');
-  if (willShow) {
-    popover.style.visibility = 'hidden';
-    requestAnimationFrame(() => {
-      positionPopover(trigger, popover);
-      popover.style.visibility = '';
-      const input = document.getElementById('listJumpInput');
-      input.focus();
-      input.select();
-    });
   }
 }
 
@@ -2284,29 +2247,30 @@ function randomQuote() {
   showQuote(next);
 }
 
-function toggleActionMenu() {
-  const drawer = document.getElementById('actionDrawer');
+function toggleActionMenu(which) {
+  const target = document.getElementById(which === 'list' ? 'listDrawer' : 'actionDrawer');
   const backdrop = document.getElementById('drawerBackdrop');
-  const opening = !drawer.classList.contains('open');
-  drawer.classList.toggle('open');
-  backdrop.classList.toggle('open');
-  if (!opening) {
-    document.getElementById('drawerJumpPopover').classList.remove('show');
+  const opening = !target.classList.contains('open');
+  closeActionMenu();
+  if (opening) {
+    target.classList.add('open');
+    backdrop.classList.add('open');
   }
 }
 
 function closeActionMenu() {
   document.getElementById('actionDrawer').classList.remove('open');
+  document.getElementById('listDrawer').classList.remove('open');
   document.getElementById('drawerBackdrop').classList.remove('open');
-  document.getElementById('drawerJumpPopover').classList.remove('show');
+  document.querySelectorAll('.drawer-jump-wrap .popover').forEach(p => p.classList.remove('show'));
 }
 
-function toggleDrawerJump() {
-  const popover = document.getElementById('drawerJumpPopover');
+function toggleDrawerJump(which) {
+  const popover = document.getElementById(which === 'list' ? 'listDrawerJumpPopover' : 'drawerJumpPopover');
+  const input = document.getElementById(which === 'list' ? 'listDrawerJumpInput' : 'drawerJumpInput');
   const willShow = !popover.classList.contains('show');
   popover.classList.toggle('show');
-  if (willShow) {
-    const input = document.getElementById('drawerJumpInput');
+  if (willShow && input) {
     input.focus();
     input.select();
   }
