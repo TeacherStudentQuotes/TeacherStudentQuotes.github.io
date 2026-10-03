@@ -1437,6 +1437,25 @@ const activeAuthors = new Set();
 const excludedTags = new Set();
 let authorFilterApplied = false; /* true=用户确认过筛选；作者全不选=刻意空结果 */
 
+function saveFilter() {
+  localStorage.setItem('filterState', JSON.stringify({
+    a: [...activeAuthors],
+    x: [...excludedTags],
+    p: authorFilterApplied,
+  }));
+}
+
+function loadFilter() {
+  try {
+    const s = JSON.parse(localStorage.getItem('filterState') || 'null');
+    if (!s) return;
+    if (Array.isArray(s.a)) s.a.forEach(v => activeAuthors.add(v));
+    if (Array.isArray(s.x)) s.x.forEach(v => excludedTags.add(v));
+    authorFilterApplied = !!s.p;
+  } catch (e) {}
+}
+loadFilter();
+
 let currentSearch = '';
 
 function createList() {
@@ -1535,6 +1554,7 @@ function createFilter() {
       cb.addEventListener('click', (e) => {
         syncOff();
         updateSelectAllBtn('tag');
+        confirmFilter(true);
         e.stopPropagation();
       });
       tagWrap.appendChild(label);
@@ -1564,6 +1584,7 @@ function createFilter() {
       `<span class="filter-option-count">${count}</span>`;
     label.querySelector('input').addEventListener('click', (e) => {
       updateSelectAllBtn('author');
+      confirmFilter(true);
       e.stopPropagation();
     });
     options.appendChild(label);
@@ -1605,6 +1626,7 @@ function toggleSelectAll(kind) {
     if (tagLabel) tagLabel.classList.toggle('off', !cb.checked);
   });
   updateSelectAllBtn(kind);
+  confirmFilter(true);
 }
 
 function invertSelection(kind) {
@@ -1614,9 +1636,10 @@ function invertSelection(kind) {
     if (tagLabel) tagLabel.classList.toggle('off', !cb.checked);
   });
   updateSelectAllBtn(kind);
+  confirmFilter(true);
 }
 
-function confirmFilter() {
+function confirmFilter(stay) {
   activeAuthors.clear();
   allFilterCheckboxes().forEach(cb => {
     if (cb.checked) activeAuthors.add(cb.dataset.author);
@@ -1626,8 +1649,9 @@ function confirmFilter() {
   allTagCheckboxes().forEach(cb => {
     if (!cb.checked) excludedTags.add(cb.dataset.tag);
   });
+  saveFilter();
   applySearch();
-  closeFilter();
+  if (!stay) closeFilter();
 }
 
 function closeFilter() {
@@ -2460,7 +2484,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v42').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v43').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
