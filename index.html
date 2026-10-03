@@ -1196,7 +1196,7 @@ rt {
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script src="quotes.js"></script>
 <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeActionMenu()"></div>
-<div class="filter-backdrop" id="filterBackdrop" onclick="closeFilter()"></div>
+<div class="filter-backdrop" id="filterBackdrop"></div>
 <div class="filter-dropdown" id="filterDropdown"></div>
 <script>
 // ===== 主题管理 =====
@@ -2419,7 +2419,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v36').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v37').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
