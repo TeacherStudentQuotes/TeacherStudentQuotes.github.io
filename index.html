@@ -2521,13 +2521,13 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     });
   };
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    __refreshVer();
+    // 交接瞬间controller可能为null，不刷新徽标（马上reload重画，避免闪没）
     if (__swRefreshing) return;
     __swRefreshing = true;
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v50').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v51').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
