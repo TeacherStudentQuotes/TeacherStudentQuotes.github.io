@@ -1829,6 +1829,7 @@ function jumpToList(value) {
       - (lb.clientHeight - item.getBoundingClientRect().height) / 2;
     lb.scrollBy({ top: delta, behavior: 'smooth' });
     runFlashAfterScroll(item);
+    document.querySelectorAll('.jump-expand-input').forEach(inp => { inp.value = ''; });
   }
 }
 
@@ -1836,6 +1837,7 @@ function jumpToQuote(value) {
   const num = parseInt(value, 10);
   if (!isNaN(num) && num >= 1 && num < total) {
     if (num !== current) showQuote(num);
+    document.querySelectorAll('.jump-expand-input').forEach(inp => { inp.value = ''; });
   } else {
     document.querySelectorAll('.jump-expand-input').forEach(inp => {
       inp.value = current >= 1 ? current : '';
@@ -2416,7 +2418,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v33').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v34').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
