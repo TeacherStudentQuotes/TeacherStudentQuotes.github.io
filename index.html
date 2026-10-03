@@ -1720,6 +1720,9 @@ document.addEventListener('click', (e) => {
   });
   const filterDd = document.getElementById('filterDropdown');
   if (filterDd && filterDd.contains(e.target)) insideFilter = true;
+  // 遮罩点击不退出（防误触），关闭走漏斗toggle/X/Esc
+  const filterBd = document.getElementById('filterBackdrop');
+  if (filterBd && filterBd.contains(e.target)) insideFilter = true;
   if (!insideFilter) closeFilter();
   if (!e.target.closest('.jump-expand')) collapseJumpAll();
 });
@@ -2431,7 +2434,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v39').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v40').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
