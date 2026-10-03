@@ -847,25 +847,44 @@ rt {
 
 .jump-expand.open .jump-expand-total { opacity: 1; padding-right: 12px; }
 
-/* 单页 action-bar 版：收起无框融入按钮组，展开成输入 pill */
+/* 单页 action-bar 版：清干净基础类残留的玻璃blur/shadow，收起居中融入，展开item提亮 */
 .action-bar .jump-expand {
   height: 42px;
   width: 42px;
   border: none;
   background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  justify-content: center;
+  padding-left: 0;
+  transition: width 0.22s ease, background 0.15s;
+}
+
+.action-bar .jump-expand:not(.open) .jump-expand-input,
+.action-bar .jump-expand:not(.open) .jump-expand-total {
+  display: none;
 }
 
 .action-bar .jump-expand.open {
-  width: 162px;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  box-shadow: none;
+  width: 150px;
+  justify-content: flex-start;
+  padding-left: 10px;
+  background: var(--glass-item-hover);
+}
+
+.action-bar .jump-expand.open .jump-expand-input {
+  flex: 1;
+  min-width: 0;
 }
 
 /* 菜单内版：整行菜单项，展开时整行变输入框 */
 .jump-expand-menu {
   width: 100%;
   height: auto;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
   border: none;
   background: transparent;
   border-radius: 8px;
