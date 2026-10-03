@@ -1785,7 +1785,7 @@ function applySearch() {
         const itemTags = item.dataset.tags ? item.dataset.tags.split(',') : [];
         if ((!authorFilterApplied || activeAuthors.has(author)) && itemTags.every(t => !excludedTags.has(t))) fc++;
       });
-      html += `，符合条件 ${fc}`;
+      html += `，筛后 ${fc} 条`;
     }
     subP.innerHTML = html;
   }
@@ -2527,7 +2527,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v47').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v48').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
