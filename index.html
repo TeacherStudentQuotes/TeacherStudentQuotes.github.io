@@ -98,6 +98,14 @@ html, body, .filter-dropdown, .quote-view {
 }
 
 /* 列表视图滚动条（低调样式） */
+.list-empty {
+  text-align: center;
+  color: var(--text-3);
+  padding: 48px 20px;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
 .list-body {
   scrollbar-width: thin;
   scrollbar-color: var(--scroll) transparent;
@@ -1073,7 +1081,7 @@ rt {
           <i class="fas fa-search search-icon"></i>
           <span class="search-count" id="searchCount"></span>
         </div>
-        <button class="filter-btn filter-wrap desktop-only" onclick="toggleFilter()" title="筛选作者"><i class="fas fa-filter"></i></button>
+        <button class="filter-btn filter-wrap desktop-only" onclick="toggleFilter()" title="筛选作者/标签"><i class="fas fa-filter"></i></button>
         <div class="drawer-jump-wrap desktop-only">
           <button class="filter-btn" onclick="toggleDrawerJump(this)" title="跳转至"><i class="fas fa-hashtag"></i></button>
           <div class="popover">
@@ -1091,10 +1099,11 @@ rt {
     <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
   </div>
   <div class="list-body" id="listBody"></div>
+  <div class="list-empty" id="listEmpty" hidden>没有符合条件的名言</div>
   <!-- 列表页抽屉 -->
   <div class="action-drawer mobile-only" id="listDrawer">
     <div class="filter-wrap">
-      <button class="drawer-item" onclick="toggleFilter()"><i class="fas fa-filter"></i><span>筛选作者</span></button>
+      <button class="drawer-item" onclick="toggleFilter()"><i class="fas fa-filter"></i><span>筛选作者/标签</span></button>
     </div>
     <div class="drawer-jump-wrap">
       <button class="drawer-item" onclick="toggleDrawerJump(this)"><i class="fas fa-hashtag"></i><span>跳转至</span></button>
@@ -1373,6 +1382,8 @@ function renderToken(t) {
 let allItems = [];
 const activeAuthors = new Set();
 const excludedTags = new Set();
+let authorFilterApplied = false; /* true=用户确认过筛选；作者全不选=刻意空结果 */
+
 let currentSearch = '';
 
 function createList() {
@@ -1482,7 +1493,7 @@ function createFilter() {
   sortedAuthors.forEach(author => {
     const label = document.createElement('label');
     label.className = 'filter-option';
-    const checked = activeAuthors.size === 0 || activeAuthors.has(author);
+    const checked = !authorFilterApplied || activeAuthors.has(author);
     const count = authorCounts[author] || 0;
     let nameHtml = escapeHtml(author);
     let pillsHtml = '';
@@ -1550,10 +1561,7 @@ function confirmFilter() {
   allFilterCheckboxes().forEach(cb => {
     if (cb.checked) activeAuthors.add(cb.dataset.author);
   });
-  if (activeAuthors.size === 0) {
-    showFilterToast('至少选择一项');
-    return;
-  }
+  authorFilterApplied = true;
   excludedTags.clear();
   allTagCheckboxes().forEach(cb => {
     if (!cb.checked) excludedTags.add(cb.dataset.tag);
@@ -1630,7 +1638,7 @@ function applySearch() {
   allItems.forEach(item => {
     const author = item.dataset.author;
     const content = item.dataset.content;
-    const matchesFilter = activeAuthors.size === 0 || activeAuthors.has(author);
+    const matchesFilter = !authorFilterApplied || activeAuthors.has(author);
     const itemTags = item.dataset.tags ? item.dataset.tags.split(',') : [];
     const matchesTag = itemTags.every(t => !excludedTags.has(t));
     const matchesSearch = !currentSearch ||
@@ -1652,6 +1660,8 @@ function applySearch() {
   });
   const countEl = document.getElementById('searchCount');
   if (countEl) countEl.textContent = currentSearch ? visibleCount : '';
+  const emptyEl = document.getElementById('listEmpty');
+  if (emptyEl) emptyEl.hidden = visibleCount !== 0;
 }
 
 function updateSearchParam(search) {
