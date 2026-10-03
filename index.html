@@ -128,6 +128,8 @@ html, body, .filter-dropdown, .quote-view {
 /* 列表视图滚动条（低调样式） */
 .bi {
   vertical-align: -0.125em;
+  /* BI字体视觉中心偏高，flex居中布局里下移修正 */
+  transform: translateY(0.0625em);
 }
 
 .list-empty {
