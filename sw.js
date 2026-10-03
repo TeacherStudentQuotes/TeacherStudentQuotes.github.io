@@ -1,4 +1,4 @@
-const CACHE = 'tsq-v49';
+const CACHE = 'tsq-v50';
 const CORE = [
   '.',
   'index.html',
@@ -8,8 +8,6 @@ const CORE = [
   'fonts/cmu.serif-roman.woff2',
   'img/favicon.ico',
   'img/cry.png',
-  'img/icon-192.png',
-  'img/icon-512.png',
 ];
 
 self.addEventListener('message', (e) => {
