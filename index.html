@@ -1597,7 +1597,10 @@ function toggleFilter() {
   const dropdown = document.getElementById('filterDropdown');
   const backdrop = document.getElementById('filterBackdrop');
   const willShow = !dropdown.classList.contains('show');
-  if (willShow) createFilter();
+  if (willShow) {
+    createFilter();
+    closeActionMenu(); /* 筛选是独立模态，菜单让位 */
+  }
   dropdown.classList.toggle('show');
   backdrop.classList.toggle('show', willShow ? true : dropdown.classList.contains('show'));
 }
