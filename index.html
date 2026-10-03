@@ -9,6 +9,69 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
+:root {
+  --bg: #f5f0e8;
+  --paper: #fffef8;
+  --text: #333;
+  --text-2: #666;
+  --text-3: #888;
+  --border: #ddd8ce;
+  --border-2: #e8e2d4;
+  --border-3: #ccc;
+  --accent: #8a7d5e;
+  --accent-hover: #756a4e;
+  --hover: #eee;
+  --hover-2: #faf7ef;
+  --hover-3: #eee7d8;
+  --pill-bg: #f3eddc;
+  --pill-border: #e2dac6;
+  --pill-text: #6b6353;
+  --footer-bg: #faf6ec;
+  --toast-bg: #4a4234;
+  --toast-text: var(--paper);
+  --indicator-bg: #2c2c2c;
+  --indicator-text: var(--bg);
+  --highlight: #ffe082;
+  --highlight-text: var(--text);
+  --mark: #ddd;
+  --backdrop: rgba(40,34,22,0.4);
+  --scroll: rgba(0,0,0,0.15);
+  --scroll-hover: rgba(0,0,0,0.25);
+  --shadow: rgba(0,0,0,0.18);
+  --shadow-2: rgba(0,0,0,0.15);
+}
+[data-theme="dark"] {
+  --bg: #171410;
+  --paper: #211d15;
+  --text: #e6dfd0;
+  --text-2: #b0a894;
+  --text-3: #8a8271;
+  --border: #3a342a;
+  --border-2: #2e2921;
+  --border-3: #4a4436;
+  --accent: #b5a27a;
+  --accent-hover: #c9b68d;
+  --hover: #2e2921;
+  --hover-2: #29241c;
+  --hover-3: #2e2921;
+  --pill-bg: #2e2921;
+  --pill-border: #3a342a;
+  --pill-text: #a89f8c;
+  --footer-bg: #1d1a13;
+  --toast-bg: #e6dfd0;
+  --toast-text: #171410;
+  --indicator-bg: #e6dfd0;
+  --indicator-text: #171410;
+  --highlight: #8a7320;
+  --highlight-text: #f5ecd0;
+  --mark: #4a4436;
+  --backdrop: rgba(0,0,0,0.6);
+  --scroll: rgba(255,255,255,0.15);
+  --scroll-hover: rgba(255,255,255,0.25);
+  --shadow: rgba(0,0,0,0.5);
+  --shadow-2: rgba(0,0,0,0.4);
+}
+
 @font-face {
   font-family: 'Computer Modern';
   src: url('fonts/cmu.serif-roman.woff2') format('woff2');
@@ -31,7 +94,7 @@ html, body, .filter-dropdown, .quote-view {
 /* 列表视图滚动条（低调样式） */
 .list-body {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.15) transparent;
+  scrollbar-color: var(--scroll) transparent;
 }
 
 .list-body::-webkit-scrollbar {
@@ -44,12 +107,12 @@ html, body, .filter-dropdown, .quote-view {
 }
 
 .list-body::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.15);
+  background: var(--scroll);
   border-radius: 3px;
 }
 
 .list-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.25);
+  background: var(--scroll-hover);
 }
 
 html, body {
@@ -58,7 +121,7 @@ html, body {
 }
 
 body {
-  background: #f5f0e8;
+  background: var(--bg);
   font-family: 'Computer Modern', 'STZhongsong', "SimSun", "宋体", serif;
   overflow: hidden;
 }
@@ -74,9 +137,9 @@ body {
 
 .list-header {
   padding: 24px 40px 16px;
-  border-bottom: 1px solid #ddd8ce;
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  background: #f5f0e8;
+  background: var(--bg);
   z-index: 10;
 }
 
@@ -88,14 +151,14 @@ body {
 
 .list-header h1 {
   font-size: 2rem;
-  color: #333;
+  color: var(--text);
   letter-spacing: 0.15em;
 }
 
 .list-header p {
   margin-top: 6px;
   font-size: 0.9rem;
-  color: #888;
+  color: var(--text-3);
 }
 
 .filter-wrap {
@@ -110,9 +173,9 @@ body {
   width: 180px;
   height: 36px;
   padding: 0 44px 0 32px;
-  border: 1px solid #ccc;
-  background: #fffef8;
-  color: #333;
+  border: 1px solid var(--border-3);
+  background: var(--paper);
+  color: var(--text);
   border-radius: 999px;
   font-family: inherit;
   font-size: 0.95rem;
@@ -145,8 +208,8 @@ body {
 }
 
 .search-highlight {
-  background: #ffe082;
-  color: #333;
+  background: var(--highlight);
+  color: var(--text);
   border-radius: 2px;
   padding: 0;
 }
@@ -166,8 +229,8 @@ body {
 .filter-btn {
   width: 36px;
   height: 36px;
-  border: 1px solid #ccc;
-  background: #fffef8;
+  border: 1px solid var(--border-3);
+  background: var(--paper);
   color: #555;
   border-radius: 999px;
   cursor: pointer;
@@ -178,7 +241,7 @@ body {
 }
 
 .filter-btn:hover {
-  background: #eee;
+  background: var(--hover);
 }
 
 .filter-dropdown {
@@ -187,10 +250,10 @@ body {
   left: 24px;
   right: 24px;
   bottom: 24px;
-  background: #fffef8;
-  border: 1px solid #ddd8ce;
+  background: var(--paper);
+  border: 1px solid var(--border);
   border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+  box-shadow: 0 12px 40px var(--shadow);
   display: none;
   flex-direction: column;
   z-index: 100;
@@ -204,7 +267,7 @@ body {
 .filter-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(40, 34, 22, 0.4);
+  background: var(--backdrop);
   display: none;
   z-index: 90;
 }
@@ -219,13 +282,13 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 14px 20px;
-  border-bottom: 1px solid #e8e2d4;
+  border-bottom: 1px solid var(--border-2);
 }
 
 .filter-title {
   font-size: 1.05rem;
   font-weight: bold;
-  color: #333;
+  color: var(--text);
 }
 
 .filter-close-btn {
@@ -243,8 +306,8 @@ body {
 }
 
 .filter-close-btn:hover {
-  background: #eee7d8;
-  color: #333;
+  background: var(--hover-3);
+  color: var(--text);
 }
 
 .filter-options {
@@ -259,11 +322,11 @@ body {
 }
 
 .filter-option {
-  border: 1px solid #e8e2d4;
+  border: 1px solid var(--border-2);
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 0.95rem;
-  color: #333;
+  color: var(--text);
   cursor: pointer;
   background: #fff;
   display: flex;
@@ -272,7 +335,7 @@ body {
 }
 
 .filter-option:hover {
-  background: #f5f0e8;
+  background: var(--bg);
 }
 
 .filter-option:has(.filter-checkbox[data-tag]):hover {
@@ -283,7 +346,7 @@ body {
 .filter-option input[type="checkbox"] {
   width: 17px;
   height: 17px;
-  accent-color: #8a7d5e;
+  accent-color: var(--accent);
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -311,9 +374,9 @@ body {
   font-size: 0.75rem;
   padding: 2px 10px;
   border-radius: 999px;
-  background: #f3eddc;
-  color: #6b6353;
-  border: 1px solid #e2dac6;
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  border: 1px solid var(--pill-border);
   white-space: nowrap;
 }
 
@@ -331,15 +394,15 @@ body {
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  border-top: 1px solid #e8e2d4;
-  background: #faf6ec;
+  border-top: 1px solid var(--border-2);
+  background: var(--footer-bg);
 }
 
 .filter-confirm-btn {
   padding: 8px 28px;
-  border: 1px solid #ccc;
-  background: #8a7d5e;
-  color: #fffef8;
+  border: 1px solid var(--border-3);
+  background: var(--accent);
+  color: var(--paper);
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.95rem;
@@ -347,13 +410,13 @@ body {
 }
 
 .filter-confirm-btn:hover {
-  background: #756a4e;
+  background: var(--accent-hover);
 }
 
 .filter-aux-btn {
   padding: 8px 18px;
-  border: 1px solid #ccc;
-  background: #fffef8;
+  border: 1px solid var(--border-3);
+  background: var(--paper);
   color: #555;
   border-radius: 6px;
   font-family: inherit;
@@ -362,7 +425,7 @@ body {
 }
 
 .filter-aux-btn:hover {
-  background: #eee;
+  background: var(--hover);
 }
 
 .filter-section-title {
@@ -372,7 +435,7 @@ body {
   align-items: center;
   font-size: 0.85rem;
   font-weight: bold;
-  color: #8a7d5e;
+  color: var(--accent);
   padding: 6px 2px 0;
 }
 
@@ -384,7 +447,7 @@ body {
 .filter-section-btn {
   border: none;
   background: none;
-  color: #8a7d5e;
+  color: var(--accent);
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: normal;
@@ -394,7 +457,7 @@ body {
 }
 
 .filter-section-btn:hover {
-  background: #eee7d8;
+  background: var(--hover-3);
 }
 
 .filter-toast {
@@ -402,12 +465,12 @@ body {
   bottom: 76px;
   left: 50%;
   transform: translateX(-50%) translateY(8px);
-  background: #4a4234;
-  color: #fffef8;
+  background: var(--toast-bg);
+  color: var(--paper);
   padding: 10px 22px;
   border-radius: 999px;
   font-size: 0.9rem;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  box-shadow: 0 6px 20px var(--scroll-hover);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -441,25 +504,25 @@ body {
 .list-item {
   padding: 14px 18px;
   margin-bottom: 10px;
-  background: #fffef8;
+  background: var(--paper);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
   display: flex;
   align-items: baseline;
   gap: 14px;
-  border: 1px solid #e8e3d9;
+  border: 1px solid var(--border-2);
 }
 
 .list-item:hover {
-  background: #faf7ef;
+  background: var(--hover-2);
   transform: translateX(4px);
-  border-color: #d5cfc4;
+  border-color: var(--border-3);
 }
 
 @keyframes flashItem {
-  0%, 100% { background-color: #fffef8; }
-  50% { background-color: #ffe082; }
+  0%, 100% { background-color: var(--paper); }
+  50% { background-color: var(--highlight); }
 }
 
 .list-item.flash {
@@ -468,7 +531,7 @@ body {
 
 .list-item-index {
   font-size: 1rem;
-  color: #666;
+  color: var(--text-2);
   font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   min-width: 42px;
   text-align: right;
@@ -479,7 +542,7 @@ body {
 .list-item-content {
   flex: 1;
   font-size: 1rem;
-  color: #333;
+  color: var(--text);
   line-height: 1.6;
   word-break: break-all;
   overflow-wrap: anywhere;
@@ -521,7 +584,7 @@ ruby {
 
 rt {
   font-size: 0.65em;
-  color: #888;
+  color: var(--text-3);
   font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   line-height: 1.1;
 }
@@ -532,7 +595,7 @@ rt {
 
 .list-item-author {
   font-size: 0.85rem;
-  color: #888;
+  color: var(--text-3);
   flex-shrink: 0;
 }
 
@@ -555,7 +618,7 @@ rt {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: #fffef8;
+  background: var(--paper);
   padding: 60px;
   display: flex;
   flex-direction: column;
@@ -566,7 +629,7 @@ rt {
 .quote-mark {
   position: absolute;
   font-size: 8rem;
-  color: #ddd;
+  color: var(--mark);
   font-family: 'STZhongsong', Georgia, serif;
   line-height: 1;
   user-select: none;
@@ -587,7 +650,7 @@ rt {
   font-size: 1.8rem;
   line-height: 2.4;
   text-align: center;
-  color: #333;
+  color: var(--text);
   max-width: 90%;
   word-break: break-all;
   overflow-wrap: anywhere;
@@ -600,7 +663,7 @@ rt {
   bottom: 80px;
   right: 80px;
   font-size: 1.3rem;
-  color: #666;
+  color: var(--text-2);
   font-style: italic;
   transition: opacity 0.3s ease;
   z-index: 5;
@@ -633,10 +696,10 @@ rt {
   position: absolute;
   top: calc(100% + 10px);
   left: 0;
-  background: #fffef8;
-  border: 1px solid #ddd8ce;
+  background: var(--paper);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px var(--scroll);
   padding: 12px 14px;
   display: none;
   z-index: 210;
@@ -654,9 +717,9 @@ rt {
   left: var(--arrow-left, 50%);
   width: 12px;
   height: 12px;
-  background: #fffef8;
-  border-left: 1px solid #ddd8ce;
-  border-top: 1px solid #ddd8ce;
+  background: var(--paper);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   transform: translateX(-50%) rotate(45deg);
 }
 
@@ -669,16 +732,16 @@ rt {
 
 .popover-label {
   font-size: 0.9rem;
-  color: #333;
+  color: var(--text);
 }
 
 .popover-input {
   width: 64px;
   height: 34px;
   padding: 0 6px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-3);
   background: #fff;
-  color: #333;
+  color: var(--text);
   border-radius: 6px;
   font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   font-size: 0.95rem;
@@ -692,7 +755,7 @@ rt {
 
 .popover-total {
   font-size: 0.85rem;
-  color: #888;
+  color: var(--text-3);
   font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
 }
 
@@ -703,8 +766,8 @@ rt {
   z-index: 30;
   width: 60px;
   height: 36px;
-  background: #2c2c2c;
-  color: #f5f0e8;
+  background: var(--indicator-bg);
+  color: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -727,8 +790,8 @@ rt {
   align-items: center;
   padding: 4px;
   border-radius: 999px;
-  background: #fffef8;
-  border: 1px solid #ccc;
+  background: var(--paper);
+  border: 1px solid var(--border-3);
   z-index: 200;
 }
 
@@ -749,7 +812,7 @@ rt {
 }
 
 .action-bar button:hover {
-  background: #eee;
+  background: var(--hover);
 }
 
 .action-bar button:active {
@@ -810,7 +873,7 @@ rt {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: #f5f0e8;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -839,13 +902,13 @@ rt {
 
 .spinner-bg {
   fill: none;
-  stroke: #ddd;
+  stroke: var(--mark);
   stroke-width: 6;
 }
 
 .spinner-progress {
   fill: none;
-  stroke: #333;
+  stroke: var(--text);
   stroke-width: 6;
   transition: stroke-dashoffset 0.1s linear;
 }
@@ -856,14 +919,14 @@ rt {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 1.4rem;
-  color: #333;
+  color: var(--text);
   font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
   z-index: 2;
 }
 
 .progress-decimal {
   font-size: 0.75rem;
-  color: #888;
+  color: var(--text-3);
 }
 
 @keyframes spin {
@@ -909,6 +972,7 @@ rt {
           <div class="filter-backdrop" id="filterBackdrop"></div>
           <div class="filter-dropdown" id="filterDropdown"></div>
         </div>
+        <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnList"><i class="fas fa-moon"></i></button>
       </div>
     </div>
     <p>师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
@@ -920,6 +984,9 @@ rt {
 <div class="quote-view" id="quoteView">
   <div class="action-bar" id="actionBar">
     <button onclick="showList()" title="返回列表"><i class="fas fa-arrow-left"></i></button>
+    <button onclick="shareQuote()" title="分享"><i class="fas fa-share-nodes"></i></button>
+    <button onclick="exportQuoteImage()" title="导出图片"><i class="fas fa-image"></i></button>
+    <button onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><i class="fas fa-moon"></i></button>
     <div class="popover-trigger">
       <button onclick="toggleJumpPopover()" title="跳转至"><i class="fas fa-hashtag"></i></button>
       <div class="popover popover-quote" id="jumpPopover">
@@ -947,6 +1014,38 @@ rt {
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script src="quotes.js"></script>
 <script>
+// ===== 主题管理 =====
+(function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
+})();
+
+function toggleTheme() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  if (isDark) {
+    delete document.documentElement.dataset.theme;
+    localStorage.setItem('theme', 'light');
+  } else {
+    document.documentElement.dataset.theme = 'dark';
+    localStorage.setItem('theme', 'dark');
+  }
+  updateThemeIcons();
+  refreshTagPills();
+}
+
+function updateThemeIcons() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  ['themeBtnList', 'themeBtnQuote'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'}"></i>`;
+  });
+}
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 let current = 0;
 const total = quotes.length + 1;
 
@@ -960,7 +1059,7 @@ function escapeHtml(text) {
 }
 
 // 每个标签一组固定的胶囊配色（底色 / 边框 / 文字），共 6 色，相近主题共用
-const TAG_PALETTE = [
+const TAG_PALETTE_LIGHT = [
   ['#fde2e2', '#e8a1a1', '#a13c3c'], // 0 红
   ['#fdeadc', '#e2ae7e', '#9a5a24'], // 1 橙
   ['#e0f2de', '#96cf92', '#2f6b2c'], // 2 绿
@@ -968,6 +1067,17 @@ const TAG_PALETTE = [
   ['#ededed', '#c2c2c2', '#545454'], // 4 灰
   ['#f0e2cf', '#c9a678', '#7c5227'], // 5 棕
 ];
+const TAG_PALETTE_DARK = [
+  ['#3a2323', '#7a4040', '#d49090'], // 0 红
+  ['#3a2c1e', '#7a5c38', '#d4a878'], // 1 橙
+  ['#23331f', '#40663a', '#90c088'], // 2 绿
+  ['#1e2a38', '#3a5a7a', '#88a8cc'], // 3 蓝
+  ['#2a2a2a', '#555555', '#a0a0a0'], // 4 灰
+  ['#33281c', '#6b5232', '#c0a078'], // 5 棕
+];
+function tagPalette() {
+  return document.documentElement.dataset.theme === 'dark' ? TAG_PALETTE_DARK : TAG_PALETTE_LIGHT;
+}
 // 按含义固定配色；有意控制颜色数量，同类标签共用一色
 const TAG_COLOR_SLOT = {
   '日常': 4,         // 灰：平淡中性
@@ -987,16 +1097,40 @@ const TAG_COLOR_SLOT = {
   '网络梗': 3,       // 蓝
   '名人梗': 3,       // 蓝
 };
-const tagColorMap = {};
+const tagColorMaps = { light: {}, dark: {} };
 
 function tagColors(tag) {
-  if (!(tag in tagColorMap)) {
+  const mode = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+  const map = tagColorMaps[mode];
+  if (!(tag in map)) {
+    const palette = tagPalette();
     const n = tag in TAG_COLOR_SLOT
       ? TAG_COLOR_SLOT[tag]
-      : Object.keys(tagColorMap).length;
-    tagColorMap[tag] = TAG_PALETTE[n % TAG_PALETTE.length];
+      : Object.keys(map).length;
+    map[tag] = palette[n % palette.length];
   }
-  return tagColorMap[tag];
+  return map[tag];
+}
+
+// 主题切换后刷新已渲染的标签胶囊
+function refreshTagPills() {
+  document.querySelectorAll('.tag-pill').forEach(pill => {
+    const tag = pill.textContent;
+    const c = tagColors(tag);
+    pill.style.background = c[0];
+    pill.style.borderColor = c[1];
+    pill.style.color = c[2];
+  });
+  // 筛选下拉里的标签底色
+  document.querySelectorAll('#filterDropdown .filter-option').forEach(opt => {
+    const cb = opt.querySelector('.filter-checkbox[data-tag]');
+    if (!cb) return;
+    const c = tagColors(cb.dataset.tag);
+    opt.style.background = c[0];
+    opt.style.borderColor = c[1];
+    const name = opt.querySelector('.filter-option-name');
+    if (name) name.style.color = c[2];
+  });
 }
 
 // 按标签名排序后一次性分配颜色，保证同一次加载中颜色稳定
@@ -1574,6 +1708,21 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') prevPage();
 });
 
+let globalToastTimer = null;
+function showToast(message, duration = 1800) {
+  let toast = document.getElementById('globalToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'globalToast';
+    toast.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:20px;font-size:14px;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;background:var(--toast-bg);color:var(--toast-text);box-shadow:0 4px 16px var(--shadow);font-family:' + FONT_STACK + ';';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  clearTimeout(globalToastTimer);
+  globalToastTimer = setTimeout(() => { toast.style.opacity = '0'; }, duration);
+}
+
 async function getRealSize() {
   try {
     const res = await fetch('fonts/STZHONGS.subset.woff2', { headers: { 'Range': 'bytes=0-0' }, cache: 'no-store' });
@@ -1651,6 +1800,403 @@ async function loadFontWithProgress() {
   }
 }
 
+// ===== Canvas 导出图片 =====
+// 逻辑尺寸模拟桌面视口
+const EXPORT_W = 1440, EXPORT_H = 900, EXPORT_SCALE = 2;
+const FONT_STACK = '"Computer Modern","STZhongsong",serif';
+
+function ensureFonts() {
+  return Promise.all([
+    document.fonts.load(`16px "STZhongsong"`),
+    document.fonts.load(`italic 16px "Computer Modern"`),
+  ]).then(() => document.fonts.ready);
+}
+
+// --- 迷你 LaTeX 渲染器：\frac \dfrac \sqrt \pi ---
+function parseMath(src) {
+  const nodes = [];
+  let i = 0;
+  while (i < src.length) {
+    if (src[i] === '\\') {
+      const rest = src.slice(i);
+      let m;
+      if ((m = rest.match(/^\\d?frac/))) {
+        // 参数可以是 {组} 或裸字符
+        const readGroup = (start) => {
+          if (src[start] === '{') {
+            let d = 0, k = start;
+            for (; k < src.length; k++) {
+              if (src[k] === '{') d++;
+              else if (src[k] === '}') { d--; if (d === 0) break; }
+            }
+            return [src.slice(start + 1, k), k + 1];
+          }
+          return [src[start] || '', start + 1];
+        };
+        let pos = i + m[0].length;
+        while (src[pos] === ' ') pos++;
+        const [num, afterNum] = readGroup(pos);
+        const [den, afterDen] = readGroup(afterNum);
+        nodes.push({ type: 'frac', num: parseMath(num), den: parseMath(den) });
+        i = afterDen;
+        continue;
+      }
+      if ((m = rest.match(/^\\sqrt/))) {
+        let pos = i + m[0].length;
+        while (src[pos] === ' ') pos++;
+        if (src[pos] === '{') {
+          let d = 0, k = pos;
+          for (; k < src.length; k++) {
+            if (src[k] === '{') d++;
+            else if (src[k] === '}') { d--; if (d === 0) break; }
+          }
+          nodes.push({ type: 'sqrt', body: parseMath(src.slice(pos + 1, k)) });
+          i = k + 1;
+        } else {
+          nodes.push({ type: 'sqrt', body: parseMath(src[pos] || '') });
+          i = pos + 1;
+        }
+        continue;
+      }
+      if ((m = rest.match(/^\\pi/))) {
+        nodes.push({ type: 'char', ch: 'π' });
+        i += 3;
+        continue;
+      }
+      // 未知命令：跳过反斜杠按普通字符处理
+      i += 1;
+      continue;
+    }
+    if (src[i] === '{' || src[i] === '}') { i++; continue; }
+    nodes.push({ type: 'char', ch: src[i] });
+    i++;
+  }
+  return nodes;
+}
+
+function mathSize(nodes) {
+  // 返回 {w, h, bl}：宽、高、基线（从顶部到基线的距离）
+  let w = 0, hAbove = 0, hBelow = 0;
+  for (const n of nodes) {
+    if (n.type === 'char') {
+      w += currentCtx.measureText(n.ch).width;
+      hAbove = Math.max(hAbove, MATH_FS * 0.8);
+      hBelow = Math.max(hBelow, MATH_FS * 0.25);
+    } else if (n.type === 'frac') {
+      const s = mathBox(n);
+      w += s.w;
+      hAbove = Math.max(hAbove, s.bl);
+      hBelow = Math.max(hBelow, s.h - s.bl);
+    } else if (n.type === 'sqrt') {
+      const s = mathBox(n);
+      w += s.w;
+      hAbove = Math.max(hAbove, s.bl);
+      hBelow = Math.max(hBelow, s.h - s.bl);
+    }
+  }
+  return { w, h: hAbove + hBelow, bl: hAbove };
+}
+
+let currentCtx = null, MATH_FS = 28;
+
+function mathBox(node) {
+  // frac: 分子在上、分数线、分母在下
+  if (node.type === 'frac') {
+    const nw = mathSize(node.num), dw = mathSize(node.den);
+    const w = Math.max(nw.w, dw.w) + MATH_FS * 0.5;
+    const lineH = Math.max(1.5, MATH_FS * 0.06);
+    const gap = MATH_FS * 0.18;
+    const h = nw.h + dw.h + lineH + gap * 2;
+    const bl = nw.h + gap + lineH / 2 + MATH_FS * 0.15; // 基线≈分数线略下
+    return { w, h, bl, nw, dw, lineH, gap };
+  }
+  if (node.type === 'sqrt') {
+    const b = mathSize(node.body);
+    const pad = MATH_FS * 0.12, rootW = MATH_FS * 0.65;
+    return { w: b.w + rootW + pad, h: b.h + pad, bl: b.bl + pad / 2, body: b, rootW, pad };
+  }
+  return { w: 0, h: 0, bl: 0 };
+}
+
+function drawMathNode(ctx, node, x, yTop) {
+  if (node.type === 'char') {
+    ctx.fillText(node.ch, x, yTop + MATH_FS * 0.8);
+    return ctx.measureText(node.ch).width;
+  }
+  if (node.type === 'frac') {
+    const b = mathBox(node);
+    // 分子（右对齐于盒子中心）
+    let nx = x + (b.w - b.nw.w) / 2;
+    for (const n of node.num) { nx += drawMathNode(ctx, n, nx, yTop); }
+    // 分数线
+    const ly = yTop + b.nw.h + b.gap + b.lineH / 2;
+    ctx.save();
+    ctx.lineWidth = b.lineH;
+    ctx.strokeStyle = ctx.fillStyle;
+    ctx.beginPath();
+    ctx.moveTo(x + 2, ly);
+    ctx.lineTo(x + b.w - 2, ly);
+    ctx.stroke();
+    ctx.restore();
+    // 分母
+    let dx = x + (b.w - b.dw.w) / 2;
+    const dy = yTop + b.nw.h + b.gap * 2 + b.lineH;
+    for (const n of node.den) { dx += drawMathNode(ctx, n, dx, dy); }
+    return b.w;
+  }
+  if (node.type === 'sqrt') {
+    const b = mathBox(node);
+    // 根号路径
+    const rt = yTop, rb = yTop + b.h, rr = x + b.rootW, bodyX = x + b.rootW + b.pad;
+    ctx.save();
+    ctx.lineWidth = Math.max(1.5, MATH_FS * 0.05);
+    ctx.strokeStyle = ctx.fillStyle;
+    ctx.beginPath();
+    ctx.moveTo(x, rt + b.h * 0.45);
+    ctx.lineTo(x + b.rootW * 0.3, rb);
+    ctx.lineTo(rr, yTop + b.pad / 2 + b.body.bl - b.body.h + b.pad * 0.5);
+    ctx.lineTo(bodyX + b.body.w + 2, yTop + b.pad / 2 + b.body.bl - b.body.h + b.pad * 0.5);
+    ctx.stroke();
+    ctx.restore();
+    const innerY = yTop + b.pad / 2 + b.body.bl - b.body.bl; // 内容顶部
+    let cx = bodyX;
+    for (const n of node.body) { cx += drawMathNode(ctx, n, cx, innerY); }
+    return b.w;
+  }
+  return 0;
+}
+
+// 把含 $...$ 的文本切成交替的 plain / math item
+function splitMathText(text) {
+  const items = [];
+  const re = /\$([^$]+)\$/g;
+  let last = 0, m;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) items.push({ kind: 'plain', text: text.slice(last, m.index) });
+    items.push({ kind: 'math', src: m[1] });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) items.push({ kind: 'plain', text: text.slice(last) });
+  return items;
+}
+
+// --- 正文排版 ---
+// 先在整段文本层面分离公式，再对普通文本做 ruby 切分
+function layoutQuote(ctx, content, maxWidth, fontSize) {
+  const lineH = fontSize * 2.4;
+  const items = [];
+
+  for (const part of splitMathText(content)) {
+    if (part.kind === 'math') {
+      MATH_FS = fontSize;
+      const prev = currentCtx;
+      currentCtx = ctx;
+      const nodes = parseMath(part.src);
+      const s = mathSize(nodes);
+      currentCtx = prev;
+      items.push({
+        w: s.w, h: s.h, bl: s.bl, spacing: fontSize * 0.1,
+        draw(c, x, blY) {
+          const p = currentCtx;
+          currentCtx = c;
+          c.font = `${fontSize}px ${FONT_STACK}`;
+          const topY = blY - s.bl - fontSize * 0.8 + fontSize * 0.8; // = blY - s.bl
+          let mx = x;
+          for (const n of nodes) { mx += drawMathNode(c, n, mx, topY); }
+          currentCtx = p;
+        }
+      });
+      continue;
+    }
+    // plain：走 ruby 分词
+    for (const t of tokenizeContent(part.text)) {
+      if (t.type === 'ruby') {
+        ctx.font = `${fontSize}px ${FONT_STACK}`;
+        const bw = ctx.measureText(t.char).width;
+        ctx.font = `${fontSize * 0.5}px ${FONT_STACK}`;
+        const tw = ctx.measureText(t.pinyin).width;
+        items.push({
+          w: Math.max(bw, tw), h: fontSize * 1.45, bl: fontSize * 0.8, spacing: 0,
+          draw(c, x, blY) {
+            c.font = `${fontSize * 0.5}px ${FONT_STACK}`;
+            c.fillText(t.pinyin, x + (this.w - tw) / 2, blY - fontSize * 0.72);
+            c.font = `${fontSize}px ${FONT_STACK}`;
+            c.fillText(t.char, x + (this.w - bw) / 2, blY);
+          }
+        });
+      } else {
+        ctx.font = `${fontSize}px ${FONT_STACK}`;
+        const ch = t.value;
+        const w = ctx.measureText(ch).width;
+        items.push({
+          w, h: fontSize, bl: fontSize * 0.8, spacing: fontSize * 0.05,
+          draw(c, x, blY) { c.font = `${fontSize}px ${FONT_STACK}`; c.fillText(ch, x, blY); }
+        });
+      }
+    }
+  }
+
+  // 贪心换行
+  const lines = [];
+  let cur = [], curW = 0;
+  for (const it of items) {
+    const add = it.w + (cur.length ? it.spacing : 0);
+    if (cur.length && curW + add > maxWidth) {
+      lines.push(cur);
+      cur = [it]; curW = it.w;
+    } else {
+      cur.push(it); curW += add;
+    }
+  }
+  if (cur.length) lines.push(cur);
+  return { lines, lineH };
+}
+
+async function renderQuoteCanvas(index) {
+  await ensureFonts();
+  const q = quotes[index - 1];
+  if (!q) return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = EXPORT_W * EXPORT_SCALE;
+  canvas.height = EXPORT_H * EXPORT_SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(EXPORT_SCALE, EXPORT_SCALE);
+
+  const paper = cssVar('--paper') || '#fffef8';
+  const textColor = cssVar('--text') || '#333';
+  const accent = cssVar('--accent') || '#8a7d5e';
+
+  // 纸张背景
+  ctx.fillStyle = paper;
+  ctx.fillRect(0, 0, EXPORT_W, EXPORT_H);
+
+  // 大引号
+  ctx.fillStyle = cssVar('--mark') || '#ddd';
+  ctx.font = `128px "STZhongsong",${FONT_STACK}`;
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('“', 40, 158);
+  const blW = ctx.measureText('”').width;
+  ctx.fillText('”', EXPORT_W - 40 - blW, EXPORT_H - 30);
+
+  // 正文
+  ctx.fillStyle = textColor;
+  ctx.textAlign = 'left';
+  const fontSize = 28.8;
+  const isImg = q.content.trim().startsWith('<img');
+  let contentH;
+
+  if (isImg) {
+    const src = (q.content.match(/src="([^"]+)"/) || [])[1];
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = src; });
+    const h = fontSize * 2.8, w = img.width * (h / img.height);
+    ctx.drawImage(img, (EXPORT_W - w) / 2, (EXPORT_H - h) / 2 - 20);
+    contentH = h;
+  } else {
+    const { lines, lineH } = layoutQuote(ctx, q.content, EXPORT_W * 0.9, fontSize);
+    contentH = lines.length * lineH;
+    let y = EXPORT_H / 2 - contentH / 2 + lineH / 2;
+    for (const line of lines) {
+      const lineW = line.reduce((s, it, i) => s + it.w + (i ? it.spacing : 0), 0);
+      let x = (EXPORT_W - lineW) / 2;
+      const blY = y + fontSize * 0.8 + (lineH - fontSize * 1.05) / 2;
+      for (const it of line) {
+        it.draw(ctx, x, blY);
+        x += it.w + it.spacing;
+      }
+      y += lineH;
+    }
+  }
+
+  // 作者：右下，斜体
+  ctx.font = `italic 20.8px ${FONT_STACK}`;
+  ctx.fillStyle = cssVar('--text-2') || '#666';
+  const authorText = '—— ' + q.author;
+  const aw = ctx.measureText(authorText).width;
+  ctx.fillText(authorText, EXPORT_W - 80 - aw, EXPORT_H - 80);
+
+  // 标签：左下角胶囊
+  const tags = (q.tags || []).slice(0, 5);
+  let tx = 0;
+  const ty = EXPORT_H - 36;
+  ctx.font = `13px ${FONT_STACK}`;
+  for (const tag of tags) {
+    const c = tagColors(tag);
+    const tw = ctx.measureText(tag).width;
+    const pw = tw + 24, ph = 22;
+    ctx.fillStyle = c[0];
+    ctx.strokeStyle = c[1];
+    ctx.beginPath();
+    ctx.roundRect(tx, ty + (36 - ph) / 2, pw, ph, 11);
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = c[2];
+    ctx.fillText(tag, tx + 12, ty + (36 + ph) / 2 - 6);
+    ctx.fillStyle = textColor;
+    tx += pw + 8;
+  }
+
+  // 梯形页码：右下 60×36，斜切左边
+  const pw2 = 60, ph2 = 36, cut = 15;
+  const px = EXPORT_W - pw2, py = EXPORT_H - ph2;
+  ctx.fillStyle = cssVar('--indicator-bg') || '#2c2c2c';
+  ctx.beginPath();
+  ctx.moveTo(px + cut, py);
+  ctx.lineTo(px + pw2, py);
+  ctx.lineTo(px + pw2, py + ph2);
+  ctx.lineTo(px, py + ph2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = cssVar('--indicator-text') || '#f5f0e8';
+  ctx.font = `14px ${FONT_STACK}`;
+  ctx.textAlign = 'center';
+  ctx.fillText(String(index), px + (pw2 + cut) / 2, py + ph2 / 2 + 5);
+  ctx.textAlign = 'left';
+
+  return canvas;
+}
+
+async function exportQuoteImage() {
+  showToast('正在生成图片…', 60000);
+  try {
+    const canvas = await renderQuoteCanvas(current);
+    if (!canvas) return;
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `quote-${current}.png`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('已导出 quote-' + current + '.png');
+  } catch (e) {
+    console.error(e);
+    showToast('导出失败：' + e.message);
+  }
+}
+
+async function shareQuote() {
+  const url = location.origin + location.pathname + '#page=' + current;
+  const q = quotes[current - 1];
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: '师生名言 #' + current, text: q.content.replace(/<[^>]+>/g, '').slice(0, 100), url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      showToast('链接已复制');
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('链接已复制');
+      } catch (_) { showToast('分享失败'); }
+    }
+  }
+}
+
+updateThemeIcons();
 loadFontWithProgress();
 
 createList();
