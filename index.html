@@ -705,6 +705,8 @@ rt {
   right: 40px;
 }
 
+[data-theme="dark"] .quote-content img { filter: invert(1); }
+
 .quote-content {
   font-size: 1.8rem;
   line-height: 2.4;
@@ -746,82 +748,97 @@ rt {
   z-index: 5;
 }
 
-.popover-trigger {
-  position: relative;
-  display: inline-block;
-}
-
-.popover {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0;
-  background: var(--paper);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px var(--scroll);
-  padding: 12px 14px;
-  display: none;
-  z-index: 210;
-  min-width: 170px;
-}
-
-.popover.show {
-  display: block;
-}
-
-.drawer-jump-wrap .popover {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.popover::before {
-  content: '';
-  position: absolute;
-  top: -7px;
-  left: var(--arrow-left, 50%);
-  width: 12px;
-  height: 12px;
-  background: var(--paper);
-  border-left: 1px solid var(--border);
-  border-top: 1px solid var(--border);
-  transform: translateX(-50%) rotate(45deg);
-}
-
-.popover-row {
+.jump-expand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  height: 36px;
+  width: 36px;
+  border: 1px solid var(--border-3);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--text-2);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: width 0.22s ease;
 }
 
-.popover-label {
-  font-size: 0.9rem;
+.jump-expand.open { width: 152px; }
+
+.jump-expand > .bi {
+  width: 34px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.jump-expand-input {
+  width: 46px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
   color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.15s;
 }
 
-.popover-input {
-  width: 64px;
-  height: 34px;
-  padding: 0 6px;
+.jump-expand-input::-webkit-outer-spin-button,
+.jump-expand-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.jump-expand-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+.jump-expand.open .jump-expand-input { opacity: 1; }
+
+.jump-expand-total {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--text-3);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.jump-expand.open .jump-expand-total { opacity: 1; padding-right: 12px; }
+
+/* 单页 action-bar 版：收起无框融入按钮组，展开成输入 pill */
+.action-bar .jump-expand {
+  height: 42px;
+  width: 42px;
+  border: none;
+  background: transparent;
+}
+
+.action-bar .jump-expand.open {
+  width: 162px;
   border: 1px solid var(--border-3);
   background: var(--paper);
-  color: var(--text);
-  border-radius: 6px;
-  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
+}
+
+/* 菜单内版：整行菜单项，展开时整行变输入框 */
+.jump-expand-menu {
+  width: 100%;
+  height: auto;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 11px 14px;
+  transition: none;
+}
+
+.jump-expand-menu > .bi { width: auto; text-align: left; }
+
+.jump-expand-label {
+  flex: 1;
+  margin-left: 12px;
   font-size: 0.95rem;
-  text-align: center;
-  outline: none;
+  color: var(--text);
 }
 
-.popover-input:focus {
-  border-color: var(--text-3);
-}
-
-.popover-total {
-  font-size: 0.85rem;
-  color: var(--text-3);
-  font-family: 'Computer Modern', 'STZhongsong', Cambria, Georgia, serif;
-}
+.jump-expand-menu .jump-expand-input { display: none; width: 54px; }
+.jump-expand-menu .jump-expand-total { opacity: 1; padding-right: 0; }
+.jump-expand-menu.open .jump-expand-label { display: none; }
+.jump-expand-menu.open .jump-expand-input { display: block; opacity: 1; }
 
 .page-indicator {
   position: fixed;
@@ -945,11 +962,6 @@ rt {
   color: var(--text-2);
 }
 
-/* 抽屉内跳转 popover 向左弹出 */
-.drawer-jump-wrap {
-  position: relative;
-}
-
 /* 桌面平铺 / 移动收进菜单（仅控制隐藏方向，显示交给元素自身样式） */
 @media (max-width: 767px) {
   .desktop-only { display: none !important; }
@@ -1004,8 +1016,6 @@ rt {
   .quote-mark.bottom-right { bottom: 24px; right: 24px; }
 }
 @media (max-width: 600px) {
-  .popover { padding: 10px 12px; min-width: 140px; top: calc(100% + 8px); }
-  .popover-input { width: 56px; height: 30px; font-size: 0.9rem; }
   .page-indicator { width: 48px; height: 32px; font-size: 0.85rem; }
 }
 
@@ -1098,15 +1108,10 @@ rt {
           <span class="search-count" id="searchCount"></span>
         </div>
         <button class="filter-btn filter-wrap desktop-only" onclick="toggleFilter()" title="筛选作者/标签"><i class="bi bi-funnel-fill"></i></button>
-        <div class="drawer-jump-wrap desktop-only">
-          <button class="filter-btn" onclick="toggleDrawerJump(this)" title="跳转至"><i class="bi bi-hash"></i></button>
-          <div class="popover">
-            <div class="popover-row">
-              <span class="popover-label">跳转至</span>
-              <input type="number" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value);closeActionMenu()">
-              <span class="popover-total">/ <span class="list-jump-total"></span></span>
-            </div>
-          </div>
+        <div class="jump-expand desktop-only" onclick="toggleJumpExpand(this)" title="跳转至">
+          <i class="bi bi-hash"></i>
+          <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToList(this.value);closeActionMenu();}window.__jumpEsc=false;">
+          <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
         </div>
         <button class="filter-btn" onclick="toggleTheme()" title="切换主题" id="themeBtnList"><i class="bi bi-moon-fill"></i></button>
         <button class="filter-btn mobile-only" onclick="toggleActionMenu('list')" title="菜单"><i class="bi bi-three-dots-vertical"></i></button>
@@ -1121,15 +1126,10 @@ rt {
     <div class="filter-wrap">
       <button class="drawer-item" onclick="toggleFilter()"><i class="bi bi-funnel-fill"></i><span>筛选作者/标签</span></button>
     </div>
-    <div class="drawer-jump-wrap">
-      <button class="drawer-item" onclick="toggleDrawerJump(this)"><i class="bi bi-hash"></i><span>跳转至</span></button>
-      <div class="popover">
-        <div class="popover-row">
-          <span class="popover-label">跳转至</span>
-          <input type="number" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToList(this.value);closeActionMenu()">
-          <span class="popover-total">/ <span class="list-jump-total"></span></span>
-        </div>
-      </div>
+    <div class="jump-expand jump-expand-menu" onclick="toggleJumpExpand(this)">
+      <i class="bi bi-hash"></i><span class="jump-expand-label">跳转至</span>
+      <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToList(this.value);}window.__jumpEsc=false;collapseJumpAll();">
+      <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
     </div>
   </div>
 </div>
@@ -1140,15 +1140,10 @@ rt {
     <button onclick="randomQuote()" title="随机一条"><i class="bi bi-dice-5-fill"></i></button>
     <button class="desktop-only" onclick="shareQuote()" title="分享"><i class="bi bi-share-fill"></i></button>
     <button class="desktop-only" onclick="exportQuoteImage()" title="导出图片"><i class="bi bi-image-fill"></i></button>
-    <div class="drawer-jump-wrap desktop-only">
-      <button onclick="toggleDrawerJump(this)" title="跳转至"><i class="bi bi-hash"></i></button>
-      <div class="popover">
-        <div class="popover-row">
-          <span class="popover-label">跳转至</span>
-          <input type="number" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToQuote(this.value);closeActionMenu()">
-          <span class="popover-total">/ <span class="quote-jump-total"></span></span>
-        </div>
-      </div>
+    <div class="jump-expand desktop-only" onclick="toggleJumpExpand(this)" title="跳转至">
+      <i class="bi bi-hash"></i>
+      <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);closeActionMenu();}window.__jumpEsc=false;">
+      <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
     </div>
     <button onclick="toggleTheme()" title="切换主题" id="themeBtnQuote"><i class="bi bi-moon-fill"></i></button>
     <button class="desktop-only" onclick="showList()" title="返回列表"><i class="bi bi-arrow-left"></i></button>
@@ -1158,15 +1153,10 @@ rt {
     <button class="drawer-item" onclick="closeActionMenu();showList()"><i class="bi bi-arrow-left"></i><span>返回列表</span></button>
     <button class="drawer-item" onclick="closeActionMenu();shareQuote()"><i class="bi bi-share-fill"></i><span>分享</span></button>
     <button class="drawer-item" onclick="closeActionMenu();exportQuoteImage()"><i class="bi bi-image-fill"></i><span>导出图片</span></button>
-    <div class="drawer-jump-wrap">
-      <button class="drawer-item" onclick="toggleDrawerJump(this)"><i class="bi bi-hash"></i><span>跳转至</span></button>
-      <div class="popover">
-        <div class="popover-row">
-          <span class="popover-label">跳转至</span>
-          <input type="number" class="popover-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="jumpToQuote(this.value);closeActionMenu()">
-          <span class="popover-total">/ <span class="quote-jump-total"></span></span>
-        </div>
-      </div>
+    <div class="jump-expand jump-expand-menu" onclick="toggleJumpExpand(this)">
+      <i class="bi bi-hash"></i><span class="jump-expand-label">跳转至</span>
+      <input type="number" class="jump-expand-input" min="1" onkeydown="if(event.key==='Enter'){this.blur();}" onblur="if(!window.__jumpEsc){jumpToQuote(this.value);}window.__jumpEsc=false;collapseJumpAll();">
+      <span class="jump-expand-total">/ <b class="jump-total-num"></b></span>
     </div>
   </div>
 <div class="click-zone left" onclick="prevPage()"></div>
@@ -1431,11 +1421,11 @@ function createList() {
 }
 
 function fillJumpTotals() {
-  document.querySelectorAll('.drawer-jump-wrap input').forEach(inp => {
+  document.querySelectorAll('.jump-expand-input').forEach(inp => {
     inp.max = quotes.length;
     inp.placeholder = `1-${quotes.length}`;
   });
-  document.querySelectorAll('.list-jump-total, .quote-jump-total').forEach(s => s.textContent = quotes.length);
+  document.querySelectorAll('.jump-total-num').forEach(s => s.textContent = quotes.length);
 }
 
 function createFilter() {
@@ -1711,14 +1701,13 @@ document.addEventListener('click', (e) => {
   const filterDd = document.getElementById('filterDropdown');
   if (filterDd && filterDd.contains(e.target)) insideFilter = true;
   if (!insideFilter) closeFilter();
-  if (!e.target.closest('.drawer-jump-wrap')) {
-    document.querySelectorAll('.drawer-jump-wrap .popover').forEach(p => p.classList.remove('show'));
-  }
+  if (!e.target.closest('.jump-expand')) collapseJumpAll();
 });
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    document.querySelectorAll('.drawer-jump-wrap .popover').forEach(p => p.classList.remove('show'));
+    if (document.querySelector('.jump-expand.open')) window.__jumpEsc = true;
+    collapseJumpAll();
     closeFilter();
   }
 });
@@ -1737,7 +1726,7 @@ function renderQuote(index) {
     authorEl.innerHTML = escapeHtml(q.author);
     const tagsEl = document.getElementById('qTags');
     if (tagsEl) tagsEl.innerHTML = (q.tags || []).map(tagPillHtml).join('');
-    document.querySelectorAll('.drawer-jump-wrap input').forEach(inp => {
+    document.querySelectorAll('.jump-expand-input').forEach(inp => {
       inp.value = index;
     });
     const pageIndicatorNum = document.getElementById('pageIndicatorNum');
@@ -1825,7 +1814,7 @@ function jumpToQuote(value) {
   if (!isNaN(num) && num >= 1 && num < total) {
     if (num !== current) showQuote(num);
   } else {
-    document.querySelectorAll('.drawer-jump-wrap input').forEach(inp => {
+    document.querySelectorAll('.jump-expand-input').forEach(inp => {
       inp.value = current >= 1 ? current : '';
     });
   }
@@ -2349,18 +2338,19 @@ function closeActionMenu() {
   document.getElementById('actionDrawer').classList.remove('open');
   document.getElementById('listDrawer').classList.remove('open');
   document.getElementById('drawerBackdrop').classList.remove('open');
-  document.querySelectorAll('.drawer-jump-wrap .popover').forEach(p => p.classList.remove('show'));
+  collapseJumpAll();
 }
 
-function toggleDrawerJump(btn) {
-  const wrap = btn.closest('.drawer-jump-wrap');
-  const popover = wrap.querySelector('.popover');
-  const input = wrap.querySelector('input');
-  popover.classList.toggle('show');
-  if (popover.classList.contains('show') && input) {
-    input.focus({ preventScroll: true });
-    input.select();
-  }
+function toggleJumpExpand(el) {
+  if (el.classList.contains('open')) return;
+  collapseJumpAll();
+  el.classList.add('open');
+  const input = el.querySelector('input');
+  if (input) { input.focus({ preventScroll: true }); input.select(); }
+}
+
+function collapseJumpAll() {
+  document.querySelectorAll('.jump-expand.open').forEach(j => j.classList.remove('open'));
 }
 
 async function shareQuote() {
