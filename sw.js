@@ -1,4 +1,4 @@
-const CACHE = 'tsq-v1';
+const CACHE = 'tsq-v2';
 const CORE = [
   '.',
   'index.html',
@@ -44,7 +44,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // 跨域 CDN（font-awesome、KaTeX）：缓存优先
+  // 跨域 CDN（lucide、KaTeX）：缓存优先
   e.respondWith(
     caches.match(e.request).then(
       (hit) =>
