@@ -1671,6 +1671,8 @@ document.addEventListener('click', (e) => {
   document.querySelectorAll('.filter-wrap').forEach(w => {
     if (w.contains(e.target)) insideFilter = true;
   });
+  const filterDd = document.getElementById('filterDropdown');
+  if (filterDd && filterDd.contains(e.target)) insideFilter = true;
   if (!insideFilter) closeFilter();
   if (!e.target.closest('.drawer-jump-wrap')) {
     document.querySelectorAll('.drawer-jump-wrap .popover').forEach(p => p.classList.remove('show'));
