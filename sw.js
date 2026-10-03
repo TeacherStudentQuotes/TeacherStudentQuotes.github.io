@@ -1,4 +1,4 @@
-const CACHE = 'tsq-v21';
+const CACHE = 'tsq-v22';
 const CORE = [
   '.',
   'index.html',
@@ -11,6 +11,10 @@ const CORE = [
   'img/icon-192.png',
   'img/icon-512.png',
 ];
+
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)));

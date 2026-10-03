@@ -2419,9 +2419,31 @@ async function shareQuote() {
 updateThemeIcons();
 loadFontWithProgress();
 
-// PWA Service Worker
+// PWA Service Worker：检测到新版本立即激活并自动刷新一次
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  let __swRefreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (__swRefreshing) return;
+    __swRefreshing = true;
+    location.reload();
+  });
+  navigator.serviceWorker.register('sw.js').then((reg) => {
+    const kick = (worker) => {
+      if (worker && navigator.serviceWorker.controller) {
+        worker.postMessage({ type: 'SKIP_WAITING' });
+      }
+    };
+    if (reg.waiting) kick(reg.waiting);
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed') kick(nw);
+      });
+    });
+    // 每次启动也检查一次服务端是否有新版
+    setTimeout(() => reg.update().catch(() => {}), 3000);
+  }).catch(() => {});
 }
 
 createList();
