@@ -807,13 +807,13 @@ rt {
   align-items: center;
   height: 36px;
   width: 36px;
-  padding: 0 12px;
+  padding: 0 6px;
 }
 
 .jump-expand-input {
-  width: 54px;
+  width: 76px;
   height: 26px;
-  padding: 0 2px;
+  padding: 0;
   flex-shrink: 0;
   border: none;
   border-bottom: 1px solid var(--glass-border);
@@ -2419,7 +2419,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v35').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v36').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
