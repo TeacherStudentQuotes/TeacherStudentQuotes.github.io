@@ -26,7 +26,7 @@
   --border-3: #ccc;
   --glass-bg: rgba(255, 253, 247, 0.55);
   --glass-bg-hover: rgba(255, 253, 247, 0.78);
-  --glass-item-hover: rgba(255, 255, 255, 0.42);
+  --glass-item-hover: rgba(255, 255, 255, 0.68);
   --glass-divider: rgba(140, 122, 90, 0.38);
   --glass-blur: blur(14px) saturate(1.35);
   --glass-border: rgba(140, 122, 90, 0.28);
@@ -937,6 +937,23 @@ rt {
 /* 独立居中短竖线分隔（不用border-left：圆角按钮上border会像阴影带） */
 .list-header-actions > * {
   position: relative;
+}
+
+/* 收起态图标居中；展开态靠左当输入框前缀，宽度收紧，输入框吃掉空隙 */
+.list-header-actions .jump-expand {
+  justify-content: center;
+  padding-left: 0;
+}
+
+.list-header-actions .jump-expand.open {
+  justify-content: flex-start;
+  width: 146px;
+  padding-left: 8px;
+}
+
+.list-header-actions .jump-expand.open .jump-expand-input {
+  flex: 1;
+  min-width: 0;
 }
 
 .list-header-actions > *:not(:first-child)::before {
