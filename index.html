@@ -381,8 +381,8 @@ body {
 
 .filter-tags {
   grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 4px 2px 12px;
 }
@@ -488,9 +488,10 @@ body {
 }
 
 .filter-option-pills {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .filter-pill {
@@ -2508,7 +2509,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v59').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v60').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
