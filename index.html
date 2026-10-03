@@ -484,7 +484,7 @@ body {
 .filter-abbr {
   font-size: 0.72rem;
   opacity: 0.65;
-  margin-right: 0.45em;
+  margin-left: 0.45em;
 }
 
 .filter-option-pills {
@@ -1577,7 +1577,7 @@ function createFilter() {
     let pillsHtml = '';
     const t = teachers.find(t => t.full === author);
     if (t) {
-      nameHtml = `<span class="filter-abbr">${escapeHtml(t.abbr)}</span>${escapeHtml(t.full)}`;
+      nameHtml = `${escapeHtml(t.full)}<span class="filter-abbr">${escapeHtml(t.abbr)}</span>`;
       if (t.desc) pillsHtml += `<span class="filter-pill">${escapeHtml(t.desc)}</span>`;
       if (t.time) pillsHtml += `<span class="filter-pill">${escapeHtml(t.time)}</span>`;
     } else {
@@ -2508,7 +2508,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     location.reload();
   });
   __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v58').then((reg) => {
+  navigator.serviceWorker.register('sw.js?v=tsq-v59').then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
