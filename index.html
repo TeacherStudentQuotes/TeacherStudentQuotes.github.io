@@ -1245,10 +1245,13 @@ rt {
    健壮性：世代计数防连点错位；finished+定时器双保险防 promise 失语；
    换主题期间全局禁过渡防卡片 0.15s 背景残影 */
 let diyGen = 0;
+let themeAnimLock = false; /* true=揭示动画播放中，期间主题切换点击一律无效 */
 function themeRevealDIY(evt, apply) {
-  const gen = ++diyGen;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) { apply(); return; }
+  if (themeAnimLock) return;
+  themeAnimLock = true;
+  const gen = ++diyGen;
   const prev = document.getElementById('diyReveal');
   if (prev) prev.remove();
   const btn = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect) ? evt.currentTarget : null;
@@ -1294,6 +1297,7 @@ function themeRevealDIY(evt, apply) {
       try { overlay.remove(); } catch (e) {}
       document.documentElement.classList.remove('theme-swapping');
       document.body.style.overflow = '';
+      themeAnimLock = false;
     };
     requestAnimationFrame(commit);
     setTimeout(commit, 80); /* rAF 失语的引擎兜底 */
