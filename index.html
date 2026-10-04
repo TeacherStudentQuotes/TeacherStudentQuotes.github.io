@@ -1461,6 +1461,7 @@ function loadFilter() {
   } catch (e) {}
 }
 loadFilter();
+readFilterParams(); /* 网址栏参数优先于 localStorage */
 
 let currentSearch = '';
 
@@ -1716,6 +1717,7 @@ function confirmFilter(stay) {
     if (!cb.checked) excludedTags.add(cb.dataset.tag);
   });
   saveFilter();
+  updateFilterParam();
   applySearch();
   syncAuthorVisibility();
   if (!stay) closeFilter();
@@ -1833,6 +1835,30 @@ function readSearchParam() {
   return url.searchParams.get('search') || '';
 }
 
+function updateFilterParam() {
+  const url = new URL(location.href);
+  url.searchParams.delete('authors');
+  url.searchParams.delete('notags');
+  /* 作者筛选只有真正缩小范围才写进网址：全选等价于不筛；全不选写成 authors=（空值=刻意空结果） */
+  if (authorFilterApplied && activeAuthors.size < allAuthorsSet.size) {
+    if (activeAuthors.size) [...activeAuthors].forEach(a => url.searchParams.append('authors', a));
+    else url.searchParams.set('authors', '');
+  }
+  excludedTags.forEach(t => url.searchParams.append('notags', t));
+  history.replaceState(null, '', url.pathname + url.search + location.hash);
+}
+
+function readFilterParams() {
+  const url = new URL(location.href);
+  if (!url.searchParams.has('authors') && !url.searchParams.has('notags')) return;
+  activeAuthors.clear();
+  excludedTags.clear();
+  authorFilterApplied = url.searchParams.has('authors');
+  url.searchParams.getAll('authors').forEach(v => { if (v) activeAuthors.add(v); });
+  url.searchParams.getAll('notags').forEach(v => { if (v) excludedTags.add(v); });
+  saveFilter();
+}
+
 document.addEventListener('click', (e) => {
   let insideFilter = false;
   document.querySelectorAll('.filter-wrap').forEach(w => {
@@ -1937,10 +1963,12 @@ function jumpToList(value) {
   if (isNaN(num) || num < 1 || num > quotes.length) return;
   activeAuthors.clear();
   excludedTags.clear();
+  authorFilterApplied = false;
   currentSearch = '';
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.value = '';
   applySearch();
+  updateFilterParam();
   createFilter();
   const item = allItems.find(el => parseInt(el.dataset.index, 10) === num);
   if (item) {
@@ -2528,14 +2556,13 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   }).catch(() => {});
 }
 
-createList();
-
 const initialSearch = readSearchParam();
 if (initialSearch) {
   const input = document.getElementById('searchInput');
   if (input) input.value = initialSearch;
-  applySearch();
 }
+
+createList();
 
 const initialPage = readHash();
 if (initialPage > 0) {
