@@ -1220,6 +1220,35 @@ rt {
   if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
 })();
 
+/* VT 坐标探针：2px 透明元素参与快照，实测浏览器快照坐标系与 getBoundingClientRect 的偏差
+   （部分手机浏览器两套坐标系不一致，波纹会跑偏），实测比任何理论公式可靠 */
+let vtProbeEl = null;
+let vtCal = { x: 0, y: 0 };
+function ensureVTProbe() {
+  if (vtProbeEl) return;
+  vtProbeEl = document.createElement('div');
+  vtProbeEl.setAttribute('aria-hidden', 'true');
+  vtProbeEl.style.cssText = 'position:absolute;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;view-transition-name:vt-probe;';
+  document.body.appendChild(vtProbeEl);
+}
+function parseTranslate(m) {
+  if (!m || m === 'none') return { x: 0, y: 0 };
+  const mm = m.match(/matrix3d\(([^)]+)\)/) || m.match(/matrix\(([^)]+)\)/);
+  if (!mm) return null;
+  const v = mm[1].split(',').map(Number);
+  return v.length === 16 ? { x: v[12], y: v[13] } : { x: v[4], y: v[5] };
+}
+function measureVTCal() {
+  try {
+    const r = vtProbeEl.getBoundingClientRect();
+    const p = parseTranslate(getComputedStyle(vtProbeEl, '::view-transition-old(vt-probe)').transform);
+    const rp = parseTranslate(getComputedStyle(document.documentElement, '::view-transition-old(root)').transform);
+    if (!p || !rp) return;
+    const dx = p.x - rp.x - r.left, dy = p.y - rp.y - r.top;
+    if (Math.hypot(dx, dy) < 400) vtCal = { x: dx, y: dy };
+  } catch (e) {}
+}
+
 function toggleTheme(evt) {
   const isDark = document.documentElement.dataset.theme === 'dark';
   const apply = () => {
@@ -1238,16 +1267,16 @@ function toggleTheme(evt) {
   if (!document.startViewTransition) { apply(); return; }
   const rect = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
     ? evt.currentTarget.getBoundingClientRect() : null;
-  /* 按钮中心是视觉视口坐标，而 ::view-transition-new(root) 快照是布局视口坐标系。
-     手机端页面缩放时（iOS 聚焦小字号输入框自动放大、双指缩放）两者错位，波纹会跑到按钮上方/侧方，必须换算回来 */
-  const vv = window.visualViewport;
-  const vs = vv ? vv.scale : 1, voL = vv ? vv.offsetLeft : 0, voT = vv ? vv.offsetTop : 0;
-  const cx = rect ? (rect.left + rect.width / 2) / vs + voL : innerWidth - 40;
-  const cy = rect ? (rect.top + rect.height / 2) / vs + voT : 40;
-  const r0 = rect ? Math.max(rect.width, rect.height) / 2 / vs : 0;
-  const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) + r0;
+  ensureVTProbe();
   const vt = document.startViewTransition(apply);
+  measureVTCal();
   vt.ready.then(() => {
+    measureVTCal();
+    /* 按钮中心 + 实测坐标系偏差；探针失败时偏差为0，退化为原始行为 */
+    const cx = (rect ? rect.left + rect.width / 2 : innerWidth - 40) + vtCal.x;
+    const cy = (rect ? rect.top + rect.height / 2 : 40) + vtCal.y;
+    const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
+    const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) + r0;
     document.documentElement.animate(
       [
         { clipPath: `circle(${r0}px at ${cx}px ${cy}px)` },
