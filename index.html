@@ -1305,7 +1305,8 @@ function toggleTheme(evt) {
       let G = 0;
       if (forced > 0 && forced < 400) G = forced;
       else if (dyn > 0 && dyn < 400) G = isEdge ? dyn / 2 : dyn;
-      showVTDbg('dyn=' + dyn + ' G=' + G.toFixed(1) + (isEdge ? ' Edge' : ' Chrome') + ' ' + uaTok);
+      if (new URLSearchParams(location.search).has('vtdbg'))
+        showVTDbg('dyn=' + dyn + ' G=' + G.toFixed(1) + (isEdge ? ' Edge' : ' Chrome') + ' ' + uaTok);
       if (G <= 0) return;
       const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
       const cy = (rect ? rect.top + rect.height / 2 : 40) + G;
