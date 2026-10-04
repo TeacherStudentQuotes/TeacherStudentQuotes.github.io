@@ -1303,18 +1303,14 @@ function toggleTheme(evt) {
     const outerDiff = window.outerHeight - window.innerHeight;
     let G = 0;
     if (H > 0 && H < 400) {
-      /* Edge 顶栏+底栏都折叠：lvh-svh=顶+底，VT只要顶栏修正。
-         底栏≈outerDiff-H → 顶栏≈2H-outerDiff；畸形值退化 H/2。
-         ?vtg=N 可强制修正值便于实测校准 */
+      /* 实测校准(2026-10-04)：Edge 顶栏与底栏对称折叠，各=lvh-svh 的一半，VT 偏差只要顶栏；
+         Chrome 等无底栏浏览器 G=H。?vtg=N 强制覆盖便于校准 */
+      G = /Edg\//.test(navigator.userAgent) ? H / 2 : H;
       const forced = parseFloat(new URLSearchParams(location.search).get('vtg'));
       if (forced > 0 && forced < 400) G = forced;
-      else {
-        const cand = 2 * H - outerDiff;
-        G = (cand > 0 && cand < H) ? cand : H / 2;
-      }
     }
     if (G <= 0) {
-      showVTDbg('H=' + H + ' o=' + outerDiff + '（淡入）');
+      if (new URLSearchParams(location.search).has('vtdbg')) showVTDbg('H=' + H + ' o=' + outerDiff + '（淡入）');
       document.startViewTransition(apply);
       return;
     }
@@ -1323,7 +1319,8 @@ function toggleTheme(evt) {
     const cy = (rect ? rect.top + rect.height / 2 : 40) + G;
     const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
     const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy + G)) + r0 + G;
-    showVTDbg('G=' + G.toFixed(0) + ' H=' + H + ' o=' + outerDiff + '（波纹）');
+    if (new URLSearchParams(location.search).has('vtdbg'))
+      showVTDbg('G=' + G.toFixed(0) + ' H=' + H + ' o=' + outerDiff + '（波纹）');
     const vt = document.startViewTransition(apply);
     vt.ready.then(() => {
       document.documentElement.animate(
