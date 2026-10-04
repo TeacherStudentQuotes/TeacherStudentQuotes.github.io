@@ -1605,7 +1605,10 @@ function createFilter() {
     .sort((a, b) => b[1] - a[1])
     .map(entry => entry[0]);
   /* 初始隐藏集合：重建 DOM 时直接 display:none，不播收起动画
-     （否则打开筛选窗会先看到满员网格再塌缩重排，视觉上“跳一下”） */
+     （否则打开筛选窗会先看到满员网格再塌缩重排，视觉上“跳一下”）
+     数据源统一用 excludedTags（applied 状态）：checkbox 渲染也用它，
+     Esc/点外关闭=放弃 preview，重开时勾选与显隐都回到已确认状态，
+     两者必然一致，全部早退，零动画 */
   const initiallyEligible = new Set();
   quotes.forEach(q => {
     const tags = q.tags || [];
@@ -1692,7 +1695,9 @@ function createFilter() {
   dropdown.appendChild(footer);
   updateSelectAllBtn('author');
   updateSelectAllBtn('tag');
-  syncAuthorVisibility();
+  /* 不调 syncAuthorVisibility()：作者显隐已按 initiallyEligible 设为终态。
+     若此处兜底，preview 未确认就关闭时会用旧 applied 状态倒算，
+     与重建依据的勾选状态不一致，导致全部作者重播一遍收起/展开过渡 */
 }
 
 function allFilterCheckboxes() {
