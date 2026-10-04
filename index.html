@@ -1253,6 +1253,31 @@ function measureVTCal() {
   } catch (e) {}
 }
 
+/* 手机端顶栏高度：Chromium 系 lvh(工具栏收起)-svh(展开) 的差值即折叠工具栏高度，唯一可读的近似 */
+function mobileTopChrome() {
+  try {
+    const a = document.createElement('div');
+    const b = document.createElement('div');
+    a.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:100lvh;';
+    b.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:100svh;';
+    document.body.appendChild(a); document.body.appendChild(b);
+    const h = a.offsetHeight - b.offsetHeight;
+    a.remove(); b.remove();
+    return h;
+  } catch (e) { return 0; }
+}
+let vtDbgEl = null;
+function showVTDbg(msg) {
+  try {
+    if (!vtDbgEl) {
+      vtDbgEl = document.createElement('div');
+      vtDbgEl.style.cssText = 'position:fixed;right:6px;bottom:6px;z-index:99999;font:10px monospace;opacity:.45;padding:2px 5px;pointer-events:none;';
+      document.body.appendChild(vtDbgEl);
+    }
+    vtDbgEl.textContent = msg;
+  } catch (e) {}
+}
+
 function toggleTheme(evt) {
   const isDark = document.documentElement.dataset.theme === 'dark';
   const apply = () => {
@@ -1269,12 +1294,37 @@ function toggleTheme(evt) {
 
   // View Transitions：波纹圆心锚在主题按钮正中心，从按钮本体扩散揭示新模式
   if (!document.startViewTransition) { apply(); return; }
-  /* 手机浏览器（Edge/Chrome系）顶部工具栏使VT快照层原点比页面坐标系高出一个工具栏高度，
-     该差值无任何JS API可读（visualViewport只管双指缩放），自定义clip圆心必然偏上——
-     触屏端退回VT默认交叉淡入（不受坐标系影响），桌面端保留按钮锚定波纹 */
-  if (!window.matchMedia('(pointer: fine)').matches) { document.startViewTransition(apply); return; }
-  const rect = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
-    ? evt.currentTarget.getBoundingClientRect() : null;
+  const btn = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
+    ? evt.currentTarget : null;
+  /* 手机端：VT快照层原点比页面坐标系高出一个顶栏高度。理论无API可读，但Chromium的
+     lvh-svh 差值=可折叠顶栏高度，试试；读不到或太离谱就退回默认交叉淡入 */
+  if (!window.matchMedia('(pointer: fine)').matches) {
+    const H = mobileTopChrome();
+    const outerDiff = window.outerHeight - window.innerHeight;
+    if (H <= 0 || H >= 400) {
+      showVTDbg('H=' + H + ' outer=' + outerDiff + '（淡入）');
+      document.startViewTransition(apply);
+      return;
+    }
+    const rect = btn ? btn.getBoundingClientRect() : null;
+    const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
+    const cy = (rect ? rect.top + rect.height / 2 : 40) + H;
+    const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
+    const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy + H)) + r0 + H;
+    showVTDbg('H=' + H + ' outer=' + outerDiff + '（波纹）');
+    const vt = document.startViewTransition(apply);
+    vt.ready.then(() => {
+      document.documentElement.animate(
+        [
+          { clipPath: `circle(${r0}px at ${cx}px ${cy}px)` },
+          { clipPath: `circle(${r}px at ${cx}px ${cy}px)` },
+        ],
+        { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
+      );
+    }).catch(() => {});
+    return;
+  }
+  const rect = btn ? btn.getBoundingClientRect() : null;
   ensureVTProbe();
   const vt = document.startViewTransition(apply);
   measureVTCal();
