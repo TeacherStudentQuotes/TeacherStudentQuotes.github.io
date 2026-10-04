@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <style>
-:root {
+:root, [data-theme="light"] {
   --bg: #f5f0e8;
   --paper: #fffef8;
   --text: #333;
@@ -1253,7 +1253,7 @@ function themeRevealDIY(evt, apply) {
   overlay.id = 'diyReveal';
   overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;pointer-events:none;';
   const inner = document.createElement('div');
-  if (!isDark) inner.dataset.theme = 'dark';
+  inner.dataset.theme = isDark ? 'light' : 'dark';
   inner.style.cssText = 'position:absolute;inset:0;overflow:hidden;background:var(--bg);';
   const clone = document.body.cloneNode(true);
   clone.style.cssText = 'position:absolute;left:' + (-window.scrollX) + 'px;top:' + (-window.scrollY) + 'px;width:100%;margin:0;';
@@ -1289,6 +1289,7 @@ function themeRevealDIY(evt, apply) {
     try {
       const cp = getComputedStyle(overlay).clipPath || getComputedStyle(overlay).webkitClipPath || 'nil';
       diyTrace('m:' + String(cp).slice(0, 20));
+      diyTrace('b:' + String(getComputedStyle(inner).backgroundColor).slice(0, 18));
     } catch (e) { diyTrace('m!'); }
   }, 250);
   setTimeout(once, 560); /* finished 失语/迟到的引擎由定时器兜底 */
