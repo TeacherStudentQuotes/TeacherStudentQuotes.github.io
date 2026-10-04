@@ -1253,22 +1253,11 @@ function measureVTCal() {
   } catch (e) {}
 }
 
-/* 手机端工具栏几何：Chromium 的 lvh/svh/dvh 视口单位。
-   lvh-svh=可折叠总量(端点常量)；lvh-dvh=当前展开量(随工具栏动画实时变化)，VT 偏差跟的是后者 */
-function mobileChromePx() {
-  try {
-    const mk = (h) => {
-      const d = document.createElement('div');
-      d.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:' + h + ';';
-      document.body.appendChild(d);
-      const v = d.offsetHeight;
-      d.remove();
-      return v;
-    };
-    return { lvh: mk('100lvh'), svh: mk('100svh'), dvh: mk('100dvh') };
-  } catch (e) { return null; }
-}
+/* VT 快照根几何：Chromium 把 ::view-transition-old(root) 盒顶放在层原点(屏幕顶)，
+   高度=innerHeight+当前工具栏总展开量，页面内容实际从盒内 top 栏之下开始——
+   clip-path 局部坐标比页面坐标高出的顶栏量 = dyn 的顶栏份额，从快照自身读，最准 */
 let vtDbgEl = null;
+
 function showVTDbg(msg) {
   try {
     if (!vtDbgEl) {
@@ -1298,44 +1287,30 @@ function toggleTheme(evt) {
   if (!document.startViewTransition) { apply(); return; }
   const btn = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
     ? evt.currentTarget : null;
-  /* 手机端：VT快照层原点比页面坐标系高出一个顶栏高度。理论无API可读，但Chromium的
-     lvh-svh 差值=可折叠顶栏高度，试试；读不到或太离谱就退回默认交叉淡入 */
+  /* 手机端：VT快照层比页面坐标高出一个顶栏高度。最准的测量源是快照自己：
+     过渡就绪后读 ::view-transition-old(root) 盒高与 innerHeight 的差（当前工具栏总展开量），
+     Edge(EdgA UA)顶底对称取半，Chrome 只有顶栏全取；差为0说明坐标系重合，默认淡入即正确 */
   if (!window.matchMedia('(pointer: fine)').matches) {
-    const m = mobileChromePx();
-    const outerDiff = window.outerHeight - window.innerHeight;
-    let G = 0;
-    let dbgMsg = '';
-    if (m) {
-      const range = m.lvh - m.svh;   /* 可折叠总量：Edge=顶52+底52 */
-      const cur = m.lvh - m.dvh;     /* 当前展开量：随工具栏状态实时变化 */
-      if (range > 0 && range < 400) {
-        /* 实测(2026-10-04)：Edge 顶栏与底栏对称折叠，VT 快照偏差=顶栏=当前展开量/2；
-           Chrome 无底栏，偏差=当前展开量。?vtg=N 强制覆盖便于校准 */
-        const useCur = (cur >= 0 && cur <= range + 1) ? cur : range;
-        G = /Edg\//.test(navigator.userAgent) ? useCur / 2 : useCur;
-        const forced = parseFloat(new URLSearchParams(location.search).get('vtg'));
-        if (forced > 0 && forced < 400) G = forced;
-      }
-      const uaTok = ((navigator.userAgent.match(/(Edg|EdgA|Chrome|OPR)\/[\d.]+/g)) || []).join(' ');
-      dbgMsg = 'G=' + G.toFixed(0) + ' cur=' + cur + ' rng=' + range + ' o=' + outerDiff + ' ua=' + uaTok;
-    }
-    if (G <= 0) {
-      showVTDbg((dbgMsg || 'no-chrome-px') + '（淡入）');
-      document.startViewTransition(apply);
-      return;
-    }
     const rect = btn ? btn.getBoundingClientRect() : null;
-    const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
-    const cy = (rect ? rect.top + rect.height / 2 : 40) + G;
-    const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
-    const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy + G)) + r0 + G;
-    showVTDbg(dbgMsg + '（波纹）');
+    const isEdge = /EdgA?\//.test(navigator.userAgent);
+    const uaTok = ((navigator.userAgent.match(/(EdgA|Edg|Chrome|OPR)\/[\d.]+/g)) || []).join(' ');
+    const forced = parseFloat(new URLSearchParams(location.search).get('vtg'));
     const vt = document.startViewTransition(apply);
     vt.ready.then(() => {
+      let dyn = -1;
       try {
         const rs = getComputedStyle(document.documentElement, '::view-transition-old(root)');
-        showVTDbg(dbgMsg + ' rt=' + rs.top + ' rh=' + rs.height + '/' + innerHeight + ' ih');
+        dyn = (parseFloat(rs.height) - window.innerHeight) || 0;
       } catch (e) {}
+      let G = 0;
+      if (forced > 0 && forced < 400) G = forced;
+      else if (dyn > 0 && dyn < 400) G = isEdge ? dyn / 2 : dyn;
+      showVTDbg('dyn=' + dyn + ' G=' + G.toFixed(1) + (isEdge ? ' Edge' : ' Chrome') + ' ' + uaTok);
+      if (G <= 0) return;
+      const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
+      const cy = (rect ? rect.top + rect.height / 2 : 40) + G;
+      const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
+      const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy + G)) + r0 + G;
       document.documentElement.animate(
         [
           { clipPath: `circle(${r0}px at ${cx}px ${cy}px)` },
@@ -1346,7 +1321,8 @@ function toggleTheme(evt) {
     }).catch(() => {});
     return;
   }
-  const rect = btn ? btn.getBoundingClientRect() : null;
+
+const rect = btn ? btn.getBoundingClientRect() : null;
   ensureVTProbe();
   const vt = document.startViewTransition(apply);
   measureVTCal();
