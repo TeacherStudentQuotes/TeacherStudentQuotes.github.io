@@ -2539,26 +2539,28 @@ loadFontWithProgress();
 // PWA Service Worker：检测到新版本立即激活并自动刷新一次
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   let __swRefreshing = false;
-  const __refreshVer = () => {
-    const m = (navigator.serviceWorker.controller?.scriptURL || '').match(/tsq-(v\d+)/);
+  const setVer = (v) => {
     document.querySelectorAll('.sw-version').forEach((el) => {
-      el.textContent = m ? m[1] : '';
-      el.style.display = m ? '' : 'none';
+      el.textContent = v || '';
+      el.style.display = v ? '' : 'none';
     });
   };
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'VERSION') setVer(e.data.version);
+  });
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     // 交接瞬间controller可能为null，不刷新徽标（马上reload重画，避免闪没）
     if (__swRefreshing) return;
     __swRefreshing = true;
     location.reload();
   });
-  __refreshVer();
-  navigator.serviceWorker.register('sw.js?v=tsq-v63').then((reg) => {
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
     const kick = (worker) => {
       if (worker && navigator.serviceWorker.controller) {
         worker.postMessage({ type: 'SKIP_WAITING' });
       }
     };
+    if (reg.active) reg.active.postMessage({ type: 'GET_VERSION' });
     if (reg.waiting) kick(reg.waiting);
     reg.addEventListener('updatefound', () => {
       const nw = reg.installing;
