@@ -1309,7 +1309,19 @@ function toggleTheme(evt) {
       if (forced > 0 && forced < 400) G = forced;
       else if (!isWx && dyn > 0 && dyn < 400) G = isEdge ? dyn / 2 : dyn;
       if (isWx || new URLSearchParams(location.search).has('vtdbg'))
-        showVTDbg('dyn=' + dyn + ' rt=' + rt + ' rh=' + rhRaw + '/' + window.innerHeight + ' G=' + G.toFixed(1) + (isEdge ? ' Edge' : isWx ? ' Wx平移不可测→淡入' : ' Chrome') + ' ' + uaTok);
+        showVTDbg('dyn=' + dyn + ' rt=' + rt + ' rh=' + rhRaw + '/' + window.innerHeight + ' G=' + G.toFixed(1) + (isEdge ? ' Edge' : isWx ? ' Wx平移不可测→中心圆' : ' Chrome') + ' ' + uaTok);
+      if (isWx) {
+        /* 微信X5：平移不可测，锚定波纹必偏；改全屏中心圆揭示——百分比圆心绑在快照盒上，
+           与页面坐标系无关，平移不影响；视觉上保留圆形扩散美学 */
+        document.documentElement.animate(
+          [
+            { clipPath: 'circle(0% at 50% 50%)' },
+            { clipPath: 'circle(142% at 50% 50%)' },
+          ],
+          { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
+        );
+        return;
+      }
       if (G <= 0) return;
       const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
       const cy = (rect ? rect.top + rect.height / 2 : 40) + G;
