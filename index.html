@@ -1269,6 +1269,42 @@ function showVTDbg(msg) {
   } catch (e) {}
 }
 
+/* DIY 揭示（?diy=1 启用）：不依赖 VT 快照层。克隆当前页面裹上新主题塞进全屏遮罩，
+   circle() 从按钮中心渐放——圆外是旧页面实况，圆内是克隆的新主题页面，
+   坐标全在页面系，任何浏览器/内核零偏差，无 UA 判别无 dyn */
+function themeRevealDIY(evt, apply) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { apply(); return; }
+  const prev = document.getElementById('diyReveal');
+  if (prev) prev.remove();
+  const btn = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect) ? evt.currentTarget : null;
+  const r = btn ? btn.getBoundingClientRect() : null;
+  const x = r ? r.left + r.width / 2 : window.innerWidth / 2;
+  const y = r ? r.top + r.height / 2 : window.innerHeight / 2;
+  const isDark = document.documentElement.dataset.theme === 'dark';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'diyReveal';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;pointer-events:none;';
+  const inner = document.createElement('div');
+  if (!isDark) inner.dataset.theme = 'dark';
+  inner.style.cssText = 'position:absolute;inset:0;overflow:hidden;background:var(--bg);';
+  const clone = document.body.cloneNode(true);
+  clone.style.cssText = 'position:absolute;left:' + (-window.scrollX) + 'px;top:' + (-window.scrollY) + 'px;width:100%;margin:0;';
+  inner.appendChild(clone);
+  overlay.appendChild(inner);
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+
+  const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) + 8;
+  const anim = overlay.animate(
+    [{ clipPath: 'circle(0px at ' + x + 'px ' + y + 'px)' },
+     { clipPath: 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)' }],
+    { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)' }
+  );
+  const done = () => { apply(); overlay.remove(); document.body.style.overflow = ''; };
+  anim.finished.then(done).catch(done);
+}
+
 function toggleTheme(evt) {
   const isDark = document.documentElement.dataset.theme === 'dark';
   const apply = () => {
@@ -1284,6 +1320,7 @@ function toggleTheme(evt) {
   };
 
   // View Transitions：波纹圆心锚在主题按钮正中心，从按钮本体扩散揭示新模式
+  if (new URLSearchParams(location.search).has('diy')) { themeRevealDIY(evt, apply); return; }
   if (!document.startViewTransition) { apply(); return; }
   const btn = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
     ? evt.currentTarget : null;
