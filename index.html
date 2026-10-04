@@ -1125,11 +1125,6 @@ rt {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
 </style>
 </head>
 <body>
@@ -1220,58 +1215,9 @@ rt {
   if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
 })();
 
-/* VT 坐标探针：桌面端双指缩放(Ctrl+滚轮)时量出快照坐标系与gBCR的偏差 */
-let vtProbeEl = null;
-let vtCal = { x: 0, y: 0 };
-function ensureVTProbe() {
-  if (vtProbeEl) return;
-  vtProbeEl = document.createElement('div');
-  vtProbeEl.setAttribute('aria-hidden', 'true');
-  vtProbeEl.style.cssText = 'position:absolute;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;view-transition-name:vt-probe;';
-  document.body.appendChild(vtProbeEl);
-}
-function parseTranslate(m) {
-  if (!m || m === 'none') return { x: 0, y: 0 };
-  const mm = m.match(/matrix3d\(([^)]+)\)/) || m.match(/matrix\(([^)]+)\)/);
-  if (!mm) return null;
-  const v = mm[1].split(',').map(Number);
-  return v.length === 16 ? { x: v[12], y: v[13] } : { x: v[4], y: v[5] };
-}
-function measureVTCal() {
-  try {
-    const r = vtProbeEl.getBoundingClientRect();
-    /* Chromium 系用 left/top 给 VT 伪元素定位（transform 恒为 none，不能读） */
-    const cs = getComputedStyle(vtProbeEl, '::view-transition-old(vt-probe)');
-    const rs = getComputedStyle(document.documentElement, '::view-transition-old(root)');
-    const pt = parseTranslate(cs.transform), rt = parseTranslate(rs.transform);
-    const px = (parseFloat(cs.left) || 0) + (pt ? pt.x : 0);
-    const py = (parseFloat(cs.top) || 0) + (pt ? pt.y : 0);
-    const rx = (parseFloat(rs.left) || 0) + (rt ? rt.x : 0);
-    const ry = (parseFloat(rs.top) || 0) + (rt ? rt.y : 0);
-    const dx = px - rx - r.left, dy = py - ry - r.top;
-    if (Math.hypot(dx, dy) < 400) vtCal = { x: dx, y: dy };
-  } catch (e) {}
-}
-
-/* VT 快照根几何：Chromium 把 ::view-transition-old(root) 盒顶放在层原点(屏幕顶)，
-   高度=innerHeight+当前工具栏总展开量，页面内容实际从盒内 top 栏之下开始——
-   clip-path 局部坐标比页面坐标高出的顶栏量 = dyn 的顶栏份额，从快照自身读，最准 */
-let vtDbgEl = null;
-
-function showVTDbg(msg) {
-  try {
-    if (!vtDbgEl) {
-      vtDbgEl = document.createElement('div');
-      vtDbgEl.style.cssText = 'position:fixed;right:6px;bottom:6px;z-index:99999;font:10px monospace;opacity:.45;padding:2px 5px;pointer-events:none;';
-      document.body.appendChild(vtDbgEl);
-    }
-    vtDbgEl.textContent = msg;
-  } catch (e) {}
-}
-
-/* DIY 揭示（?diy=1 启用）：不依赖 VT 快照层。克隆当前页面裹上新主题塞进全屏遮罩，
-   circle() 从按钮中心渐放——圆外是旧页面实况，圆内是克隆的新主题页面，
-   坐标全在页面系，任何浏览器/内核零偏差，无 UA 判别无 dyn */
+/* 主题揭示：克隆当前页面裹上新主题塞进全屏遮罩，circle() 从按钮中心渐放——
+   圆外是旧页面实况，圆内是克隆的新主题页面；全程页面坐标系，
+   任何浏览器/内核零偏差（替代已退役的 View Transitions 快照方案） */
 function themeRevealDIY(evt, apply) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { apply(); return; }
   const prev = document.getElementById('diyReveal');
@@ -1319,70 +1265,7 @@ function toggleTheme(evt) {
     refreshTagPills();
   };
 
-  // View Transitions：波纹圆心锚在主题按钮正中心，从按钮本体扩散揭示新模式
-  if (new URLSearchParams(location.search).has('diy')) { themeRevealDIY(evt, apply); return; }
-  if (!document.startViewTransition) { apply(); return; }
-  const btn = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
-    ? evt.currentTarget : null;
-  /* 手机端：VT快照层比页面坐标高出一个顶栏高度。最准的测量源是快照自己：
-     过渡就绪后读 ::view-transition-old(root) 盒高与 innerHeight 的差（当前工具栏总展开量），
-     Edge(EdgA UA)顶底对称取半，Chrome 只有顶栏全取；差为0说明坐标系重合，默认淡入即正确 */
-  if (!window.matchMedia('(pointer: fine)').matches) {
-    const rect = btn ? btn.getBoundingClientRect() : null;
-    const isEdge = /EdgA?\//.test(navigator.userAgent);
-    const uaTok = ((navigator.userAgent.match(/(EdgA|Edg|Chrome|OPR|MicroMessenger)\/[\d.]+/g)) || []).join(' ');
-    const isWx = /MicroMessenger/.test(navigator.userAgent);
-    const isPhone = /Mobile/.test(navigator.userAgent); /* Edge 手机 dyn=顶+底取半；平板无底栏取全量 */
-    const forced = parseFloat(new URLSearchParams(location.search).get('vtg'));
-    const vt = document.startViewTransition(apply);
-    vt.ready.then(() => {
-      let dyn = -1, rt = '?', rhRaw = '?';
-      try {
-        const rs = getComputedStyle(document.documentElement, '::view-transition-old(root)');
-        rt = rs.top;
-        rhRaw = rs.height;
-        dyn = (parseFloat(rs.height) - window.innerHeight) || 0;
-      } catch (e) {}
-      let G = 0;
-      if (forced > 0 && forced < 400) G = forced;
-      else if (dyn > 0 && dyn < 400) G = (isEdge && isPhone) ? dyn / 2 : dyn;
-      if (new URLSearchParams(location.search).has('vtdbg'))
-        showVTDbg('dyn=' + dyn + ' rt=' + rt + ' rh=' + rhRaw + '/' + window.innerHeight + ' G=' + G.toFixed(1) + (isPhone ? ' P' : ' T') + ' dpr=' + window.devicePixelRatio + ' iw=' + window.innerWidth + (isEdge ? ' Edge' : isWx ? ' Wx' : ' Chrome') + ' ' + uaTok);
-      if (G <= 0) return;
-      const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
-      const cy = (rect ? rect.top + rect.height / 2 : 40) + G;
-      const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
-      const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy + G)) + r0 + G;
-      document.documentElement.animate(
-        [
-          { clipPath: `circle(${r0}px at ${cx}px ${cy}px)` },
-          { clipPath: `circle(${r}px at ${cx}px ${cy}px)` },
-        ],
-        { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
-      );
-    }).catch(() => {});
-    return;
-  }
-
-const rect = btn ? btn.getBoundingClientRect() : null;
-  ensureVTProbe();
-  const vt = document.startViewTransition(apply);
-  measureVTCal();
-  vt.ready.then(() => {
-    measureVTCal();
-    /* 按钮中心 + 实测坐标系偏差；探针失败时偏差为0，退化为原始行为 */
-    const cx = (rect ? rect.left + rect.width / 2 : innerWidth - 40) + vtCal.x;
-    const cy = (rect ? rect.top + rect.height / 2 : 40) + vtCal.y;
-    const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
-    const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) + r0;
-    document.documentElement.animate(
-      [
-        { clipPath: `circle(${r0}px at ${cx}px ${cy}px)` },
-        { clipPath: `circle(${r}px at ${cx}px ${cy}px)` },
-      ],
-      { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
-    );
-  }).catch(() => {});
+  themeRevealDIY(evt, apply);
 }
 
 function updateThemeIcons() {
