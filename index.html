@@ -1220,8 +1220,7 @@ rt {
   if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
 })();
 
-/* VT 坐标探针：2px 透明元素参与快照，实测浏览器快照坐标系与 getBoundingClientRect 的偏差
-   （部分手机浏览器两套坐标系不一致，波纹会跑偏），实测比任何理论公式可靠 */
+/* VT 坐标探针：桌面端双指缩放(Ctrl+滚轮)时量出快照坐标系与gBCR的偏差 */
 let vtProbeEl = null;
 let vtCal = { x: 0, y: 0 };
 function ensureVTProbe() {
@@ -1253,17 +1252,6 @@ function measureVTCal() {
     if (Math.hypot(dx, dy) < 400) vtCal = { x: dx, y: dy };
   } catch (e) {}
 }
-let vtDbgEl = null;
-function showVTCal() {
-  try {
-    if (!vtDbgEl) {
-      vtDbgEl = document.createElement('div');
-      vtDbgEl.style.cssText = 'position:fixed;right:6px;bottom:6px;z-index:99999;font:10px monospace;opacity:.45;padding:2px 5px;pointer-events:none;';
-      document.body.appendChild(vtDbgEl);
-    }
-    vtDbgEl.textContent = 'cal ' + vtCal.x.toFixed(1) + ', ' + vtCal.y.toFixed(1);
-  } catch (e) {}
-}
 
 function toggleTheme(evt) {
   const isDark = document.documentElement.dataset.theme === 'dark';
@@ -1281,6 +1269,10 @@ function toggleTheme(evt) {
 
   // View Transitions：波纹圆心锚在主题按钮正中心，从按钮本体扩散揭示新模式
   if (!document.startViewTransition) { apply(); return; }
+  /* 手机浏览器（Edge/Chrome系）顶部工具栏使VT快照层原点比页面坐标系高出一个工具栏高度，
+     该差值无任何JS API可读（visualViewport只管双指缩放），自定义clip圆心必然偏上——
+     触屏端退回VT默认交叉淡入（不受坐标系影响），桌面端保留按钮锚定波纹 */
+  if (!window.matchMedia('(pointer: fine)').matches) { document.startViewTransition(apply); return; }
   const rect = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
     ? evt.currentTarget.getBoundingClientRect() : null;
   ensureVTProbe();
@@ -1300,7 +1292,6 @@ function toggleTheme(evt) {
       ],
       { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
     );
-    showVTCal();
   }).catch(() => {});
 }
 
