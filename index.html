@@ -459,18 +459,8 @@ body {
   max-height: 140px;
   transition: max-height .26s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .26s cubic-bezier(.4,0,.2,1), margin .26s cubic-bezier(.4,0,.2,1), border-color .26s ease, transform .26s cubic-bezier(.4,0,.2,1);
 }
-/* 作者跟随标签的收起过渡：负margin吞掉grid gap，收缩到零后JS再display:none */
-.filter-option.f-hiding {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin: -4px;
-  border-color: transparent;
-  transform: scale(.95);
-  pointer-events: none;
-}
+/* 作者显隐动画：布局跳变与 FLIP 补偿同 JS 任务内完成（浏览器无中间态渲染），
+   位移用 WAAPI 补间，自身淡入淡出 */
 
 .filter-option:hover {
   background: var(--bg);
@@ -1716,26 +1706,62 @@ function allFilterCheckboxes() {
     .filter(cb => isAuthorOptionVisible(cb));
 }
 
-// 作者项可见性（带收起/展开过渡）
+// 作者项是否可见（供全选/确认统计）
 function isAuthorOptionVisible(cb) {
   const opt = cb.closest('.filter-option');
-  return opt.style.display !== 'none' && !opt.classList.contains('f-hiding');
+  return opt.style.display !== 'none';
 }
+// FLIP：重排瞬移改平滑过渡。first 为兄弟项快照 [{el,top,left}]，exclude 除外
+function flipMove(parent, first, exclude) {
+  if (!parent) return;
+  first.forEach(f => {
+    if (f.el === exclude || f.el.style.display === 'none') return;
+    const last = f.el.getBoundingClientRect();
+    const dx = f.left - last.left;
+    const dy = f.top - last.top;
+    if (!dx && !dy) return;
+    f.el.style.transition = 'none';
+    f.el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    requestAnimationFrame(() => {
+      f.el.style.transition = '';
+      f.el.style.transform = '';
+    });
+  });
+}
+function snapshotSiblings(parent, exclude) {
+  if (!parent) return [];
+  return [...parent.children]
+    .filter(el => el !== exclude && el.style.display !== 'none')
+    .map(el => { const r = el.getBoundingClientRect(); return { el, top: r.top, left: r.left }; });
+}
+
 function setAuthorOptionHidden(cb, hide) {
   const opt = cb.closest('.filter-option');
-  clearTimeout(opt.__hideT);
   if (hide) {
-    if (opt.style.display === 'none' || opt.classList.contains('f-hiding')) return;
-    opt.classList.add('f-hiding');
-    opt.__hideT = setTimeout(() => {
-      opt.classList.remove('f-hiding');
-      opt.style.display = 'none';
-    }, 280);
+    if (opt.style.display === 'none') return;
+    const parent = opt.parentElement;
+    const first = snapshotSiblings(parent, opt);
+    if (opt.animate) {
+      opt.animate(
+        [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.95)' }],
+        { duration: 200, easing: 'ease' }
+      );
+    }
+    /* 布局跳变与兄弟补偿同一任务：浏览器没见过未补偿的中间帧 */
+    opt.style.display = 'none';
+    flipMove(parent, first, opt);
   } else {
-    if (opt.style.display !== 'none' && !opt.classList.contains('f-hiding')) return;
+    if (opt.style.display !== 'none') return;
+    const parent = opt.parentElement;
+    const first = snapshotSiblings(parent, opt);
     opt.style.display = '';
-    opt.classList.add('f-hiding');
-    requestAnimationFrame(() => requestAnimationFrame(() => opt.classList.remove('f-hiding')));
+    flipMove(parent, first, null);
+    if (opt.animate) {
+      opt.animate(
+        [{ opacity: 0, transform: 'scale(.95)' }, { opacity: 1, transform: 'none' }],
+        { duration: 200, easing: 'ease' }
+      );
+    }
   }
 }
 
