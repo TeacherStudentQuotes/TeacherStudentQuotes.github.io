@@ -1253,18 +1253,20 @@ function measureVTCal() {
   } catch (e) {}
 }
 
-/* 手机端顶栏高度：Chromium 系 lvh(工具栏收起)-svh(展开) 的差值即折叠工具栏高度，唯一可读的近似 */
-function mobileTopChrome() {
+/* 手机端工具栏几何：Chromium 的 lvh/svh/dvh 视口单位。
+   lvh-svh=可折叠总量(端点常量)；lvh-dvh=当前展开量(随工具栏动画实时变化)，VT 偏差跟的是后者 */
+function mobileChromePx() {
   try {
-    const a = document.createElement('div');
-    const b = document.createElement('div');
-    a.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:100lvh;';
-    b.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:100svh;';
-    document.body.appendChild(a); document.body.appendChild(b);
-    const h = a.offsetHeight - b.offsetHeight;
-    a.remove(); b.remove();
-    return h;
-  } catch (e) { return 0; }
+    const mk = (h) => {
+      const d = document.createElement('div');
+      d.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:' + h + ';';
+      document.body.appendChild(d);
+      const v = d.offsetHeight;
+      d.remove();
+      return v;
+    };
+    return { lvh: mk('100lvh'), svh: mk('100svh'), dvh: mk('100dvh') };
+  } catch (e) { return null; }
 }
 let vtDbgEl = null;
 function showVTDbg(msg) {
@@ -1299,18 +1301,23 @@ function toggleTheme(evt) {
   /* 手机端：VT快照层原点比页面坐标系高出一个顶栏高度。理论无API可读，但Chromium的
      lvh-svh 差值=可折叠顶栏高度，试试；读不到或太离谱就退回默认交叉淡入 */
   if (!window.matchMedia('(pointer: fine)').matches) {
-    const H = mobileTopChrome();
+    const m = mobileChromePx();
     const outerDiff = window.outerHeight - window.innerHeight;
     let G = 0;
-    if (H > 0 && H < 400) {
-      /* 实测校准(2026-10-04)：Edge 顶栏与底栏对称折叠，各=lvh-svh 的一半，VT 偏差只要顶栏；
-         Chrome 等无底栏浏览器 G=H。?vtg=N 强制覆盖便于校准 */
-      G = /Edg\//.test(navigator.userAgent) ? H / 2 : H;
-      const forced = parseFloat(new URLSearchParams(location.search).get('vtg'));
-      if (forced > 0 && forced < 400) G = forced;
+    if (m) {
+      const range = m.lvh - m.svh;   /* 可折叠总量：Edge=顶52+底52 */
+      const cur = m.lvh - m.dvh;     /* 当前展开量：随工具栏状态实时变化 */
+      if (range > 0 && range < 400) {
+        /* 实测(2026-10-04)：Edge 顶栏与底栏对称折叠，VT 快照偏差=顶栏=当前展开量/2；
+           Chrome 无底栏，偏差=当前展开量。?vtg=N 强制覆盖便于校准 */
+        const useCur = (cur >= 0 && cur <= range + 1) ? cur : range;
+        G = /Edg\//.test(navigator.userAgent) ? useCur / 2 : useCur;
+        const forced = parseFloat(new URLSearchParams(location.search).get('vtg'));
+        if (forced > 0 && forced < 400) G = forced;
+      }
     }
     if (G <= 0) {
-      if (new URLSearchParams(location.search).has('vtdbg')) showVTDbg('H=' + H + ' o=' + outerDiff + '（淡入）');
+      if (new URLSearchParams(location.search).has('vtdbg')) showVTDbg('range=' + (m ? m.lvh - m.svh : 'n/a') + ' o=' + outerDiff + '（淡入）');
       document.startViewTransition(apply);
       return;
     }
@@ -1320,7 +1327,7 @@ function toggleTheme(evt) {
     const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
     const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy + G)) + r0 + G;
     if (new URLSearchParams(location.search).has('vtdbg'))
-      showVTDbg('G=' + G.toFixed(0) + ' H=' + H + ' o=' + outerDiff + '（波纹）');
+      showVTDbg('G=' + G.toFixed(0) + ' cur=' + (m ? m.lvh - m.dvh : '?') + '/' + (m ? m.lvh - m.svh : '?') + '（波纹）');
     const vt = document.startViewTransition(apply);
     vt.ready.then(() => {
       document.documentElement.animate(
