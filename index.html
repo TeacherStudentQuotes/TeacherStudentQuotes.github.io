@@ -287,7 +287,11 @@ body {
 @media (max-width: 600px) {
   .search-input {
     width: 120px;
-    font-size: 0.9rem;
+    /* 16px 以下 iOS 聚焦输入框会自动缩放页面，会导致波纹等视口坐标错位 */
+    font-size: 16px;
+  }
+  .jump-expand-input {
+    font-size: 16px;
   }
 }
 
@@ -1234,9 +1238,13 @@ function toggleTheme(evt) {
   if (!document.startViewTransition) { apply(); return; }
   const rect = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect)
     ? evt.currentTarget.getBoundingClientRect() : null;
-  const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
-  const cy = rect ? rect.top + rect.height / 2 : 40;
-  const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
+  /* 按钮中心是视觉视口坐标，而 ::view-transition-new(root) 快照是布局视口坐标系。
+     手机端页面缩放时（iOS 聚焦小字号输入框自动放大、双指缩放）两者错位，波纹会跑到按钮上方/侧方，必须换算回来 */
+  const vv = window.visualViewport;
+  const vs = vv ? vv.scale : 1, voL = vv ? vv.offsetLeft : 0, voT = vv ? vv.offsetTop : 0;
+  const cx = rect ? (rect.left + rect.width / 2) / vs + voL : innerWidth - 40;
+  const cy = rect ? (rect.top + rect.height / 2) / vs + voT : 40;
+  const r0 = rect ? Math.max(rect.width, rect.height) / 2 / vs : 0;
   const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy)) + r0;
   const vt = document.startViewTransition(apply);
   vt.ready.then(() => {
