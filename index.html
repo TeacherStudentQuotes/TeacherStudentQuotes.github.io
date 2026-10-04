@@ -1354,8 +1354,9 @@ const TAG_PALETTE_DARK = [
   ['#2a2a2a', '#555555', '#a0a0a0'], // 4 灰
   ['#33281c', '#6b5232', '#c0a078'], // 5 棕
 ];
-function tagPalette() {
-  return document.documentElement.dataset.theme === 'dark' ? TAG_PALETTE_DARK : TAG_PALETTE_LIGHT;
+function tagPalette(mode) {
+  const m = mode || (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+  return m === 'dark' ? TAG_PALETTE_DARK : TAG_PALETTE_LIGHT;
 }
 // 按含义固定配色；有意控制颜色数量，同类标签共用一色
 const TAG_COLOR_SLOT = {
@@ -1382,7 +1383,7 @@ function tagColors(tag, mode) {
   const m = mode || (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
   const map = tagColorMaps[m];
   if (!(tag in map)) {
-    const palette = tagPalette();
+    const palette = tagPalette(m);
     const n = tag in TAG_COLOR_SLOT
       ? TAG_COLOR_SLOT[tag]
       : Object.keys(map).length;
