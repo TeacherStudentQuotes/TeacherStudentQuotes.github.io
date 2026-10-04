@@ -57,11 +57,11 @@
   --scroll-hover: rgba(0,0,0,0.25);
   --shadow: rgba(0,0,0,0.18);
   --shadow-2: rgba(0,0,0,0.15);
-  /* 玻璃角部高光 */
+  /* 玻璃角部高光（满强度） */
   --sheen-a: rgba(255, 255, 255, 1);
-  --sheen-b: rgba(255, 255, 255, 0.65);
-  --sheen-rim: rgba(140, 122, 90, 0.24);
-  --sheen-glow: rgba(255, 255, 255, 0.45);
+  --sheen-b: rgba(255, 255, 255, 1);
+  --sheen-rim: rgba(255, 255, 255, 1);
+  --sheen-glow: rgba(255, 255, 255, 1);
 }
 [data-theme="dark"] {
   --bg: #171410;
@@ -105,11 +105,11 @@
   --scroll-hover: rgba(255,255,255,0.25);
   --shadow: rgba(0,0,0,0.5);
   --shadow-2: rgba(0,0,0,0.4);
-  /* 玻璃角部高光（暗色更克制） */
-  --sheen-a: rgba(255, 246, 224, 0.55);
-  --sheen-b: rgba(255, 246, 224, 0.24);
-  --sheen-rim: rgba(255, 244, 224, 0.15);
-  --sheen-glow: rgba(255, 246, 224, 0.18);
+  /* 玻璃角部高光（暗色，满强度暖白） */
+  --sheen-a: rgba(255, 246, 224, 1);
+  --sheen-b: rgba(255, 246, 224, 1);
+  --sheen-rim: rgba(255, 246, 224, 1);
+  --sheen-glow: rgba(255, 246, 224, 1);
 }
 
 @font-face {
@@ -1164,7 +1164,7 @@ rt {
 <!-- 右上角液态玻璃高光曲线（角弧+柔光带，色随主题变量） -->
 <svg class="glass-sheen" viewBox="0 0 560 400" preserveAspectRatio="xMaxYMin meet" aria-hidden="true">
   <defs>
-    <radialGradient id="sheenRad" cx="560" cy="0" r="430" gradientUnits="userSpaceOnUse">
+    <radialGradient id="sheenRad" cx="560" cy="0" r="700" gradientUnits="userSpaceOnUse">
       <stop offset="0" style="stop-color:var(--sheen-a)"/>
       <stop offset="0.5" style="stop-color:var(--sheen-b)"/>
       <stop offset="1" style="stop-color:var(--sheen-b); stop-opacity:0"/>
@@ -1179,10 +1179,16 @@ rt {
     </linearGradient>
   </defs>
   <path class="streak" d="M 445 -8 Q 375 95 255 185" stroke="url(#glowRad)"/>
+  <path class="arc" style="stroke-width:1"    d="M 500 0 A 60 60 0 0 0 560 60" stroke="url(#sheenRad)"/>
+  <path class="arc" style="stroke-width:1.6"  d="M 465 0 A 95 95 0 0 0 560 95" stroke="url(#sheenRad)"/>
   <path class="arc a140" d="M 420 0 A 140 140 0 0 0 560 140" stroke="url(#sheenRad)"/>
+  <path class="arc" style="stroke-width:1.2"  d="M 375 0 A 185 185 0 0 0 560 185" stroke="url(#sheenRad)"/>
   <path class="arc a230" d="M 330 0 A 230 230 0 0 0 560 230" stroke="url(#sheenRad)"/>
+  <path class="arc" style="stroke-width:1.4"  d="M 275 0 A 285 285 0 0 0 560 285" stroke="url(#sheenRad)"/>
   <path class="arc a340" d="M 220 0 A 340 340 0 0 0 560 340" stroke="url(#sheenRad)"/>
+  <path class="arc" style="stroke-width:1.1"  d="M 160 0 A 400 400 0 0 0 560 400" stroke="url(#sheenRad)"/>
   <path class="arc a460" d="M 100 0 A 460 460 0 0 0 560 460" stroke="url(#rimGrad)"/>
+  <path class="arc" style="stroke-width:1.8"  d="M 0 0 A 560 560 0 0 0 560 560" stroke="url(#rimGrad)"/>
 </svg>
 
 <div class="loading-overlay" id="loadingOverlay">
