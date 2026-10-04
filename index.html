@@ -1304,6 +1304,7 @@ function toggleTheme(evt) {
     const m = mobileChromePx();
     const outerDiff = window.outerHeight - window.innerHeight;
     let G = 0;
+    let dbgMsg = '';
     if (m) {
       const range = m.lvh - m.svh;   /* 可折叠总量：Edge=顶52+底52 */
       const cur = m.lvh - m.dvh;     /* 当前展开量：随工具栏状态实时变化 */
@@ -1315,9 +1316,11 @@ function toggleTheme(evt) {
         const forced = parseFloat(new URLSearchParams(location.search).get('vtg'));
         if (forced > 0 && forced < 400) G = forced;
       }
+      const uaTok = ((navigator.userAgent.match(/(Edg|EdgA|Chrome|OPR)\/[\d.]+/g)) || []).join(' ');
+      dbgMsg = 'G=' + G.toFixed(0) + ' cur=' + cur + ' rng=' + range + ' o=' + outerDiff + ' ua=' + uaTok;
     }
     if (G <= 0) {
-      if (new URLSearchParams(location.search).has('vtdbg')) showVTDbg('range=' + (m ? m.lvh - m.svh : 'n/a') + ' o=' + outerDiff + '（淡入）');
+      showVTDbg((dbgMsg || 'no-chrome-px') + '（淡入）');
       document.startViewTransition(apply);
       return;
     }
@@ -1326,10 +1329,13 @@ function toggleTheme(evt) {
     const cy = (rect ? rect.top + rect.height / 2 : 40) + G;
     const r0 = rect ? Math.max(rect.width, rect.height) / 2 : 0;
     const r = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy + G)) + r0 + G;
-    if (new URLSearchParams(location.search).has('vtdbg'))
-      showVTDbg('G=' + G.toFixed(0) + ' cur=' + (m ? m.lvh - m.dvh : '?') + '/' + (m ? m.lvh - m.svh : '?') + '（波纹）');
+    showVTDbg(dbgMsg + '（波纹）');
     const vt = document.startViewTransition(apply);
     vt.ready.then(() => {
+      try {
+        const rs = getComputedStyle(document.documentElement, '::view-transition-old(root)');
+        showVTDbg(dbgMsg + ' rt=' + rs.top + ' rh=' + rs.height + '/' + innerHeight + ' ih');
+      } catch (e) {}
       document.documentElement.animate(
         [
           { clipPath: `circle(${r0}px at ${cx}px ${cy}px)` },
