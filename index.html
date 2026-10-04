@@ -1241,11 +1241,27 @@ function parseTranslate(m) {
 function measureVTCal() {
   try {
     const r = vtProbeEl.getBoundingClientRect();
-    const p = parseTranslate(getComputedStyle(vtProbeEl, '::view-transition-old(vt-probe)').transform);
-    const rp = parseTranslate(getComputedStyle(document.documentElement, '::view-transition-old(root)').transform);
-    if (!p || !rp) return;
-    const dx = p.x - rp.x - r.left, dy = p.y - rp.y - r.top;
+    /* Chromium 系用 left/top 给 VT 伪元素定位（transform 恒为 none，不能读） */
+    const cs = getComputedStyle(vtProbeEl, '::view-transition-old(vt-probe)');
+    const rs = getComputedStyle(document.documentElement, '::view-transition-old(root)');
+    const pt = parseTranslate(cs.transform), rt = parseTranslate(rs.transform);
+    const px = (parseFloat(cs.left) || 0) + (pt ? pt.x : 0);
+    const py = (parseFloat(cs.top) || 0) + (pt ? pt.y : 0);
+    const rx = (parseFloat(rs.left) || 0) + (rt ? rt.x : 0);
+    const ry = (parseFloat(rs.top) || 0) + (rt ? rt.y : 0);
+    const dx = px - rx - r.left, dy = py - ry - r.top;
     if (Math.hypot(dx, dy) < 400) vtCal = { x: dx, y: dy };
+  } catch (e) {}
+}
+let vtDbgEl = null;
+function showVTCal() {
+  try {
+    if (!vtDbgEl) {
+      vtDbgEl = document.createElement('div');
+      vtDbgEl.style.cssText = 'position:fixed;right:6px;bottom:6px;z-index:99999;font:10px monospace;opacity:.45;padding:2px 5px;pointer-events:none;';
+      document.body.appendChild(vtDbgEl);
+    }
+    vtDbgEl.textContent = 'cal ' + vtCal.x.toFixed(1) + ', ' + vtCal.y.toFixed(1);
   } catch (e) {}
 }
 
@@ -1284,6 +1300,7 @@ function toggleTheme(evt) {
       ],
       { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', pseudoElement: '::view-transition-new(root)' }
     );
+    showVTCal();
   }).catch(() => {});
 }
 
