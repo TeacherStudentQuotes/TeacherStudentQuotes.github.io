@@ -1600,6 +1600,13 @@ function createFilter() {
   const sortedTags = Object.entries(tagCounts)
     .sort((a, b) => b[1] - a[1])
     .map(entry => entry[0]);
+  /* 初始隐藏集合：重建 DOM 时直接 display:none，不播收起动画
+     （否则打开筛选窗会先看到满员网格再塌缩重排，视觉上“跳一下”） */
+  const initiallyEligible = new Set();
+  quotes.forEach(q => {
+    const tags = q.tags || [];
+    if (tags.every(t => !excludedTags.has(t))) initiallyEligible.add(q.author);
+  });
   const options = document.createElement('div');
   options.className = 'filter-options';
   const makeSectionTitle = (text, kind) => {
@@ -1667,6 +1674,7 @@ function createFilter() {
       `<div class="filter-option-main"><span class="filter-option-name">${nameHtml}</span>` +
       (pillsHtml ? `<span class="filter-option-pills">${pillsHtml}</span>` : '') + `</div>` +
       `<span class="filter-option-count">${count}</span>`;
+    if (!initiallyEligible.has(author)) label.style.display = 'none';
     label.querySelector('input').addEventListener('click', (e) => {
       updateSelectAllBtn('author');
       e.stopPropagation();
