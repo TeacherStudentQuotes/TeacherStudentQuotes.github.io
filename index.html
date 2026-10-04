@@ -1295,9 +1295,20 @@ function themeRevealDIY(evt, apply) {
       if (committed || gen !== diyGen) return;
       committed = true;
       try { overlay.remove(); } catch (e) {}
-      document.documentElement.classList.remove('theme-swapping');
       document.body.style.overflow = '';
       themeAnimLock = false;
+      /* 掐过渡的 class 再留一帧：overlay 移除后的首次 style/paint 必须发生在
+         transition:none 之下——若恢复过渡发生在值变化的 style 计算之前，
+         卡片 background 0.15s 过渡会补播（用户看到的"闪回原色再渐变"残影）
+         gen 检查防竞态：新一轮动画已启动时，本轮的移除不得误伤新保护 */
+      requestAnimationFrame(() => {
+        if (gen !== diyGen) return;
+        document.documentElement.classList.remove('theme-swapping');
+      });
+      setTimeout(() => {
+        if (gen !== diyGen) return;
+        document.documentElement.classList.remove('theme-swapping');
+      }, 120);
     };
     requestAnimationFrame(commit);
     setTimeout(commit, 80); /* rAF 失语的引擎兜底 */
