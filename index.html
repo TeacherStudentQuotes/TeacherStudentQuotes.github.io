@@ -1293,20 +1293,23 @@ function toggleTheme(evt) {
   if (!window.matchMedia('(pointer: fine)').matches) {
     const rect = btn ? btn.getBoundingClientRect() : null;
     const isEdge = /EdgA?\//.test(navigator.userAgent);
-    const uaTok = ((navigator.userAgent.match(/(EdgA|Edg|Chrome|OPR)\/[\d.]+/g)) || []).join(' ');
+    const uaTok = ((navigator.userAgent.match(/(EdgA|Edg|Chrome|OPR|MicroMessenger)\/[\d.]+/g)) || []).join(' ');
+    const isWx = /MicroMessenger/.test(navigator.userAgent);
     const forced = parseFloat(new URLSearchParams(location.search).get('vtg'));
     const vt = document.startViewTransition(apply);
     vt.ready.then(() => {
-      let dyn = -1;
+      let dyn = -1, rt = '?', rhRaw = '?';
       try {
         const rs = getComputedStyle(document.documentElement, '::view-transition-old(root)');
+        rt = rs.top;
+        rhRaw = rs.height;
         dyn = (parseFloat(rs.height) - window.innerHeight) || 0;
       } catch (e) {}
       let G = 0;
       if (forced > 0 && forced < 400) G = forced;
       else if (dyn > 0 && dyn < 400) G = isEdge ? dyn / 2 : dyn;
-      if (new URLSearchParams(location.search).has('vtdbg'))
-        showVTDbg('dyn=' + dyn + ' G=' + G.toFixed(1) + (isEdge ? ' Edge' : ' Chrome') + ' ' + uaTok);
+      if (isWx || new URLSearchParams(location.search).has('vtdbg'))
+        showVTDbg('dyn=' + dyn + ' rt=' + rt + ' rh=' + rhRaw + '/' + window.innerHeight + ' G=' + G.toFixed(1) + (isEdge ? ' Edge' : isWx ? ' Wx' : ' Chrome') + ' ' + uaTok);
       if (G <= 0) return;
       const cx = rect ? rect.left + rect.width / 2 : innerWidth - 40;
       const cy = (rect ? rect.top + rect.height / 2 : 40) + G;
