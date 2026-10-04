@@ -62,6 +62,8 @@
   --sheen-b: rgba(255, 255, 255, 1);
   --sheen-rim: rgba(255, 255, 255, 1);
   --sheen-glow: rgba(255, 255, 255, 1);
+  /* 单页版：纸白底上用棕墨线，深底上用暖白 */
+  --sheen-ink: rgba(150, 132, 95, 0.5);
 }
 [data-theme="dark"] {
   --bg: #171410;
@@ -110,6 +112,7 @@
   --sheen-b: rgba(255, 246, 224, 1);
   --sheen-rim: rgba(255, 246, 224, 1);
   --sheen-glow: rgba(255, 246, 224, 1);
+  --sheen-ink: rgba(255, 246, 224, 0.4);
 }
 
 @font-face {
@@ -206,6 +209,11 @@ body {
   flex-shrink: 0;
   background: var(--bg);
   z-index: 10;
+  position: relative;
+}
+.list-header > *:not(.glass-sheen) {
+  position: relative;
+  z-index: 1;
 }
 
 .list-header-top {
@@ -241,12 +249,12 @@ body {
 }
 
 .glass-sheen {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: min(76vw, 560px);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
   display: block;
 }
 .glass-sheen .arc { fill: none; stroke-linecap: round; }
@@ -255,6 +263,19 @@ body {
 .glass-sheen .a340 { stroke-width: 3.4; }
 .glass-sheen .a460 { stroke-width: 1.4; }
 .glass-sheen .streak { fill: none; stroke-width: 22; filter: blur(9px); }
+.glass-sheen.quote-sheen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: auto;
+  bottom: auto;
+  width: min(76vw, 560px);
+  height: 220px;
+}
+.quote-view {
+  position: relative;
+  z-index: 0;
+}
 
 .search-input {
   width: 180px;
@@ -1161,8 +1182,8 @@ rt {
 </head>
 <body>
 
-<!-- 右上角液态玻璃高光曲线（角弧+柔光带，色随主题变量） -->
-<svg class="glass-sheen" viewBox="0 0 560 400" preserveAspectRatio="xMaxYMin meet" aria-hidden="true">
+<!-- 玻璃高光渐变定义（全局零尺寸，供多处曲线引用） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <radialGradient id="sheenRad" cx="560" cy="0" r="700" gradientUnits="userSpaceOnUse">
       <stop offset="0" style="stop-color:var(--sheen-a)"/>
@@ -1177,18 +1198,12 @@ rt {
       <stop offset="0" style="stop-color:var(--sheen-rim)"/>
       <stop offset="1" style="stop-color:var(--sheen-rim); stop-opacity:0"/>
     </linearGradient>
+    <radialGradient id="inkGrad" cx="560" cy="0" r="620" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color:var(--sheen-ink)"/>
+      <stop offset="0.55" style="stop-color:var(--sheen-ink)"/>
+      <stop offset="1" style="stop-color:var(--sheen-ink); stop-opacity:0"/>
+    </radialGradient>
   </defs>
-  <path class="streak" d="M 445 -8 Q 375 95 255 185" stroke="url(#glowRad)"/>
-  <path class="arc" style="stroke-width:1"    d="M 500 0 A 60 60 0 0 0 560 60" stroke="url(#sheenRad)"/>
-  <path class="arc" style="stroke-width:1.6"  d="M 465 0 A 95 95 0 0 0 560 95" stroke="url(#sheenRad)"/>
-  <path class="arc a140" d="M 420 0 A 140 140 0 0 0 560 140" stroke="url(#sheenRad)"/>
-  <path class="arc" style="stroke-width:1.2"  d="M 375 0 A 185 185 0 0 0 560 185" stroke="url(#sheenRad)"/>
-  <path class="arc a230" d="M 330 0 A 230 230 0 0 0 560 230" stroke="url(#sheenRad)"/>
-  <path class="arc" style="stroke-width:1.4"  d="M 275 0 A 285 285 0 0 0 560 285" stroke="url(#sheenRad)"/>
-  <path class="arc a340" d="M 220 0 A 340 340 0 0 0 560 340" stroke="url(#sheenRad)"/>
-  <path class="arc" style="stroke-width:1.1"  d="M 160 0 A 400 400 0 0 0 560 400" stroke="url(#sheenRad)"/>
-  <path class="arc a460" d="M 100 0 A 460 460 0 0 0 560 460" stroke="url(#rimGrad)"/>
-  <path class="arc" style="stroke-width:1.8"  d="M 0 0 A 560 560 0 0 0 560 560" stroke="url(#rimGrad)"/>
 </svg>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -1204,6 +1219,19 @@ rt {
 <!-- 列表视图 -->
 <div class="list-view" id="listView">
   <div class="list-header">
+    <svg class="glass-sheen" viewBox="0 0 560 400" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">
+  <path class="streak" d="M 445 -8 Q 375 95 255 185" stroke="url(#glowRad)"/>
+  <path class="arc" style="stroke-width:1"    d="M 500 0 A 60 60 0 0 0 560 60" stroke="url(#sheenRad)"/>
+  <path class="arc" style="stroke-width:1.6"  d="M 465 0 A 95 95 0 0 0 560 95" stroke="url(#sheenRad)"/>
+  <path class="arc a140" d="M 420 0 A 140 140 0 0 0 560 140" stroke="url(#sheenRad)"/>
+  <path class="arc" style="stroke-width:1.2"  d="M 375 0 A 185 185 0 0 0 560 185" stroke="url(#sheenRad)"/>
+  <path class="arc a230" d="M 330 0 A 230 230 0 0 0 560 230" stroke="url(#sheenRad)"/>
+  <path class="arc" style="stroke-width:1.4"  d="M 275 0 A 285 285 0 0 0 560 285" stroke="url(#sheenRad)"/>
+  <path class="arc a340" d="M 220 0 A 340 340 0 0 0 560 340" stroke="url(#sheenRad)"/>
+  <path class="arc" style="stroke-width:1.1"  d="M 160 0 A 400 400 0 0 0 560 400" stroke="url(#sheenRad)"/>
+  <path class="arc a460" d="M 100 0 A 460 460 0 0 0 560 460" stroke="url(#rimGrad)"/>
+  <path class="arc" style="stroke-width:1.8"  d="M 0 0 A 560 560 0 0 0 560 560" stroke="url(#rimGrad)"/>
+    </svg>
     <div class="list-header-top">
       <div class="title-wrap"><h1>名言</h1><span class="sw-version" aria-hidden="true"></span></div>
       <div class="list-header-actions">
@@ -1241,6 +1269,7 @@ rt {
 
 <!-- 名言单页视图 -->
 <div class="quote-view" id="quoteView">
+  
   <div class="action-bar" id="actionBar">
     <button class="filter-btn" onclick="showList()" title="返回列表"><i class="bi bi-arrow-left"></i></button>
     <div class="jump-expand" onclick="toggleJumpExpand(this)" title="跳转至">
@@ -1261,6 +1290,19 @@ rt {
     <div class="quote-mark bottom-right">”</div>
     <div class="page-indicator" id="pageIndicator"><span id="pageIndicatorNum"></span></div>
   </div>
+<svg class="glass-sheen quote-sheen" viewBox="0 0 560 400" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">
+    <path class="streak" style="stroke-width:10; filter: blur(8px); opacity:.45" d="M 445 -8 Q 375 95 255 185" stroke="url(#inkGrad)"/>
+    <path class="arc" style="stroke-width:1"    d="M 500 0 A 60 60 0 0 0 560 60" stroke="url(#inkGrad)"/>
+    <path class="arc" style="stroke-width:1.6"  d="M 465 0 A 95 95 0 0 0 560 95" stroke="url(#inkGrad)"/>
+    <path class="arc a140" d="M 420 0 A 140 140 0 0 0 560 140" stroke="url(#inkGrad)"/>
+    <path class="arc" style="stroke-width:1.2"  d="M 375 0 A 185 185 0 0 0 560 185" stroke="url(#inkGrad)"/>
+    <path class="arc a230" d="M 330 0 A 230 230 0 0 0 560 230" stroke="url(#inkGrad)"/>
+    <path class="arc" style="stroke-width:1.4"  d="M 275 0 A 285 285 0 0 0 560 285" stroke="url(#inkGrad)"/>
+    <path class="arc a340" d="M 220 0 A 340 340 0 0 0 560 340" stroke="url(#inkGrad)"/>
+    <path class="arc" style="stroke-width:1.1"  d="M 160 0 A 400 400 0 0 0 560 400" stroke="url(#inkGrad)"/>
+    <path class="arc a460" d="M 100 0 A 460 460 0 0 0 560 460" stroke="url(#inkGrad)"/>
+    <path class="arc" style="stroke-width:1.8"  d="M 0 0 A 560 560 0 0 0 560 560" stroke="url(#inkGrad)"/>
+  </svg>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
