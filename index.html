@@ -1125,6 +1125,12 @@ rt {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+/* 主题切换瞬间全局掐过渡：防卡片/按钮 0.15s 背景残影造成"闪回原色" */
+.theme-swapping *,
+.theme-swapping *::before,
+.theme-swapping *::after {
+  transition: none !important;
+}
 </style>
 </head>
 <body>
@@ -1217,9 +1223,14 @@ rt {
 
 /* 主题揭示：克隆当前页面裹上新主题塞进全屏遮罩，circle() 从按钮中心渐放——
    圆外是旧页面实况，圆内是克隆的新主题页面；全程页面坐标系，
-   任何浏览器/内核零偏差（替代已退役的 View Transitions 快照方案） */
+   任何浏览器/内核零偏差（替代已退役的 View Transitions 快照方案）
+   健壮性：世代计数防连点错位；finished+定时器双保险防 promise 失语；
+   换主题期间全局禁过渡防卡片 0.15s 背景残影 */
+let diyGen = 0;
 function themeRevealDIY(evt, apply) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { apply(); return; }
+  const gen = ++diyGen;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) { apply(); return; }
   const prev = document.getElementById('diyReveal');
   if (prev) prev.remove();
   const btn = (evt && evt.currentTarget && evt.currentTarget.getBoundingClientRect) ? evt.currentTarget : null;
@@ -1238,17 +1249,29 @@ function themeRevealDIY(evt, apply) {
   clone.style.cssText = 'position:absolute;left:' + (-window.scrollX) + 'px;top:' + (-window.scrollY) + 'px;width:100%;margin:0;';
   inner.appendChild(clone);
   overlay.appendChild(inner);
+  document.documentElement.classList.add('theme-swapping');
   document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';
 
   const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) + 8;
-  const anim = overlay.animate(
-    [{ clipPath: 'circle(0px at ' + x + 'px ' + y + 'px)' },
-     { clipPath: 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)' }],
-    { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)' }
-  );
-  const done = () => { apply(); overlay.remove(); document.body.style.overflow = ''; };
-  anim.finished.then(done).catch(done);
+  let called = false;
+  const once = () => {
+    if (called || gen !== diyGen) return;
+    called = true;
+    apply();
+    overlay.remove();
+    document.documentElement.classList.remove('theme-swapping');
+    document.body.style.overflow = '';
+  };
+  try {
+    const anim = overlay.animate(
+      [{ clipPath: 'circle(0px at ' + x + 'px ' + y + 'px)' },
+       { clipPath: 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)' }],
+      { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)' }
+    );
+    anim.finished.then(once).catch(() => {});
+  } catch (e) { /* 引擎不支持 WAAPI clip 也保底收尾 */ }
+  setTimeout(once, 560); /* finished 失语/迟到的引擎由定时器兜底 */
 }
 
 function toggleTheme(evt) {
