@@ -1253,6 +1253,8 @@ function themeRevealDIY(evt, apply) {
     const cb = clone.querySelector('#' + id);
     if (cb) cb.innerHTML = '<i class="bi ' + targetIcon + '"></i>';
   });
+  /* 克隆体内标签胶囊按目标主题预染色（单页视图左下角标签的变色要圆到色到） */
+  try { refreshTagPills(clone, isDark ? 'light' : 'dark'); } catch (e) {}
   inner.appendChild(clone);
   overlay.appendChild(inner);
   document.documentElement.classList.add('theme-swapping');
@@ -1376,9 +1378,9 @@ const TAG_COLOR_SLOT = {
 };
 const tagColorMaps = { light: {}, dark: {} };
 
-function tagColors(tag) {
-  const mode = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
-  const map = tagColorMaps[mode];
+function tagColors(tag, mode) {
+  const m = mode || (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+  const map = tagColorMaps[m];
   if (!(tag in map)) {
     const palette = tagPalette();
     const n = tag in TAG_COLOR_SLOT
@@ -1389,20 +1391,20 @@ function tagColors(tag) {
   return map[tag];
 }
 
-// 主题切换后刷新已渲染的标签胶囊
-function refreshTagPills() {
-  document.querySelectorAll('.tag-pill').forEach(pill => {
+// 主题切换后刷新已渲染的标签胶囊（root/mode 供克隆体按目标主题预染色）
+function refreshTagPills(root, mode) {
+  (root || document).querySelectorAll('.tag-pill').forEach(pill => {
     const tag = pill.textContent;
-    const c = tagColors(tag);
+    const c = tagColors(tag, mode);
     pill.style.background = c[0];
     pill.style.borderColor = c[1];
     pill.style.color = c[2];
   });
   // 筛选下拉里的标签底色
-  document.querySelectorAll('#filterDropdown .filter-option').forEach(opt => {
+  (root || document).querySelectorAll('#filterDropdown .filter-option').forEach(opt => {
     const cb = opt.querySelector('.filter-checkbox[data-tag]');
     if (!cb) return;
-    const c = tagColors(cb.dataset.tag);
+    const c = tagColors(cb.dataset.tag, mode);
     opt.style.background = c[0];
     opt.style.borderColor = c[1];
     const name = opt.querySelector('.filter-option-name');
@@ -1414,7 +1416,7 @@ function refreshTagPills() {
 function initTagColors() {
   const all = new Set();
   quotes.forEach(q => (q.tags || []).forEach(t => all.add(t)));
-  [...all].sort().forEach(tagColors);
+  [...all].sort().forEach((tag) => tagColors(tag));
 }
 
 function tagPillHtml(tag) {
