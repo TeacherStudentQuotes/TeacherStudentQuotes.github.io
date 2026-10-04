@@ -2546,7 +2546,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     });
   };
   navigator.serviceWorker.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'VERSION') setVer(e.data.version);
+    if (e.data && e.data.type === 'VERSION') setVer((e.data.version || '').replace(/^tsq-/, ''));
   });
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     // 交接瞬间controller可能为null，不刷新徽标（马上reload重画，避免闪没）
