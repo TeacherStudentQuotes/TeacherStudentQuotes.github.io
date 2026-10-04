@@ -1265,9 +1265,18 @@ function themeRevealDIY(evt, apply) {
     if (called || gen !== diyGen) return;
     called = true;
     try { apply(); } catch (e) {}
-    try { overlay.remove(); } catch (e) {}
-    document.documentElement.classList.remove('theme-swapping');
-    document.body.style.overflow = '';
+    /* 揭盖推迟一帧：真实页面先在遮罩底下以新主题完成一次绘制，
+       否则懒引擎直接亮出旧色缓存层，再带过渡渐变到新色（残影） */
+    let committed = false;
+    const commit = () => {
+      if (committed || gen !== diyGen) return;
+      committed = true;
+      try { overlay.remove(); } catch (e) {}
+      document.documentElement.classList.remove('theme-swapping');
+      document.body.style.overflow = '';
+    };
+    requestAnimationFrame(commit);
+    setTimeout(commit, 80); /* rAF 失语的引擎兜底 */
   };
   try {
     const anim = overlay.animate(
