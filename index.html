@@ -1868,9 +1868,10 @@ function readFilterParams() {
   activeAuthors.clear();
   excludedTags.clear();
   authorFilterApplied = url.searchParams.has('authors');
-  /* getAll 兼容历史格式（authors=甲&authors=乙），再按逗号切新格式 */
-  url.searchParams.getAll('authors').forEach(v => { if (v) v.split(',').forEach(n => { if (n) activeAuthors.add(n); }); });
-  url.searchParams.getAll('notags').forEach(v => { if (v) v.split(',').forEach(n => { if (n) excludedTags.add(n); }); });
+  const a = url.searchParams.get('authors');
+  if (a) a.split(',').forEach(n => { if (n) activeAuthors.add(n); });
+  const t = url.searchParams.get('notags');
+  if (t) t.split(',').forEach(n => { if (n) excludedTags.add(n); });
   saveFilter();
 }
 
