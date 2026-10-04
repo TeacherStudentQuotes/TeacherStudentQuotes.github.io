@@ -1284,6 +1284,13 @@ function themeRevealDIY(evt, apply) {
     diyTrace('A');
     anim.finished.then(() => { diyTrace('F'); once(); }).catch(() => { diyTrace('Fr'); once(); });
   } catch (e) { diyTrace('Ax:' + (e && e.message ? e.message.slice(0, 10) : '?')); }
+  setTimeout(() => {
+    if (gen !== diyGen) return;
+    try {
+      const cp = getComputedStyle(overlay).clipPath || getComputedStyle(overlay).webkitClipPath || 'nil';
+      diyTrace('m:' + String(cp).slice(0, 20));
+    } catch (e) { diyTrace('m!'); }
+  }, 250);
   setTimeout(once, 560); /* finished 失语/迟到的引擎由定时器兜底 */
 }
 
