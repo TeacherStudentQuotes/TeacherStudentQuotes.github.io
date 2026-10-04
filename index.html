@@ -57,8 +57,6 @@
   --scroll-hover: rgba(0,0,0,0.25);
   --shadow: rgba(0,0,0,0.18);
   --shadow-2: rgba(0,0,0,0.15);
-  /* 玻璃后流线（纯色无渐变：浅底深棕线，深底暖白线） */
-  --sheen-ink: rgba(96, 78, 52, 0.9);
 }
 [data-theme="dark"] {
   --bg: #171410;
@@ -102,8 +100,6 @@
   --scroll-hover: rgba(255,255,255,0.25);
   --shadow: rgba(0,0,0,0.5);
   --shadow-2: rgba(0,0,0,0.4);
-  /* 玻璃后流线（暗色：暖白线） */
-  --sheen-ink: rgba(255, 246, 224, 0.5);
 }
 
 @font-face {
@@ -201,19 +197,6 @@ body {
   background: var(--bg);
   z-index: 10;
   position: relative;
-  overflow: hidden;
-}
-.list-header > *:not(.glass-sheen) {
-  position: relative;
-  z-index: 1;
-}
-/* 顶栏玻璃近乎全透+轻磨砂：后方 S 线直接透出（其余玻璃件维持 0.55 白） */
-.list-header .search-input,
-.list-header .filter-btn,
-.action-bar .filter-btn {
-  background: rgba(255, 253, 247, 0.02);
-  backdrop-filter: blur(0.5px) saturate(1.2);
-  -webkit-backdrop-filter: blur(0.5px) saturate(1.2);
 }
 
 .list-header-top {
@@ -248,29 +231,6 @@ body {
   position: relative;
 }
 
-.glass-sheen {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  display: block;
-}
-.glass-sheen .arc {
-  fill: none;
-  stroke: var(--sheen-ink);
-  stroke-linecap: round;
-}
-.glass-sheen.quote-sheen {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: auto;
-  bottom: auto;
-  width: min(76vw, 560px);
-  height: 220px;
-}
 .quote-view {
   position: relative;
   z-index: 0;
@@ -1194,10 +1154,6 @@ rt {
 <!-- 列表视图 -->
 <div class="list-view" id="listView">
   <div class="list-header">
-    <svg class="glass-sheen" viewBox="0 0 560 400" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">
-      <path class="arc" style="stroke-width:2.5" d="M 60 5 C 150 -5, 190 45, 270 38 C 350 31, 390 70, 470 62 C 530 56, 545 80, 560 85"/>
-      <path class="arc" style="stroke-width:1.5" d="M 30 70 C 110 60, 155 115, 235 108 C 315 101, 360 145, 440 138 C 500 133, 530 160, 560 170"/>
-    </svg>
     <div class="list-header-top">
       <div class="title-wrap"><h1>名言</h1><span class="sw-version" aria-hidden="true"></span></div>
       <div class="list-header-actions">
@@ -1256,10 +1212,6 @@ rt {
     <div class="quote-mark bottom-right">”</div>
     <div class="page-indicator" id="pageIndicator"><span id="pageIndicatorNum"></span></div>
   </div>
-<svg class="glass-sheen quote-sheen" viewBox="0 0 560 400" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">
-    <path class="arc" style="stroke-width:2.5" d="M 60 5 C 150 -5, 190 45, 270 38 C 350 31, 390 70, 470 62 C 530 56, 545 80, 560 85"/>
-    <path class="arc" style="stroke-width:1.5" d="M 30 70 C 110 60, 155 115, 235 108 C 315 101, 360 145, 440 138 C 500 133, 530 160, 560 170"/>
-  </svg>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
