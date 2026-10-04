@@ -1226,9 +1226,19 @@ rt {
    任何浏览器/内核零偏差（替代已退役的 View Transitions 快照方案）
    健壮性：世代计数防连点错位；finished+定时器双保险防 promise 失语；
    换主题期间全局禁过渡防卡片 0.15s 背景残影 */
+/* DIY 揭示调试轨迹：每步缩写入徽标，真机出错时截图即得证据。R=开始 C=克隆完 A=animate成 Ax=animate炸 F=finished成 Fr=finished拒 T=超时兜底(=finished失语!) 1=收尾 a=apply成 a:=apply炸 i=图标成 s:=存储炸 */
+let diyTraceArr = [];
+function diyTrace(code) {
+  diyTraceArr.push(code);
+  if (diyTraceArr.length > 14) diyTraceArr.shift();
+  const el = document.querySelector('.sw-version');
+  if (el) { el.textContent = diyTraceArr.join(' '); el.style.display = ''; }
+}
+function diyStore(k, v) { try { localStorage.setItem(k, v); } catch (e) { diyTrace('s:' + (e && e.message ? e.message.slice(0, 10) : '?')); } }
 let diyGen = 0;
 function themeRevealDIY(evt, apply) {
   const gen = ++diyGen;
+  diyTrace('R' + gen);
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) { apply(); return; }
   const prev = document.getElementById('diyReveal');
@@ -1251,6 +1261,7 @@ function themeRevealDIY(evt, apply) {
   overlay.appendChild(inner);
   document.documentElement.classList.add('theme-swapping');
   document.body.appendChild(overlay);
+  diyTrace('C');
   document.body.style.overflow = 'hidden';
 
   const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) + 8;
@@ -1258,8 +1269,9 @@ function themeRevealDIY(evt, apply) {
   const once = () => {
     if (called || gen !== diyGen) return;
     called = true;
-    apply();
-    overlay.remove();
+    diyTrace('1');
+    try { apply(); diyTrace('a'); } catch (e) { diyTrace('a:' + (e && e.message ? e.message.slice(0, 12) : '?')); }
+    try { overlay.remove(); } catch (e) {}
     document.documentElement.classList.remove('theme-swapping');
     document.body.style.overflow = '';
   };
@@ -1269,8 +1281,9 @@ function themeRevealDIY(evt, apply) {
        { clipPath: 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)' }],
       { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)' }
     );
-    anim.finished.then(once).catch(() => {});
-  } catch (e) { /* 引擎不支持 WAAPI clip 也保底收尾 */ }
+    diyTrace('A');
+    anim.finished.then(() => { diyTrace('F'); once(); }).catch(() => { diyTrace('Fr'); once(); });
+  } catch (e) { diyTrace('Ax:' + (e && e.message ? e.message.slice(0, 10) : '?')); }
   setTimeout(once, 560); /* finished 失语/迟到的引擎由定时器兜底 */
 }
 
@@ -1279,10 +1292,10 @@ function toggleTheme(evt) {
   const apply = () => {
     if (isDark) {
       delete document.documentElement.dataset.theme;
-      localStorage.setItem('theme', 'light');
+      diyStore('theme', 'light');
     } else {
       document.documentElement.dataset.theme = 'dark';
-      localStorage.setItem('theme', 'dark');
+      diyStore('theme', 'dark');
     }
     updateThemeIcons();
     refreshTagPills();
