@@ -1849,11 +1849,17 @@ function updateFilterParam() {
   url.searchParams.delete('notags');
   /* 作者筛选只有真正缩小范围才写进网址：全选等价于不筛；全不选写成 authors=（空值=刻意空结果） */
   if (authorFilterApplied && activeAuthors.size < allAuthorsSet.size) {
-    if (activeAuthors.size) [...activeAuthors].forEach(a => url.searchParams.append('authors', a));
+    if (activeAuthors.size) url.search = appendListParam(url.search, 'authors', [...activeAuthors]);
     else url.searchParams.set('authors', '');
   }
-  excludedTags.forEach(t => url.searchParams.append('notags', t));
+  if (excludedTags.size) url.search = appendListParam(url.search, 'notags', [...excludedTags]);
   history.replaceState(null, '', url.pathname + url.search + location.hash);
+}
+
+/* 逗号拼接的列表参数：值各自编码、逗号保留字面量，网址更短（authors=甲,乙 而非 authors=甲&authors=乙） */
+function appendListParam(search, key, values) {
+  const enc = values.map(v => encodeURIComponent(v)).join(',');
+  return search ? search + '&' + key + '=' + enc : '?' + key + '=' + enc;
 }
 
 function readFilterParams() {
@@ -1862,8 +1868,9 @@ function readFilterParams() {
   activeAuthors.clear();
   excludedTags.clear();
   authorFilterApplied = url.searchParams.has('authors');
-  url.searchParams.getAll('authors').forEach(v => { if (v) activeAuthors.add(v); });
-  url.searchParams.getAll('notags').forEach(v => { if (v) excludedTags.add(v); });
+  /* getAll 兼容历史格式（authors=甲&authors=乙），再按逗号切新格式 */
+  url.searchParams.getAll('authors').forEach(v => { if (v) v.split(',').forEach(n => { if (n) activeAuthors.add(n); }); });
+  url.searchParams.getAll('notags').forEach(v => { if (v) v.split(',').forEach(n => { if (n) excludedTags.add(n); }); });
   saveFilter();
 }
 
