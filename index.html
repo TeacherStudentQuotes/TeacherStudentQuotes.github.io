@@ -2324,9 +2324,8 @@ function zoneNav(dir) {
 /* 单页触摸滑动翻页：横向主导手势跟手拖动纸页（阻尼 0.35），
    阈值 50px 才放行翻页，不足则弹回；纵向滚动天然让位 */
 (function initSwipeNav() {
-  let sx = 0, sy = 0, st0 = 0, active = false, axis = 0; /* 0未分轴 1横 2纵 */
+  let sx = 0, sy = 0, st0 = 0, t0 = 0, active = false, axis = 0; /* 0未分轴 1横 2纵 */
   let velY = 0, lastY = 0, lastT = 0, flingRAF = 0;
-  const pageEl = () => quoteView.querySelector('.page');
 
   quoteView.addEventListener('touchstart', (e) => {
     if (!quoteView.classList.contains('show')) return;
@@ -2335,6 +2334,7 @@ function zoneNav(dir) {
     const t = e.changedTouches[0];
     sx = t.clientX; sy = t.clientY;
     st0 = quoteView.scrollTop;
+    t0 = e.timeStamp;
     active = true; axis = 0;
     velY = 0; lastY = t.clientY; lastT = e.timeStamp;
   }, { passive: true });
@@ -2350,13 +2350,9 @@ function zoneNav(dir) {
       if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; /* 分轴死区 */
       axis = Math.abs(dx) > Math.abs(dy) ? 1 : 2;
     }
-    if (axis === 1) {
-      const page = pageEl();
-      if (page) {
-        page.style.transition = 'none';
-        page.style.transform = 'translateX(' + (dx * 0.35) + 'px)';
-      }
-    } else {
+    /* 横向(axis 1)：纸页绝不跟手（硬需求"整个页面不要动"——划动全程画面纹丝不动），
+       这里只记录轨迹，是否翻页全由 touchend 按阈值判定后播放方向性动画 */
+    if (axis === 2) {
       quoteView.scrollTop = st0 - dy; /* 手动纵向滚动，边缘天然钳制不拽动整页 */
       const dt = e.timeStamp - lastT;
       /* dt<4ms 的采样噪声太大丢弃；速度钳制防异常尖峰 */
@@ -2369,25 +2365,15 @@ function zoneNav(dir) {
     active = false;
     const t = e.changedTouches[0];
     const dx = t.clientX - sx, dy = t.clientY - sy;
-    const page = pageEl();
-    const clearDrag = () => {
-      if (!page) return;
-      page.style.transition = '';
-      page.style.transform = '';
-    };
     if (axis === 1) {
-      if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy)) {
-        clearDrag(); /* 同任务清跟手位移，方向滑入动画无缝接管 */
-        lastSwipeTs = Date.now();
+      /* 抬手才判定：够50px必翻，快速甩动(300ms内30px)也算 */
+      const adx = Math.abs(dx);
+      const quick = e.timeStamp - t0 < 300;
+      if (adx > Math.abs(dy) && (adx >= 50 || (quick && adx >= 30))) {
+        lastSwipeTs = Date.now(); /* 吞掉随之而来的click，防误触翻页 */
         if (dx < 0) nextPage(); else prevPage();
-      } else if (page) {
-        const from = 'translateX(' + (dx * 0.35) + 'px)';
-        clearDrag();
-        if (page.animate && !reducedMotion()) {
-          page.animate([{ transform: from }, { transform: 'translateX(0px)' }],
-            { duration: 180, easing: 'ease-out' });
-        }
       }
+      /* 不够阈值：什么都不做——页面从头至尾没有移动过，无需回弹 */
     } else if (axis === 2) {
       /* 惯性：velY(px/ms) 转每帧位移，阻尼 0.94 衰减 */
       let v = velY * 16.7;
