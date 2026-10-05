@@ -152,6 +152,28 @@ html, body, .filter-dropdown, .quote-view {
   pointer-events: none;
 }
 .list-empty[hidden] { display: none; }
+.list-empty {
+  flex-direction: column;
+  gap: 4px;
+}
+.empty-clear-btn {
+  margin-top: 12px;
+  padding: 7px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.empty-clear-btn:active {
+  transform: scale(0.97);
+}
 
 .list-body {
   scrollbar-width: thin;
@@ -1138,6 +1160,15 @@ rt {
 .theme-swapping *::after {
   transition: none !important;
 }
+
+/* 系统级减少动态偏好：全局压掉动画/过渡时长（主题揭示已单独遵守） */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1159,7 +1190,7 @@ rt {
       <div class="title-wrap"><h1>名言</h1><span class="sw-version" aria-hidden="true"></span></div>
       <div class="list-header-actions">
         <div class="search-wrap">
-          <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="applySearch()">
+          <input type="text" id="searchInput" class="search-input" placeholder="搜索..." oninput="scheduleSearch()">
           <i class="bi bi-search search-icon"></i>
           <span class="search-count" id="searchCount"></span>
         </div>
@@ -1176,7 +1207,10 @@ rt {
     <p id="listSub">师生名言“精选”，共 <span id="totalCount">0</span> 条</p>
   </div>
   <div class="list-body" id="listBody"></div>
-  <div class="list-empty" id="listEmpty" hidden>没有符合条件的名言</div>
+  <div class="list-empty" id="listEmpty" hidden>
+    <div>没有符合条件的名言</div>
+    <button class="empty-clear-btn" onclick="clearAllFilters()">清除搜索和筛选</button>
+  </div>
   <!-- 列表页抽屉 -->
   <div class="action-drawer mobile-only" id="listDrawer">
     <div class="filter-wrap">
@@ -1203,8 +1237,8 @@ rt {
     <button class="filter-btn" onclick="toggleTheme(event)" title="切换主题" id="themeBtnQuote">
 <i class="bi bi-moon-fill"></i></button>
   </div>
-<div class="click-zone left" onclick="prevPage()"></div>
-  <div class="click-zone right" onclick="nextPage()"></div>
+<div class="click-zone left" onclick="zoneNav(-1)"></div>
+  <div class="click-zone right" onclick="zoneNav(1)"></div>
   <div class="page">
     <div class="quote-mark top-left">“</div>
     <div class="quote-content" id="qContent"></div>
@@ -1559,6 +1593,7 @@ function createList() {
     item.dataset.content = q.content;
     item.dataset.tags = (q.tags || []).join(',');
     item.dataset.index = i + 1;
+    item.dataset.hasMath = (q.content.includes('$') || q.content.includes('\\(')) ? '1' : '';
     item.onclick = () => showQuote(i + 1);
     const preview = q.content;
     item.innerHTML = `
@@ -1854,9 +1889,28 @@ function confirmFilter(stay) {
   if (!stay) closeFilter();
 }
 
+let filterGen = 0;
+function reducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 function closeFilter() {
-  document.getElementById('filterDropdown').classList.remove('show');
-  document.getElementById('filterBackdrop').classList.remove('show');
+  const dropdown = document.getElementById('filterDropdown');
+  const backdrop = document.getElementById('filterBackdrop');
+  if (!dropdown.classList.contains('show')) return;
+  const gen = ++filterGen;
+  const finish = () => {
+    if (gen !== filterGen) return;
+    dropdown.classList.remove('show');
+    backdrop.classList.remove('show');
+    dropdown.style.pointerEvents = '';
+  };
+  if (reducedMotion() || !dropdown.animate) { finish(); return; }
+  /* 动画期间先摘交互，防连点；显示类等动画落地再摘 */
+  dropdown.style.pointerEvents = 'none';
+  dropdown.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease-in' });
+  if (backdrop.animate) backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease-in' });
+  setTimeout(finish, 140);
 }
 
 
@@ -1871,16 +1925,36 @@ function studentInfo(name) {
   return null;
 }
 
-function toggleFilter() {
+function openFilterPanel() {
   const dropdown = document.getElementById('filterDropdown');
   const backdrop = document.getElementById('filterBackdrop');
-  const willShow = !dropdown.classList.contains('show');
-  if (willShow) {
-    createFilter();
-    closeActionMenu(); /* 筛选是独立模态，菜单让位 */
+  /* 关闭动画播到一半又打开：旧收尾已失效（代次过期），须先亲手终结 */
+  if (dropdown.style.pointerEvents === 'none') {
+    filterGen++;
+    dropdown.getAnimations().forEach(a => a.cancel());
+    if (backdrop.getAnimations) backdrop.getAnimations().forEach(a => a.cancel());
+    dropdown.classList.remove('show');
+    backdrop.classList.remove('show');
+    dropdown.style.pointerEvents = '';
   }
-  dropdown.classList.toggle('show');
-  backdrop.classList.toggle('show', willShow ? true : dropdown.classList.contains('show'));
+  if (dropdown.classList.contains('show')) return;
+  const gen = ++filterGen;
+  createFilter();
+  closeActionMenu(); /* 筛选是独立模态，菜单让位 */
+  dropdown.classList.add('show');
+  backdrop.classList.add('show');
+  if (!reducedMotion() && dropdown.animate) {
+    dropdown.animate(
+      [{ opacity: 0, transform: 'scale(.97)' }, { opacity: 1, transform: 'scale(1)' }],
+      { duration: 170, easing: 'cubic-bezier(0,0,.2,1)' });
+    if (backdrop.animate) backdrop.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 170, easing: 'ease-out' });
+  }
+}
+
+function toggleFilter() {
+  const dropdown = document.getElementById('filterDropdown');
+  if (dropdown.classList.contains('show')) closeFilter();
+  else openFilterPanel();
 }
 
 function highlightText(text, query) {
@@ -1921,7 +1995,7 @@ function applySearch() {
       const authorSpan = item.querySelector('.list-item-author');
       if (contentSpan) {
         contentSpan.innerHTML = renderContentWithPinyin(content, currentSearch);
-        renderMath(contentSpan);
+        if (item.dataset.hasMath === '1') renderMath(contentSpan);
       }
       if (authorSpan) authorSpan.innerHTML = highlightText(author, currentSearch);
     } else {
@@ -1949,6 +2023,27 @@ function applySearch() {
     }
     subP.innerHTML = html;
   }
+}
+
+/* 搜索防抖：快速连击键时合并重渲染，低端机不卡 */
+let __searchTimer = null;
+function scheduleSearch() {
+  clearTimeout(__searchTimer);
+  __searchTimer = setTimeout(applySearch, 120);
+}
+
+/* 空结果态一键复位：清空搜索词 + 作者/标签筛选，回全量 */
+function clearAllFilters() {
+  clearTimeout(__searchTimer);
+  const input = document.getElementById('searchInput');
+  if (input) input.value = '';
+  activeAuthors.clear();
+  excludedTags.clear();
+  authorFilterApplied = false;
+  saveFilter();
+  updateFilterParam();
+  createFilter();
+  applySearch();
 }
 
 function updateSearchParam(search) {
@@ -2020,25 +2115,56 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-function renderQuote(index) {
+let quoteRenderGen = 0;
+function renderQuote(index, dir) {
   const q = quotes[index - 1];
   const contentEl = document.getElementById('qContent');
   const authorEl = document.getElementById('qAuthor');
+  const tagsEl = document.getElementById('qTags');
+  const indEl = document.getElementById('pageIndicator');
+  const gen = ++quoteRenderGen;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const els = [contentEl, authorEl, tagsEl, indEl].filter(Boolean);
+  /* 同任务掐掉上一轮动画：base 状态即全显示，无中间帧可闪 */
+  els.forEach(el => el.getAnimations().forEach(a => a.cancel()));
 
-  contentEl.style.opacity = '0';
-  authorEl.style.opacity = '0';
-
-  setTimeout(() => {
+  const fill = () => {
+    if (gen !== quoteRenderGen) return false;
     contentEl.innerHTML = renderContentWithPinyin(q.content, '');
     renderMath(contentEl);
     authorEl.innerHTML = escapeHtml(q.author);
-    const tagsEl = document.getElementById('qTags');
     if (tagsEl) tagsEl.innerHTML = (q.tags || []).map(tagPillHtml).join('');
     const pageIndicatorNum = document.getElementById('pageIndicatorNum');
     if (pageIndicatorNum) pageIndicatorNum.textContent = index;
-    contentEl.style.opacity = '1';
-    authorEl.style.opacity = '1';
-  }, 150);
+    return true;
+  };
+
+  if (reduced) { fill(); return; }
+
+  /* 方向性翻页（纸页手感）：旧内容向翻页方向退，新内容从反方向进，
+     两阶段重叠 30ms 让两页"擦"过去；直达（dir=0）退化为原地淡换 */
+  const OUT_MS = 140, IN_MS = 240;
+  const slideOut = dir
+    ? els.map((el, i) => el.animate(
+        [{ opacity: 1, transform: 'translate(0px,0px)' },
+         { opacity: 0, transform: 'translate(' + (-dir * 26) + 'px,' + (i === 3 ? -8 : 0) + 'px)' }],
+        { duration: OUT_MS, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' }))
+    : els.map(el => el.animate([{ opacity: 1 }, { opacity: 0 }],
+        { duration: OUT_MS, easing: 'ease-in', fill: 'forwards' }));
+
+  setTimeout(() => {
+    if (gen !== quoteRenderGen) return;
+    slideOut.forEach(a => { try { a.cancel(); } catch (e) {} });
+    if (!fill()) return;
+    els.forEach((el, i) => {
+      const from = !dir ? { opacity: 0 }
+        : (i === 3
+            ? { opacity: 0, transform: 'translate(0px,8px)' }
+            : { opacity: 0, transform: 'translate(' + (dir * 30) + 'px,0px)' });
+      el.animate([from, { opacity: 1, transform: 'translate(0px,0px)' }],
+        { duration: IN_MS, delay: i === 0 ? 0 : 30, easing: 'cubic-bezier(0,0,.2,1)' });
+    });
+  }, OUT_MS - 30);
 }
 
 function setOgMeta(title, description) {
@@ -2056,15 +2182,22 @@ function showList() {
   setOgMeta('师生名言精选', '纸页之间的 689 句师生对话');
 
   history.replaceState(null, '', location.pathname + location.search);
+
+  /* 回来时锚定刚读的那条：滚进视野居中 + 高亮闪烁一次 */
+  const cur = allItems[current - 1];
+  if (cur) {
+    cur.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setTimeout(() => flashItemNow(cur), 360);
+  }
 }
 
-function showQuote(index) {
+function showQuote(index, dir) {
   if (index < 1 || index >= total) return;
   closeActionMenu();
   current = index;
   listView.style.display = 'none';
   quoteView.classList.add('show');
-  renderQuote(index);
+  renderQuote(index, dir || 0);
   const q = quotes[index - 1];
   const preview = q.content.length > 20 ? q.content.slice(0, 20) + '...' : q.content;
   document.title = `名言 #${index} — ${q.author}：${preview}`;
@@ -2074,11 +2207,18 @@ function showQuote(index) {
 }
 
 function nextPage() {
-  if (current < total - 1) showQuote(current + 1);
+  if (current < total - 1) showQuote(current + 1, 1);
 }
 
 function prevPage() {
-  if (current > 1) showQuote(current - 1);
+  if (current > 1) showQuote(current - 1, -1);
+}
+
+function flashItemNow(item) {
+  item.classList.remove('flash');
+  void item.offsetWidth;
+  item.classList.add('flash');
+  setTimeout(() => item.classList.remove('flash'), 2000);
 }
 
 function runFlashAfterScroll(item) {
@@ -2092,10 +2232,7 @@ function runFlashAfterScroll(item) {
   };
   const flash = () => {
     cleanup();
-    item.classList.remove('flash');
-    void item.offsetWidth;
-    item.classList.add('flash');
-    setTimeout(() => item.classList.remove('flash'), 2000);
+    flashItemNow(item);
   };
   const onScroll = () => {
     clearTimeout(scrollTimer);
@@ -2133,7 +2270,7 @@ function jumpToList(value) {
 function jumpToQuote(value) {
   const num = parseInt(value, 10);
   if (!isNaN(num) && num >= 1 && num < total) {
-    if (num !== current) showQuote(num);
+    if (num !== current) showQuote(num, Math.sign(num - current));
     document.querySelectorAll('.jump-expand-input').forEach(inp => { inp.value = ''; });
   } else {
     document.querySelectorAll('.jump-expand-input').forEach(inp => { inp.value = ''; });
@@ -2165,6 +2302,74 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') nextPage();
   if (e.key === 'ArrowLeft') prevPage();
 });
+
+/* 点击区防连发：触摸滑动翻页后浏览器仍可能补发一次合成 click，
+   若落在对侧点击区会再翻一页；滑动后 400ms 内的 click 一律吞掉 */
+let lastSwipeTs = 0;
+function zoneNav(dir) {
+  if (Date.now() - lastSwipeTs < 400) return;
+  if (dir > 0) nextPage(); else prevPage();
+}
+
+/* 单页触摸滑动翻页：横向主导手势跟手拖动纸页（阻尼 0.35），
+   阈值 50px 才放行翻页，不足则弹回；纵向滚动天然让位 */
+(function initSwipeNav() {
+  let sx = 0, sy = 0, active = false, dragging = false;
+  const pageEl = () => quoteView.querySelector('.page');
+
+  quoteView.addEventListener('touchstart', (e) => {
+    if (!quoteView.classList.contains('show')) return;
+    if (e.target.closest('button, input, .action-bar, a')) return;
+    const t = e.changedTouches[0];
+    sx = t.clientX; sy = t.clientY;
+    active = true; dragging = false;
+  }, { passive: true });
+
+  quoteView.addEventListener('touchmove', (e) => {
+    if (!active) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    if (!dragging) {
+      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return; /* 死区 */
+      if (Math.abs(dx) > Math.abs(dy)) dragging = true;
+      else { active = false; return; } /* 纵向滚动优先 */
+    }
+    e.preventDefault(); /* 横向拖：锁住纵向滚动 */
+    const page = pageEl();
+    if (page) {
+      page.style.transition = 'none';
+      page.style.transform = 'translateX(' + (dx * 0.35) + 'px)';
+    }
+  }, { passive: false });
+
+  const end = (e) => {
+    if (!active) return;
+    active = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    const page = pageEl();
+    const clearDrag = () => {
+      if (!page) return;
+      page.style.transition = '';
+      page.style.transform = '';
+    };
+    if (dragging && Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy)) {
+      clearDrag(); /* 同任务清跟手位移，方向滑入动画无缝接管 */
+      lastSwipeTs = Date.now();
+      if (dx < 0) nextPage(); else prevPage();
+    } else if (dragging && page) {
+      const from = 'translateX(' + (dx * 0.35) + 'px)';
+      clearDrag();
+      if (page.animate && !reducedMotion()) {
+        page.animate([{ transform: from }, { transform: 'translateX(0px)' }],
+          { duration: 180, easing: 'ease-out' });
+      }
+    }
+    dragging = false;
+  };
+  quoteView.addEventListener('touchend', end, { passive: true });
+  quoteView.addEventListener('touchcancel', end, { passive: true });
+})();
 
 let globalToastTimer = null;
 function showToast(message, duration = 1800) {
@@ -2638,21 +2843,40 @@ async function renderQuoteCanvas(index) {
 
 
 
+let menuGen = 0;
 function toggleActionMenu(which) {
   const target = document.getElementById('listDrawer');
   const backdrop = document.getElementById('drawerBackdrop');
   const opening = !target.classList.contains('open');
   closeActionMenu();
   if (opening) {
+    menuGen++; /* 作废 closeActionMenu 可能挂起的收尾 */
+    target.style.pointerEvents = '';
     target.classList.add('open');
     backdrop.classList.add('open');
+    if (!reducedMotion() && target.animate) {
+      target.animate(
+        [{ opacity: 0, transform: 'translateY(-6px) scale(.97)' }, { opacity: 1, transform: 'translateY(0px) scale(1)' }],
+        { duration: 150, easing: 'cubic-bezier(0,0,.2,1)' });
+    }
   }
 }
 
 function closeActionMenu() {
-  document.getElementById('listDrawer').classList.remove('open');
-  document.getElementById('drawerBackdrop').classList.remove('open');
-  collapseJumpAll();
+  const gen = ++menuGen;
+  const target = document.getElementById('listDrawer');
+  const backdrop = document.getElementById('drawerBackdrop');
+  if (backdrop.classList.contains('open')) backdrop.classList.remove('open'); /* CSS opacity 淡出 */
+  if (!target.classList.contains('open')) { collapseJumpAll(); return; }
+  const finish = () => {
+    if (gen !== menuGen) return;
+    target.classList.remove('open');
+    collapseJumpAll();
+  };
+  if (reducedMotion() || !target.animate) { finish(); return; }
+  target.style.pointerEvents = 'none';
+  target.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 110, easing: 'ease-in' });
+  setTimeout(finish, 130);
 }
 
 function toggleJumpExpand(el) {
