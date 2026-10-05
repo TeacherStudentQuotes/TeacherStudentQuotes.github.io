@@ -1650,6 +1650,7 @@ function renderToken(t) {
 }
 
 let allItems = [];
+let listScrollMem = 0;  /* #listBody 滚动位记忆：display:none 往返会把容器滚动位清零 */
 const allAuthorsSet = new Set(quotes.map(q => q.author));
 const activeAuthors = new Set();
 const excludedTags = new Set();
@@ -2287,8 +2288,11 @@ function showList() {
   document.body.scrollTop = 0;
 
   /* 列表位置已在单页翻页时同步过；这里同帧瞬时校正（无平滑、无闪烁），
-     用户退出看到的就是已居中的列表 */
-  syncListNow();
+     用户退出看到的就是已居中的列表；找不到（被筛选藏起）则恢复藏前滚动位 */
+  if (!syncListNow()) {
+    const lb = document.getElementById('listBody');
+    if (lb) lb.scrollTop = listScrollMem;
+  }
 }
 
 /* 列表静默锚定：把当前条居中到 #listBody，立即生效、无动画、无高亮。
@@ -2296,11 +2300,15 @@ function showList() {
    退出时 display:flex 之后同帧再校正一次兜底 */
 function syncListNow() {
   const lb = document.getElementById('listBody');
-  const cur = allItems[current - 1];
-  if (!cur || !lb) return;
+  if (!lb) return false;
+  /* 按 data-index（原名言号）找，不用 allItems[current-1]——筛选/搜索后
+     allItems 是过滤子集，按下标取会锚错条目或越界无操作 */
+  const cur = allItems.find(el => parseInt(el.dataset.index, 10) === current);
+  if (!cur || !cur.offsetHeight) return false;  /* 被搜索/筛选藏起的条目不锚定 */
   const delta = cur.getBoundingClientRect().top - lb.getBoundingClientRect().top
     - (lb.clientHeight - cur.getBoundingClientRect().height) / 2;
   lb.scrollTop += delta;
+  return true;
 }
 
 function showQuote(index, dir) {
@@ -2308,6 +2316,12 @@ function showQuote(index, dir) {
   closeActionMenu();
   current = index;
   syncListNow();
+  /* display:none 往返会丢 #listBody 滚动位，藏起来之前记住（仅首次隐藏时；
+     翻页期间列表已是 none，scrollTop 早被清零，不能覆盖记忆） */
+  if (listView.style.display !== 'none') {
+    const __lb = document.getElementById('listBody');
+    listScrollMem = __lb ? __lb.scrollTop : 0;
+  }
   listView.style.display = 'none';
   quoteView.classList.add('show');
   renderQuote(index, dir || 0);
