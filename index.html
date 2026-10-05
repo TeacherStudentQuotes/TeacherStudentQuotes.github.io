@@ -2341,13 +2341,15 @@ function zoneNav(dir) {
 
   quoteView.addEventListener('touchmove', (e) => {
     if (!active) return;
+    /* 单指 move 从第一帧起就掐掉默认行为（8px 分轴死区也不例外）：
+       touch-action:pinch-zoom 已让浏览器无事可做，这里兜底不支持该值的浏览器 */
+    if (e.touches.length === 1) e.preventDefault();
     const t = e.changedTouches[0];
     const dx = t.clientX - sx, dy = t.clientY - sy;
     if (!axis) {
       if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; /* 分轴死区 */
       axis = Math.abs(dx) > Math.abs(dy) ? 1 : 2;
     }
-    e.preventDefault(); /* 单指平移已全归JS，此处兜底防任何默认行为 */
     if (axis === 1) {
       const page = pageEl();
       if (page) {
