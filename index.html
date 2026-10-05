@@ -201,6 +201,7 @@ html, body, .filter-dropdown, .quote-view {
 html, body {
   width: 100%;
   height: 100%;
+  overscroll-behavior: none; /* 全页橡皮筋/pull-to-refresh 一律禁用 */
 }
 
 body {
@@ -745,6 +746,8 @@ rt {
   display: none;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y; /* 横向手势留给 JS 翻页，同时压掉 Android 边缘返回手势 */
+  overscroll-behavior: none; /* 滚动到顶/底不再拽动整页 */
 }
 
 .quote-view.show {
@@ -2326,11 +2329,19 @@ function zoneNav(dir) {
     const t = e.changedTouches[0];
     const dx = t.clientX - sx, dy = t.clientY - sy;
     if (!dragging) {
-      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return; /* 死区 */
-      if (Math.abs(dx) > Math.abs(dy)) dragging = true;
-      else { active = false; return; } /* 纵向滚动优先 */
+      if (Math.abs(dx) > Math.abs(dy)) {
+        /* 横向主导：第一个 touchmove 就 preventDefault，
+           在浏览器合成纵向滚动的同一事件里取消它——
+           超过死区才动手拖，但锁滚动不能等 */
+        if (Math.abs(dx) > 4) { e.preventDefault(); dragging = true; }
+        else return;
+      } else {
+        if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return; /* 死区 */
+        active = false; return; /* 纵向滚动优先，整页可正常滚 */
+      }
+    } else {
+      e.preventDefault();
     }
-    e.preventDefault(); /* 横向拖：锁住纵向滚动 */
     const page = pageEl();
     if (page) {
       page.style.transition = 'none';
