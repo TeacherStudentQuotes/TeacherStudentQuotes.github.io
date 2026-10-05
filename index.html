@@ -1400,11 +1400,25 @@ function themeRevealDIY(evt, apply) {
   });
   /* 克隆体内标签胶囊按目标主题预染色（单页视图左下角标签的变色要圆到色到） */
   try { refreshTagPills(clone, isDark ? 'light' : 'dark'); } catch (e) {}
+  /* 克隆不复制容器滚动位（#listBody/#quoteView 等默认回 0）：揭示中圆内是新主题
+     顶部、圆外旧主题在实况位置，收尾揭盖瞬间真身'跳'回实况位。双树同步把原页
+     每个滚动容器的 scrollTop/Left 抄给克隆——此刻 body 未挂 overlay，两树
+     结构严格对齐，先收集；挂树克隆有布局后再写入 */
+  const scrollPairs = [];
+  try {
+    const srcW = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+    const dstW = document.createTreeWalker(clone, NodeFilter.SHOW_ELEMENT);
+    let se, de;
+    while ((se = srcW.nextNode()) && (de = dstW.nextNode())) {
+      if (se.scrollTop || se.scrollLeft) scrollPairs.push([de, se.scrollTop, se.scrollLeft]);
+    }
+  } catch (e) {}
   inner.appendChild(clone);
   overlay.appendChild(inner);
   document.documentElement.classList.add('theme-swapping');
   document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';
+  try { for (const p of scrollPairs) { p[0].scrollTop = p[1]; p[0].scrollLeft = p[2]; } } catch (e) {}
 
   const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) + 8;
   let called = false;
