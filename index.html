@@ -1127,21 +1127,20 @@ rt {
   padding: 0;
 }
 
-/* 滑动手势图示：HugeIcons 圆角线性手型，单向匀速循环——
-   右侧淡入的同时已在全速左滑，滑到底渐隐，趁透明回到右侧再来 */
+/* 滑动手势图示：HugeIcons 圆角线性手型，单向循环——
+   右侧直接闪现（不淡入），向左滑行先快后慢（ease-out），到左边渐隐后趁透明回右边重来 */
 .help-swipe {
   width: 78px;
   height: 78px;
   margin-top: 16px;
   color: var(--text);
   overflow: visible;
-  animation: hs-loop 2.4s linear infinite;
+  animation: hs-loop 2.4s ease-out infinite;
 }
 @keyframes hs-loop {
-  0%   { transform: translateX(60px);  opacity: 0; }
-  20%  { transform: translateX(28px);  opacity: 1; }
-  66%  { transform: translateX(-52px); opacity: 1; }
-  78%  { transform: translateX(-72px); opacity: 0; }
+  0%   { transform: translateX(60px);  opacity: 1; }
+  78%  { transform: translateX(-72px); opacity: 1; }
+  88%  { transform: translateX(-80px); opacity: 0; }
   100% { transform: translateX(60px);  opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
