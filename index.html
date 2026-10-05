@@ -1370,10 +1370,27 @@ try { history.scrollRestoration = 'manual'; } catch (e) {}
    换主题期间全局禁过渡防卡片 0.15s 背景残影 */
 let diyGen = 0;
 let themeAnimLock = false; /* true=揭示动画播放中，期间主题切换点击一律无效 */
+/* ===== 动画互斥：页面"还在动"时主题切换一律拒绝（用户要求：滚动中/翻页中不能切主题）=====
+   滚动活跃期=末次 scroll 事件 + 160ms 尾延——动量滚动事件连绵不断，活跃期自然顺延；
+   两视图分开计时（列表容器 / 单页 JS 手动纵向滚动都产生 scroll 事件） */
+let flipAnimLock = false;      /* renderQuote 方向性翻页动画生命周期锁 */
+let listScrollBusyUntil = 0;
+let quoteScrollBusyUntil = 0;
+function animBusy() {
+  return flipAnimLock || Date.now() < listScrollBusyUntil || Date.now() < quoteScrollBusyUntil;
+}
+(function bindAnimBusyScroll() {
+  const bind = (id, setter) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('scroll', () => { setter(Date.now() + 160); }, { passive: true });
+  };
+  bind('listBody', (ts) => { listScrollBusyUntil = ts; });
+  bind('quoteView', (ts) => { quoteScrollBusyUntil = ts; });
+})();
 function themeRevealDIY(evt, apply) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) { apply(); return; }
-  if (themeAnimLock) return;
+  if (themeAnimLock || animBusy()) return;
   themeAnimLock = true;
   const gen = ++diyGen;
   const prev = document.getElementById('diyReveal');
@@ -2257,6 +2274,8 @@ function renderQuote(index, dir) {
   /* 方向性翻页（纸页手感）：旧内容向翻页方向退，新内容从反方向进，
      两阶段重叠 30ms 让两页"擦"过去；直达（dir=0）退化为原地淡换 */
   const OUT_MS = 140, IN_MS = 240;
+  flipAnimLock = true; /* 翻页动画生命周期内主题切换被拒（gen 守卫：被新一轮 renderQuote 取代时不得提前解锁） */
+  setTimeout(() => { if (gen === quoteRenderGen) flipAnimLock = false; }, OUT_MS + IN_MS + 80);
   const slideOut = dir
     ? els.map((el, i) => el.animate(
         [{ opacity: 1, transform: 'translate(0px,0px)' },
@@ -2327,6 +2346,7 @@ function syncListNow() {
 
 function showQuote(index, dir) {
   if (index < 1 || index >= total) return;
+  if (themeAnimLock) return; /* 主题揭示播放中：翻页/跳转一律拒绝，防 reveal 收尾时错位 */
   closeActionMenu();
   current = index;
   syncListNow();
@@ -2387,6 +2407,7 @@ function runFlashAfterScroll(item) {
 function jumpToList(value) {
   const num = parseInt(value, 10);
   if (isNaN(num) || num < 1 || num > quotes.length) return;
+  if (themeAnimLock) return; /* 主题揭示播放中：smooth 滚动会撞上冻结的克隆层 */
   activeAuthors.clear();
   excludedTags.clear();
   authorFilterApplied = false;
@@ -2490,6 +2511,7 @@ function closeHelp() { document.getElementById('helpOverlay').classList.remove('
   const end = (e) => {
     if (!active) return;
     active = false;
+    if (themeAnimLock) { axis = 0; return; } /* 主题揭示播放中：本次手势的翻页判定/惯性作废 */
     const t = e.changedTouches[0];
     const dx = t.clientX - sx, dy = t.clientY - sy;
     if (axis === 1) {
