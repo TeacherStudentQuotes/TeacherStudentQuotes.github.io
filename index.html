@@ -744,9 +744,9 @@ rt {
   height: 100dvh;
   position: relative;
   display: none;
-  overflow-y: auto;
+  overflow-y: hidden; /* 引言在任何机型都放得下(689条实测)；纵向浏览走JS手动scrollTop，原生滚动永不介入 */
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y; /* 横向手势留给 JS 翻页，同时压掉 Android 边缘返回手势 */
+  touch-action: pinch-zoom; /* 单指平移全部交JS(横=翻页/纵=手动滚)，零原生滚动泄漏；保留双指缩放 */
   overscroll-behavior: none; /* 滚动到顶/底不再拽动整页 */
 }
 
@@ -2116,6 +2116,7 @@ document.addEventListener('keydown', (e) => {
 
 let quoteRenderGen = 0;
 function renderQuote(index, dir) {
+  quoteView.scrollTop = 0; /* 每条从顶开始：手势带跑的纵向位移不跨页残留 */
   const q = quotes[index - 1];
   const contentEl = document.getElementById('qContent');
   const authorEl = document.getElementById('qAuthor');
@@ -2313,39 +2314,41 @@ function zoneNav(dir) {
 /* 单页触摸滑动翻页：横向主导手势跟手拖动纸页（阻尼 0.35），
    阈值 50px 才放行翻页，不足则弹回；纵向滚动天然让位 */
 (function initSwipeNav() {
-  let sx = 0, sy = 0, active = false, dragging = false;
+  let sx = 0, sy = 0, st0 = 0, active = false, axis = 0; /* 0未分轴 1横 2纵 */
+  let velY = 0, lastY = 0, lastT = 0, flingRAF = 0;
   const pageEl = () => quoteView.querySelector('.page');
 
   quoteView.addEventListener('touchstart', (e) => {
     if (!quoteView.classList.contains('show')) return;
     if (e.target.closest('button, input, .action-bar, a')) return;
+    if (flingRAF) { cancelAnimationFrame(flingRAF); flingRAF = 0; }
     const t = e.changedTouches[0];
     sx = t.clientX; sy = t.clientY;
-    active = true; dragging = false;
+    st0 = quoteView.scrollTop;
+    active = true; axis = 0;
+    velY = 0; lastY = t.clientY; lastT = e.timeStamp;
   }, { passive: true });
 
   quoteView.addEventListener('touchmove', (e) => {
     if (!active) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - sx, dy = t.clientY - sy;
-    if (!dragging) {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        /* 横向主导：第一个 touchmove 就 preventDefault，
-           在浏览器合成纵向滚动的同一事件里取消它——
-           超过死区才动手拖，但锁滚动不能等 */
-        if (Math.abs(dx) > 4) { e.preventDefault(); dragging = true; }
-        else return;
-      } else {
-        if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return; /* 死区 */
-        active = false; return; /* 纵向滚动优先，整页可正常滚 */
+    if (!axis) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; /* 分轴死区 */
+      axis = Math.abs(dx) > Math.abs(dy) ? 1 : 2;
+    }
+    e.preventDefault(); /* 单指平移已全归JS，此处兜底防任何默认行为 */
+    if (axis === 1) {
+      const page = pageEl();
+      if (page) {
+        page.style.transition = 'none';
+        page.style.transform = 'translateX(' + (dx * 0.35) + 'px)';
       }
     } else {
-      e.preventDefault();
-    }
-    const page = pageEl();
-    if (page) {
-      page.style.transition = 'none';
-      page.style.transform = 'translateX(' + (dx * 0.35) + 'px)';
+      quoteView.scrollTop = st0 - dy; /* 手动纵向滚动，边缘天然钳制不拽动整页 */
+      const dt = e.timeStamp - lastT;
+      /* dt<4ms 的采样噪声太大丢弃；速度钳制防异常尖峰 */
+      if (dt >= 4) { velY = Math.max(-2.5, Math.min(2.5, (lastY - t.clientY) / dt)); lastY = t.clientY; lastT = e.timeStamp; }
     }
   }, { passive: false });
 
@@ -2360,19 +2363,33 @@ function zoneNav(dir) {
       page.style.transition = '';
       page.style.transform = '';
     };
-    if (dragging && Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy)) {
-      clearDrag(); /* 同任务清跟手位移，方向滑入动画无缝接管 */
-      lastSwipeTs = Date.now();
-      if (dx < 0) nextPage(); else prevPage();
-    } else if (dragging && page) {
-      const from = 'translateX(' + (dx * 0.35) + 'px)';
-      clearDrag();
-      if (page.animate && !reducedMotion()) {
-        page.animate([{ transform: from }, { transform: 'translateX(0px)' }],
-          { duration: 180, easing: 'ease-out' });
+    if (axis === 1) {
+      if (Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy)) {
+        clearDrag(); /* 同任务清跟手位移，方向滑入动画无缝接管 */
+        lastSwipeTs = Date.now();
+        if (dx < 0) nextPage(); else prevPage();
+      } else if (page) {
+        const from = 'translateX(' + (dx * 0.35) + 'px)';
+        clearDrag();
+        if (page.animate && !reducedMotion()) {
+          page.animate([{ transform: from }, { transform: 'translateX(0px)' }],
+            { duration: 180, easing: 'ease-out' });
+        }
       }
+    } else if (axis === 2) {
+      /* 惯性：velY(px/ms) 转每帧位移，阻尼 0.94 衰减 */
+      let v = velY * 16.7;
+      if (Math.abs(v) < 1) return;
+      const tick = () => {
+        if (active) return; /* 新手势已接管 */
+        quoteView.scrollTop += v;
+        v *= 0.94;
+        if (Math.abs(v) > 0.4) flingRAF = requestAnimationFrame(tick);
+        else flingRAF = 0;
+      };
+      flingRAF = requestAnimationFrame(tick);
     }
-    dragging = false;
+    axis = 0;
   };
   quoteView.addEventListener('touchend', end, { passive: true });
   quoteView.addEventListener('touchcancel', end, { passive: true });
