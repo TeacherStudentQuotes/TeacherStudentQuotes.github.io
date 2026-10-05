@@ -2286,21 +2286,28 @@ function showList() {
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
 
-  /* 回来时锚定刚读的那条：只滚 #listBody 容器（scrollBy 不碰文档层），滚完居中 + 高亮闪烁一次 */
+  /* 列表位置已在单页翻页时同步过；这里同帧瞬时校正（无平滑、无闪烁），
+     用户退出看到的就是已居中的列表 */
+  syncListNow();
+}
+
+/* 列表静默锚定：把当前条居中到 #listBody，立即生效、无动画、无高亮。
+   单页每次翻页后调用（列表被 quoteView 遮住，滚动不可见）；
+   退出时 display:flex 之后同帧再校正一次兜底 */
+function syncListNow() {
   const lb = document.getElementById('listBody');
   const cur = allItems[current - 1];
-  if (cur && lb) {
-    const delta = cur.getBoundingClientRect().top - lb.getBoundingClientRect().top
-      - (lb.clientHeight - cur.getBoundingClientRect().height) / 2;
-    lb.scrollBy({ top: delta, behavior: 'smooth' });
-    runFlashAfterScroll(cur);
-  }
+  if (!cur || !lb) return;
+  const delta = cur.getBoundingClientRect().top - lb.getBoundingClientRect().top
+    - (lb.clientHeight - cur.getBoundingClientRect().height) / 2;
+  lb.scrollTop += delta;
 }
 
 function showQuote(index, dir) {
   if (index < 1 || index >= total) return;
   closeActionMenu();
   current = index;
+  syncListNow();
   listView.style.display = 'none';
   quoteView.classList.add('show');
   renderQuote(index, dir || 0);
