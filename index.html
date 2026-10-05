@@ -1128,26 +1128,19 @@ rt {
   padding: 0;
 }
 
-/* 滑动手势图示：几何手绘手左右循环拖动，双向虚线导轨 + 两侧拖尾呼吸 */
+/* 滑动手势图示：MDI 手势图标（手+水平双向箭头），整体左右循环平移 */
 .help-swipe {
-  width: 210px;
-  max-width: 64vw;
+  width: 130px;
+  max-width: 46vw;
   margin-top: 14px;
   color: var(--text);
+  fill: currentColor;
   overflow: visible;
+  animation: hs-drag 1.8s ease-in-out infinite;
 }
-.help-swipe .hs-guide { stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 0.5 7; opacity: 0.35; fill: none; }
-.help-swipe .hs-trail path { fill: currentColor; stroke: none; }
-.help-swipe .hs-trail line { stroke: currentColor; stroke-width: 5; stroke-linecap: round; }
-.help-swipe .hs-trail-l { opacity: 0.15; animation: hs-tl 1.8s ease-in-out infinite; }
-.help-swipe .hs-trail-r { opacity: 0.85; animation: hs-tr 1.8s ease-in-out infinite; }
-.help-swipe .hs-hand { fill: currentColor; animation: hs-drag 1.8s ease-in-out infinite; }
-@keyframes hs-drag { 0%, 100% { transform: translateX(-12px); } 50% { transform: translateX(12px); } }
-@keyframes hs-tl { 0%, 45% { opacity: 0.15; } 55%, 100% { opacity: 0.85; } }
-@keyframes hs-tr { 0%, 45% { opacity: 0.85; } 55%, 100% { opacity: 0.15; } }
+@keyframes hs-drag { 0%, 100% { transform: translateX(-10px); } 50% { transform: translateX(10px); } }
 @media (prefers-reduced-motion: reduce) {
-  .help-swipe .hs-hand, .help-swipe .hs-trail-l, .help-swipe .hs-trail-r { animation: none; }
-  .help-swipe .hs-trail-l, .help-swipe .hs-trail-r { opacity: 0.4; }
+  .help-swipe { animation: none; }
 }
 
 
@@ -1342,26 +1335,9 @@ rt {
       <i class="bi bi-x-lg"></i>
     </button>
     <h3>怎么翻页</h3>
-    <svg class="help-swipe" viewBox="0 0 160 110" aria-hidden="true">
-      <line x1="16" y1="62" x2="144" y2="62" class="hs-guide"/>
-      <g class="hs-trail hs-trail-l">
-        <path d="M22 62 l9 -6 v12 z"/>
-        <line x1="40" y1="50" x2="24" y2="50"/>
-        <line x1="46" y1="74" x2="30" y2="74"/>
-      </g>
-      <g class="hs-trail hs-trail-r">
-        <path d="M138 62 l-9 -6 v12 z"/>
-        <line x1="120" y1="50" x2="136" y2="50"/>
-        <line x1="114" y1="74" x2="130" y2="74"/>
-      </g>
-      <g class="hs-hand">
-        <rect x="66" y="14" width="11" height="34" rx="5.5"/>
-        <rect x="79" y="18" width="11" height="30" rx="5.5"/>
-        <rect x="92" y="24" width="10" height="26" rx="5"/>
-        <rect x="104" y="32" width="9" height="20" rx="4.5"/>
-        <rect x="60" y="46" width="58" height="32" rx="15"/>
-        <rect x="50" y="52" width="20" height="11" rx="5.5" transform="rotate(-28 60 57)"/>
-      </g>
+    <svg class="help-swipe" viewBox="0 0 24 24" aria-hidden="true">
+      <!-- mdi:gesture-swipe-horizontal · Material Design Icons · Apache-2.0 -->
+      <path d="M6 1L3 4l3 3V5h3v2l3-3l-3-3v2H6zm5 7a1 1 0 0 0-1 1v10l-3.2-1.72h-.22c-.28 0-.55.11-.74.32l-.74.77l4.9 4.2c.26.28.62.43 1 .43h6.5a1.5 1.5 0 0 0 1.5-1.5v-4.36c0-.58-.32-1.11-.85-1.35l-4.94-2.19l-1.21-.13V9a1 1 0 0 0-1-1"/>
     </svg>
     <p>在纸页上<b>左右滑动</b>即可翻页</p>
     <p class="help-sub">左滑 → 下一条　·　右滑 → 上一条</p>
