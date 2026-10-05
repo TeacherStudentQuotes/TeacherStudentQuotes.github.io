@@ -1128,19 +1128,23 @@ rt {
   padding: 0;
 }
 
-/* 滑动手势图示：MDI 手势图标（手+水平双向箭头），整体左右循环平移 */
-.help-swipe {
-  width: 130px;
-  max-width: 46vw;
-  margin-top: 14px;
+/* 滑动手势图示：HugeIcons 圆角线性手型一对（左滑/右滑各一），
+   相向呼吸平移——靠拢后向两侧滑开，直观演示双向翻页 */
+.help-swipe-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 34px;
+  margin-top: 16px;
   color: var(--text);
-  fill: currentColor;
-  overflow: visible;
-  animation: hs-drag 1.8s ease-in-out infinite;
 }
-@keyframes hs-drag { 0%, 100% { transform: translateX(-10px); } 50% { transform: translateX(10px); } }
+.help-swipe-row svg { width: 78px; height: 78px; overflow: visible; }
+.help-swipe-row .hs-l { animation: hs-out-l 1.8s ease-in-out infinite; }
+.help-swipe-row .hs-r { animation: hs-out-r 1.8s ease-in-out infinite; }
+@keyframes hs-out-l { 0%, 100% { transform: translateX(8px); } 50% { transform: translateX(-10px); } }
+@keyframes hs-out-r { 0%, 100% { transform: translateX(-8px); } 50% { transform: translateX(10px); } }
 @media (prefers-reduced-motion: reduce) {
-  .help-swipe { animation: none; }
+  .help-swipe-row .hs-l, .help-swipe-row .hs-r { animation: none; }
 }
 
 
@@ -1335,10 +1339,12 @@ rt {
       <i class="bi bi-x-lg"></i>
     </button>
     <h3>怎么翻页</h3>
-    <svg class="help-swipe" viewBox="0 0 24 24" aria-hidden="true">
-      <!-- mdi:gesture-swipe-horizontal · Material Design Icons · Apache-2.0 -->
-      <path d="M6 1L3 4l3 3V5h3v2l3-3l-3-3v2H6zm5 7a1 1 0 0 0-1 1v10l-3.2-1.72h-.22c-.28 0-.55.11-.74.32l-.74.77l4.9 4.2c.26.28.62.43 1 .43h6.5a1.5 1.5 0 0 0 1.5-1.5v-4.36c0-.58-.32-1.11-.85-1.35l-4.94-2.19l-1.21-.13V9a1 1 0 0 0-1-1"/>
-    </svg>
+    <div class="help-swipe-row" aria-hidden="true">
+      <!-- hugeicons:swipe-left-01 · HugeIcons · CC BY 4.0 -->
+      <svg class="hs-l" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.004 4.499h5.999m-6 0c0-.7 1.995-2.008 2.5-2.499m-2.5 2.499c0 .7 1.995 2.008 2.5 2.499m-.613 14.99c-.052-1.913.077-2.143.214-2.569s1.093-1.96 1.431-3.057c1.095-3.548.074-4.303-1.286-5.309c-1.508-1.115-4.353-1.68-5.764-1.558V3.744a1.744 1.744 0 0 0-3.488 0v10.26l-2.06-2.18c-.639-.694-1.667-.764-2.368-.133a1.723 1.723 0 0 0-.224 2.318l1.293 1.713M7.868 22l-.02-1.05c.043-1.232-.852-2.035-2.02-3.641l-.247-.336m0 0c-.354-.48-.665-.89-.943-1.251m.943 1.25l1.17 1.55m-1.17-1.55l-.943-1.25m0 0c-.572-.742-1.003-1.281-1.375-1.816"/></svg>
+      <!-- hugeicons:swipe-right-01 · HugeIcons · CC BY 4.0 -->
+      <svg class="hs-r" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21.001 4.5h-6m6 0c0-.7-1.994-2.009-2.5-2.5m2.5 2.5c0 .699-1.994 2.007-2.5 2.498m-1.607 14.99c-.052-1.913.077-2.143.214-2.569c.137-.425 1.093-1.96 1.431-3.057c1.095-3.548.075-4.302-1.285-5.309c-1.509-1.115-4.354-1.68-5.765-1.558V3.744a1.744 1.744 0 0 0-3.489 0v10.26l-2.06-2.18c-.64-.694-1.668-.764-2.37-.133a1.72 1.72 0 0 0-.223 2.318l1.293 1.713M7.87 22l-.019-1.05c.043-1.232-.853-2.035-2.021-3.641l-.246-.336m0 0c-.354-.48-.666-.89-.944-1.251m.944 1.251l1.17 1.55m-1.17-1.55l-.944-1.251m0 0c-.572-.742-1.003-1.28-1.375-1.816"/></svg>
+    </div>
     <p>在纸页上<b>左右滑动</b>即可翻页</p>
     <p class="help-sub">左滑 → 下一条　·　右滑 → 上一条</p>
   </div>
