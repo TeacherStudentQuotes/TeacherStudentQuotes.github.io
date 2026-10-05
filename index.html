@@ -2164,7 +2164,7 @@ function renderQuote(index, dir) {
             ? { opacity: 0, transform: 'translate(0px,8px)' }
             : { opacity: 0, transform: 'translate(' + (dir * 30) + 'px,0px)' });
       el.animate([from, { opacity: 1, transform: 'translate(0px,0px)' }],
-        { duration: IN_MS, delay: i === 0 ? 0 : 30, easing: 'cubic-bezier(0,0,.2,1)' });
+        { duration: IN_MS, delay: i === 0 ? 0 : 30, easing: 'cubic-bezier(0,0,.2,1)', fill: 'backwards' });
     });
   }, OUT_MS - 30);
 }
