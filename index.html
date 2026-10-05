@@ -1259,6 +1259,8 @@ rt {
 <div class="filter-backdrop" id="filterBackdrop"></div>
 <div class="filter-dropdown" id="filterDropdown"></div>
 <script>
+/* 历史滚动位置由代码全权管理，浏览器不得自动恢复（否则文档被滚走、头部切半） */
+try { history.scrollRestoration = 'manual'; } catch (e) {}
 // ===== 主题管理 =====
 (function initTheme() {
   const saved = localStorage.getItem('theme');
@@ -2183,11 +2185,19 @@ function showList() {
 
   history.replaceState(null, '', location.pathname + location.search);
 
-  /* 回来时锚定刚读的那条：滚进视野居中 + 高亮闪烁一次 */
+  /* 文档层滚动归零：scrollIntoView 类操作能绕过 overflow:hidden 以编程方式滚走文档，
+     用户手指又滚不回来（overflow:hidden 拦截触摸滚动）——返回列表时这里强制归零 */
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
+  /* 回来时锚定刚读的那条：只滚 #listBody 容器（scrollBy 不碰文档层），滚完居中 + 高亮闪烁一次 */
+  const lb = document.getElementById('listBody');
   const cur = allItems[current - 1];
-  if (cur) {
-    cur.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    setTimeout(() => flashItemNow(cur), 360);
+  if (cur && lb) {
+    const delta = cur.getBoundingClientRect().top - lb.getBoundingClientRect().top
+      - (lb.clientHeight - cur.getBoundingClientRect().height) / 2;
+    lb.scrollBy({ top: delta, behavior: 'smooth' });
+    runFlashAfterScroll(cur);
   }
 }
 
