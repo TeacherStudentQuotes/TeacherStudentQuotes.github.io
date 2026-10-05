@@ -1055,17 +1055,100 @@ rt {
   }
 }
 
-.click-zone {
+/* 翻页指南：问号按钮（单页左上角）+ 手势图示浮层 */
+.help-btn {
   position: fixed;
-  top: 0;
-  width: 30%;
-  height: 100%;
+  top: 16px;
+  left: 20px;
+  z-index: 200;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-2);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  z-index: 100;
+  padding: 0;
+  font-family: inherit;
 }
 
-.click-zone.left { left: 0; }
-.click-zone.right { right: 0; }
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  background: var(--backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.help-overlay.open { opacity: 1; pointer-events: auto; }
+.help-card {
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 16px 48px var(--shadow);
+  padding: 30px 28px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  transform: translateY(8px);
+  transition: transform 0.2s;
+}
+.help-overlay.open .help-card { transform: none; }
+.help-card h3 { margin: 0; font-size: 1.15rem; color: var(--text); letter-spacing: 0.05em; }
+.help-card p { margin: 12px 0 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.8; }
+.help-card .help-sub { font-size: 0.85rem; color: var(--text-3); }
+.help-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* 滑动手势图示：几何手绘手左右循环拖动，双向虚线导轨 + 两侧拖尾呼吸 */
+.help-swipe {
+  width: 210px;
+  max-width: 64vw;
+  margin-top: 14px;
+  color: var(--text);
+  overflow: visible;
+}
+.help-swipe .hs-guide { stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 0.5 7; opacity: 0.35; fill: none; }
+.help-swipe .hs-trail path { fill: currentColor; stroke: none; }
+.help-swipe .hs-trail line { stroke: currentColor; stroke-width: 5; stroke-linecap: round; }
+.help-swipe .hs-trail-l { opacity: 0.15; animation: hs-tl 1.8s ease-in-out infinite; }
+.help-swipe .hs-trail-r { opacity: 0.85; animation: hs-tr 1.8s ease-in-out infinite; }
+.help-swipe .hs-hand { fill: currentColor; animation: hs-drag 1.8s ease-in-out infinite; }
+@keyframes hs-drag { 0%, 100% { transform: translateX(-12px); } 50% { transform: translateX(12px); } }
+@keyframes hs-tl { 0%, 45% { opacity: 0.15; } 55%, 100% { opacity: 0.85; } }
+@keyframes hs-tr { 0%, 45% { opacity: 0.85; } 55%, 100% { opacity: 0.15; } }
+@media (prefers-reduced-motion: reduce) {
+  .help-swipe .hs-hand, .help-swipe .hs-trail-l, .help-swipe .hs-trail-r { animation: none; }
+  .help-swipe .hs-trail-l, .help-swipe .hs-trail-r { opacity: 0.4; }
+}
 
 
 
@@ -1240,8 +1323,9 @@ rt {
     <button class="filter-btn" onclick="toggleTheme(event)" title="切换主题" id="themeBtnQuote">
 <i class="bi bi-moon-fill"></i></button>
   </div>
-<div class="click-zone left" onclick="zoneNav(-1)"></div>
-  <div class="click-zone right" onclick="zoneNav(1)"></div>
+  <button class="help-btn" id="helpBtn" onclick="openHelp()" aria-label="怎么翻页？" title="怎么翻页？">
+    <i class="bi bi-question-circle"></i>
+  </button>
   <div class="page">
     <div class="quote-mark top-left">“</div>
     <div class="quote-content" id="qContent"></div>
@@ -1249,6 +1333,38 @@ rt {
     <div class="quote-author" id="qAuthor"></div>
     <div class="quote-mark bottom-right">”</div>
     <div class="page-indicator" id="pageIndicator"><span id="pageIndicatorNum"></span></div>
+  </div>
+</div>
+
+<div class="help-overlay" id="helpOverlay" role="dialog" aria-modal="true" aria-label="翻页指南" onclick="if(event.target===this)closeHelp()">
+  <div class="help-card">
+    <button class="help-close" onclick="closeHelp()" aria-label="关闭">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <h3>怎么翻页</h3>
+    <svg class="help-swipe" viewBox="0 0 160 110" aria-hidden="true">
+      <line x1="16" y1="62" x2="144" y2="62" class="hs-guide"/>
+      <g class="hs-trail hs-trail-l">
+        <path d="M22 62 l9 -6 v12 z"/>
+        <line x1="40" y1="50" x2="24" y2="50"/>
+        <line x1="46" y1="74" x2="30" y2="74"/>
+      </g>
+      <g class="hs-trail hs-trail-r">
+        <path d="M138 62 l-9 -6 v12 z"/>
+        <line x1="120" y1="50" x2="136" y2="50"/>
+        <line x1="114" y1="74" x2="130" y2="74"/>
+      </g>
+      <g class="hs-hand">
+        <rect x="66" y="14" width="11" height="34" rx="5.5"/>
+        <rect x="79" y="18" width="11" height="30" rx="5.5"/>
+        <rect x="92" y="24" width="10" height="26" rx="5"/>
+        <rect x="104" y="32" width="9" height="20" rx="4.5"/>
+        <rect x="60" y="46" width="58" height="32" rx="15"/>
+        <rect x="50" y="52" width="20" height="11" rx="5.5" transform="rotate(-28 60 57)"/>
+      </g>
+    </svg>
+    <p>在纸页上<b>左右滑动</b>即可翻页</p>
+    <p class="help-sub">左滑 → 下一条　·　右滑 → 上一条</p>
   </div>
 </div>
 
@@ -2113,6 +2229,7 @@ document.addEventListener('keydown', (e) => {
     if (document.querySelector('.jump-expand.open')) window.__jumpEsc = true;
     collapseJumpAll();
     closeFilter();
+    closeHelp();
   }
 });
 
@@ -2313,13 +2430,9 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') prevPage();
 });
 
-/* 点击区防连发：触摸滑动翻页后浏览器仍可能补发一次合成 click，
-   若落在对侧点击区会再翻一页；滑动后 400ms 内的 click 一律吞掉 */
-let lastSwipeTs = 0;
-function zoneNav(dir) {
-  if (Date.now() - lastSwipeTs < 400) return;
-  if (dir > 0) nextPage(); else prevPage();
-}
+/* 翻页指南浮层 */
+function openHelp() { document.getElementById('helpOverlay').classList.add('open'); }
+function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
 
 /* 单页触摸滑动翻页：横向主导手势跟手拖动纸页（阻尼 0.35），
    阈值 50px 才放行翻页，不足则弹回；纵向滚动天然让位 */
@@ -2370,7 +2483,6 @@ function zoneNav(dir) {
       const adx = Math.abs(dx);
       const quick = e.timeStamp - t0 < 300;
       if (adx > Math.abs(dy) && (adx >= 50 || (quick && adx >= 30))) {
-        lastSwipeTs = Date.now(); /* 吞掉随之而来的click，防误触翻页 */
         if (dx < 0) nextPage(); else prevPage();
       }
       /* 不够阈值：什么都不做——页面从头至尾没有移动过，无需回弹 */
