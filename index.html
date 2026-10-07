@@ -1712,7 +1712,7 @@ function refreshTagPills(root, mode) {
     pill.style.borderColor = c[1];
     pill.style.color = c[2];
   });
-  // 筛选下拉里的标签底色
+  // 筛选下拉里的标签底色（#filterDropdown 为作者区；标签区是 .filter-tag-option）
   (root || document).querySelectorAll('#filterDropdown .filter-option').forEach(opt => {
     const cb = opt.querySelector('.filter-checkbox[data-tag]');
     if (!cb) return;
@@ -1721,6 +1721,18 @@ function refreshTagPills(root, mode) {
     opt.style.borderColor = c[1];
     const name = opt.querySelector('.filter-option-name');
     if (name) name.style.color = c[2];
+  });
+  (root || document).querySelectorAll('.filter-tag-option').forEach(opt => {
+    const cb = opt.querySelector('.filter-checkbox[data-tag]');
+    const tag = cb ? cb.dataset.tag : (opt.querySelector('.filter-tag-name')?.textContent || '');
+    if (!tag) return;
+    const c = tagColors(tag, mode);
+    opt.style.background = c[0];
+    opt.style.borderColor = c[1];
+    const name = opt.querySelector('.filter-tag-name');
+    if (name) name.style.color = c[2];
+    const cnt = opt.querySelector('.filter-tag-count');
+    if (cnt) cnt.style.color = c[1];
   });
 }
 
