@@ -1121,9 +1121,26 @@ rt {
   transition: transform 0.2s;
 }
 .src-overlay.open .src-card { transform: scale(1); }
-.src-card img {
+.src-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-height: 78vh;
+  overflow-y: auto; /* 跨页多图时可滚 */
+  scrollbar-width: thin;
+}
+.src-page {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.src-page img {
   max-width: 100%;
-  max-height: 76vh;
+  max-height: 70vh;
   object-fit: contain;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -1131,7 +1148,14 @@ rt {
   box-shadow: 0 12px 48px rgba(0,0,0,0.35);
   user-select: none;
 }
-.src-card figcaption {
+/* 多页（跨页名言）：每页压到半高，两张一屏可读 */
+.src-body.multi .src-page img { max-height: 52vh; }
+.src-page figcaption {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.src-caption {
   font-size: 0.85rem;
   color: var(--muted);
   letter-spacing: 0.05em;
@@ -1416,15 +1440,15 @@ rt {
   </div>
 </div>
 
-<!-- 原稿扫描 lightbox -->
+<!-- 原稿扫描 lightbox：src 可为多页（'2-3+2-4'，纸上跨页的名言），逐页竖排 -->
 <div class="src-overlay" id="srcOverlay" role="dialog" aria-modal="true" aria-label="原稿扫描页" onclick="if(event.target===this)closeSource()">
-  <figure class="src-card">
+  <div class="src-card">
     <button class="src-close" onclick="closeSource()" aria-label="关闭">
       <i class="bi bi-x-lg"></i>
     </button>
-    <img id="srcImg" alt="原稿扫描页" draggable="false">
-    <figcaption id="srcCaption"></figcaption>
-  </figure>
+    <div class="src-body" id="srcBody"></div>
+    <div class="src-caption" id="srcCaption"></div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
@@ -2555,17 +2579,23 @@ function openHelp() { document.getElementById('helpOverlay').classList.add('open
 function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
 
 /* ===== 看原稿 =====
-   src 为 '册-页'（如 '2-7'），按区分注释批量绑定；图片在打开时才加载 */
+   src 为 '册-页'（如 '2-7'）；纸上跨页的名言用加号拼多页（如 '2-3+2-4'） */
 const SRC_VOL = { 1: '第一册', 2: '第二册', 3: '第三册' };
 function openSource() {
   const idx = window.__quoteIndex; /* renderQuote 时同步 */
   const q = quotes[idx - 1];
   if (!q || !q.src) return;
-  const [vol, page] = q.src.split('-');
-  const dir = SRC_VOL[vol];
-  const img = document.getElementById('srcImg');
-  img.src = encodeURI(`source/${dir}/${dir} ${page}.jpg`);
-  document.getElementById('srcCaption').textContent = `${dir} · 第 ${page} 页`;
+  const body = document.getElementById('srcBody');
+  const pages = q.src.split('+');
+  body.innerHTML = pages.map(p => {
+    const [vol, page] = p.split('-');
+    const dir = SRC_VOL[vol];
+    return `<figure class="src-page"><img src="${encodeURI(`source/${dir}/${dir} ${page}.jpg`)}" alt="${dir} 第 ${page} 页" draggable="false"><figcaption>第 ${page} 页</figcaption></figure>`;
+  }).join('');
+  body.classList.toggle('multi', pages.length > 1);
+  const firstVol = SRC_VOL[pages[0].split('-')[0]];
+  document.getElementById('srcCaption').textContent =
+    pages.length > 1 ? `${firstVol} · 跨页（按顺序读）` : `${firstVol} · 第 ${pages[0].split('-')[1]} 页`;
   document.getElementById('srcOverlay').classList.add('open');
 }
 function closeSource() { document.getElementById('srcOverlay').classList.remove('open'); }
