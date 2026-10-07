@@ -1138,22 +1138,43 @@ rt {
   align-items: center;
   gap: 6px;
 }
-.src-page img {
-  max-width: 100%;
-  max-height: 70vh;
-  object-fit: contain;
+.src-page img { /* 实际样式在 .src-crop 容器上 */ }
+/* 多页（跨页名言）：每页只露一半，拼成单页大小——上页露下半，下页露上半 */
+.src-body.multi { gap: 2px; }
+.src-crop {
+  position: relative;
+  width: 100%;
+  max-width: min(100%, calc(70vh * 4 / 3));
+  aspect-ratio: 4 / 3; /* 占位预估；图加载后 JS 按真实比例覆写 */
+  overflow: hidden;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: #fff; /* 便签照片底白边，暗色下不浮黑 */
   box-shadow: 0 12px 48px rgba(0,0,0,0.35);
+}
+.src-body.multi .src-crop { aspect-ratio: 8 / 3; } /* 同上，占位预估 */
+.src-crop img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.3s;
   user-select: none;
 }
-/* 多页（跨页名言）：每页压到半高，两张一屏可读 */
-.src-body.multi .src-page img { max-height: 52vh; }
-.src-page figcaption {
-  font-size: 0.78rem;
+.src-crop img.on { opacity: 1; }
+.src-body.multi .src-crop img { object-fit: cover; }
+.src-body.multi .src-page:first-child .src-crop img { object-position: bottom; }
+.src-body.multi .src-page:last-child .src-crop img { object-position: top; }
+.src-skeleton {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--muted);
-  letter-spacing: 0.05em;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
 }
 .src-caption {
   font-size: 0.85rem;
@@ -1411,7 +1432,7 @@ rt {
     <button class="filter-btn" onclick="toggleTheme(event)" title="切换主题" id="themeBtnQuote">
 <i class="bi bi-moon-fill"></i></button>
     <button class="filter-btn" onclick="openSource()" title="看原稿" id="srcBtn" style="display:none">
-<i class="bi bi-file-earmark-image"></i></button>
+<i class="bi bi-vector-pen"></i></button>
   </div>
   <button class="help-btn" id="helpBtn" onclick="openHelp()" aria-label="怎么翻页？" title="怎么翻页？">
     <i class="bi bi-question-circle"></i>
@@ -2582,6 +2603,13 @@ function closeHelp() { document.getElementById('helpOverlay').classList.remove('
    src 为 '册-页'（如 '2-7'）；纸上跨页的名言用加号拼多页（如 '2-3+2-4'）；
    心形纸便签用特殊标记 'heart'（source/心形纸.jpg） */
 const SRC_VOL = { 1: '第一册', 2: '第二册', 3: '第三册' };
+function sizeSrcCrop(crop) {
+  const img = crop.querySelector('img');
+  if (!img || !img.naturalWidth) return;
+  const r = img.naturalWidth / img.naturalHeight;
+  const multi = crop.closest('.src-body').classList.contains('multi');
+  crop.style.aspectRatio = multi ? `${2 * r} / 1` : `${r} / 1`;
+}
 function openSource() {
   const idx = window.__quoteIndex; /* renderQuote 时同步 */
   const q = quotes[idx - 1];
@@ -2595,12 +2623,18 @@ function openSource() {
   };
   const items = q.src.split('+').map(resolve);
   body.innerHTML = items.map(it =>
-    `<figure class="src-page"><img src="${encodeURI(it.url)}" alt="${it.cap}" draggable="false"><figcaption>${it.cap}</figcaption></figure>`
+    `<figure class="src-page"><div class="src-crop">` +
+    `<div class="src-skeleton"><span>加载中</span></div>` +
+    `<img src="${encodeURI(it.url)}" alt="${it.cap}" draggable="false" ` +
+    `onload="this.classList.add('on');sizeSrcCrop(this.closest('.src-crop'))" ` +
+    `onerror="this.closest('.src-crop').querySelector('.src-skeleton span').textContent='加载失败'">` +
+    `</div></figure>`
   ).join('');
   body.classList.toggle('multi', items.length > 1);
   const vols = [...new Set(items.map(i => i.vol).filter(Boolean))];
+  const nums = items.map(i => i.cap.match(/\d+/)?.[0]).filter(Boolean);
   document.getElementById('srcCaption').textContent = items.length > 1
-    ? (vols.length === 1 ? `${vols[0]} · 跨页（按顺序读）` : '跨页（按顺序读）')
+    ? (vols.length === 1 ? `${vols[0]} · 第 ${nums.join('、')} 页` : `第 ${nums.join('、')} 页`)
     : (items[0].vol ? `${items[0].vol} · ${items[0].cap}` : items[0].cap);
   document.getElementById('srcOverlay').classList.add('open');
 }
