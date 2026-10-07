@@ -1142,6 +1142,20 @@ rt {
   align-items: center;
   gap: 6px;
 }
+.src-none {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 32vh;
+  padding: 24px 32px;
+  color: var(--muted);
+  text-align: center;
+}
+.src-none i { font-size: 2rem; opacity: 0.6; }
+.src-none p { margin: 0; font-size: 0.95rem; letter-spacing: 0.02em; }
+
 .src-page img { /* 实际样式在 .src-crop 容器上 */ }
 /* 多页（跨页名言）：每页只露一半，拼成单页大小——上页露下半，下页露上半 */
 .src-body.multi { gap: 2px; }
@@ -2413,7 +2427,8 @@ function renderQuote(index, dir) {
     /* 原稿按钮随本条数据显隐（无 src 的名言不显示） */
     window.__quoteIndex = index;
     const srcBtn = document.getElementById('srcBtn');
-    if (srcBtn) srcBtn.style.display = q.src ? '' : 'none';
+    /* 原稿按钮常驻：无 src 的编者手记点开显示提示（见 openSource） */
+    if (srcBtn) srcBtn.style.display = '';
     return true;
   };
 
@@ -2631,8 +2646,15 @@ function sizeSrcCrop(crop) {
 function openSource() {
   const idx = window.__quoteIndex; /* renderQuote 时同步 */
   const q = quotes[idx - 1];
-  if (!q || !q.src) return;
+  if (!q) return;
   const body = document.getElementById('srcBody');
+  if (!q.src) { /* 编者手记：原稿未见收录 */
+    body.className = 'src-body';
+    body.innerHTML = '<div class="src-none"><i class="bi bi-feather"></i><p>此条为编者手记，原稿未见收录</p></div>';
+    document.getElementById('srcCaption').textContent = '编者手记';
+    document.getElementById('srcOverlay').classList.add('open');
+    return;
+  }
   const resolve = p => {
     if (p === 'heart') return { url: 'source/心形纸.jpg', cap: '心形纸', vol: null };
     const [vol, page] = p.split('-');
