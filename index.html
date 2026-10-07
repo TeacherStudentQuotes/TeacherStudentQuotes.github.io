@@ -2579,23 +2579,29 @@ function openHelp() { document.getElementById('helpOverlay').classList.add('open
 function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
 
 /* ===== 看原稿 =====
-   src 为 '册-页'（如 '2-7'）；纸上跨页的名言用加号拼多页（如 '2-3+2-4'） */
+   src 为 '册-页'（如 '2-7'）；纸上跨页的名言用加号拼多页（如 '2-3+2-4'）；
+   心形纸便签用特殊标记 'heart'（source/心形纸.jpg） */
 const SRC_VOL = { 1: '第一册', 2: '第二册', 3: '第三册' };
 function openSource() {
   const idx = window.__quoteIndex; /* renderQuote 时同步 */
   const q = quotes[idx - 1];
   if (!q || !q.src) return;
   const body = document.getElementById('srcBody');
-  const pages = q.src.split('+');
-  body.innerHTML = pages.map(p => {
+  const resolve = p => {
+    if (p === 'heart') return { url: 'source/心形纸.jpg', cap: '心形纸', vol: null };
     const [vol, page] = p.split('-');
     const dir = SRC_VOL[vol];
-    return `<figure class="src-page"><img src="${encodeURI(`source/${dir}/${dir} ${page}.jpg`)}" alt="${dir} 第 ${page} 页" draggable="false"><figcaption>第 ${page} 页</figcaption></figure>`;
-  }).join('');
-  body.classList.toggle('multi', pages.length > 1);
-  const firstVol = SRC_VOL[pages[0].split('-')[0]];
-  document.getElementById('srcCaption').textContent =
-    pages.length > 1 ? `${firstVol} · 跨页（按顺序读）` : `${firstVol} · 第 ${pages[0].split('-')[1]} 页`;
+    return { url: `source/${dir}/${dir} ${page}.jpg`, cap: `第 ${page} 页`, vol: dir };
+  };
+  const items = q.src.split('+').map(resolve);
+  body.innerHTML = items.map(it =>
+    `<figure class="src-page"><img src="${encodeURI(it.url)}" alt="${it.cap}" draggable="false"><figcaption>${it.cap}</figcaption></figure>`
+  ).join('');
+  body.classList.toggle('multi', items.length > 1);
+  const vols = [...new Set(items.map(i => i.vol).filter(Boolean))];
+  document.getElementById('srcCaption').textContent = items.length > 1
+    ? (vols.length === 1 ? `${vols[0]} · 跨页（按顺序读）` : '跨页（按顺序读）')
+    : (items[0].vol ? `${items[0].vol} · ${items[0].cap}` : items[0].cap);
   document.getElementById('srcOverlay').classList.add('open');
 }
 function closeSource() { document.getElementById('srcOverlay').classList.remove('open'); }
