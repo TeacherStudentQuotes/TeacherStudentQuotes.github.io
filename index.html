@@ -1093,6 +1093,65 @@ rt {
   transition: opacity 0.2s;
 }
 .help-overlay.open { opacity: 1; pointer-events: auto; }
+
+/* 原稿 lightbox：同 help-overlay 的玻璃纸面体系 */
+.src-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  background: var(--backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.src-overlay.open { opacity: 1; pointer-events: auto; }
+.src-card {
+  position: relative;
+  margin: 0;
+  max-width: min(92vw, 720px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transform: scale(0.96);
+  transition: transform 0.2s;
+}
+.src-overlay.open .src-card { transform: scale(1); }
+.src-card img {
+  max-width: 100%;
+  max-height: 76vh;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff; /* 便签照片底白边，暗色下不浮黑 */
+  box-shadow: 0 12px 48px rgba(0,0,0,0.35);
+  user-select: none;
+}
+.src-card figcaption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.src-close {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+}
 .help-card {
   position: relative;
   background: var(--paper);
@@ -1327,6 +1386,8 @@ rt {
     </div>
     <button class="filter-btn" onclick="toggleTheme(event)" title="切换主题" id="themeBtnQuote">
 <i class="bi bi-moon-fill"></i></button>
+    <button class="filter-btn" onclick="openSource()" title="看原稿" id="srcBtn" style="display:none">
+<i class="bi bi-file-earmark-image"></i></button>
   </div>
   <button class="help-btn" id="helpBtn" onclick="openHelp()" aria-label="怎么翻页？" title="怎么翻页？">
     <i class="bi bi-question-circle"></i>
@@ -1353,6 +1414,17 @@ rt {
     </svg>
     <p>在纸页上<b>左右滑动</b><span class="kbd-hint">，或按键盘 <kbd>←</kbd> <kbd>→</kbd></span>即可翻页</p>
   </div>
+</div>
+
+<!-- 原稿扫描 lightbox -->
+<div class="src-overlay" id="srcOverlay" role="dialog" aria-modal="true" aria-label="原稿扫描页" onclick="if(event.target===this)closeSource()">
+  <figure class="src-card">
+    <button class="src-close" onclick="closeSource()" aria-label="关闭">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <img id="srcImg" alt="原稿扫描页" draggable="false">
+    <figcaption id="srcCaption"></figcaption>
+  </figure>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
@@ -2248,6 +2320,7 @@ document.addEventListener('keydown', (e) => {
     if (document.querySelector('.jump-expand.open')) window.__jumpEsc = true;
     collapseJumpAll();
     closeFilter();
+    closeSource();
     closeHelp();
   }
 });
@@ -2274,6 +2347,10 @@ function renderQuote(index, dir) {
     if (tagsEl) tagsEl.innerHTML = (q.tags || []).map(tagPillHtml).join('');
     const pageIndicatorNum = document.getElementById('pageIndicatorNum');
     if (pageIndicatorNum) pageIndicatorNum.textContent = index;
+    /* 原稿按钮随本条数据显隐（无 src 的名言不显示） */
+    window.__quoteIndex = index;
+    const srcBtn = document.getElementById('srcBtn');
+    if (srcBtn) srcBtn.style.display = q.src ? '' : 'none';
     return true;
   };
 
@@ -2476,6 +2553,22 @@ document.addEventListener('keydown', (e) => {
 /* 翻页指南浮层 */
 function openHelp() { document.getElementById('helpOverlay').classList.add('open'); }
 function closeHelp() { document.getElementById('helpOverlay').classList.remove('open'); }
+
+/* ===== 看原稿 =====
+   src 为 '册-页'（如 '2-7'），按区分注释批量绑定；图片在打开时才加载 */
+const SRC_VOL = { 1: '第一册', 2: '第二册', 3: '第三册' };
+function openSource() {
+  const idx = window.__quoteIndex; /* renderQuote 时同步 */
+  const q = quotes[idx - 1];
+  if (!q || !q.src) return;
+  const [vol, page] = q.src.split('-');
+  const dir = SRC_VOL[vol];
+  const img = document.getElementById('srcImg');
+  img.src = encodeURI(`source/${dir}/${dir} ${page}.jpg`);
+  document.getElementById('srcCaption').textContent = `${dir} · 第 ${page} 页`;
+  document.getElementById('srcOverlay').classList.add('open');
+}
+function closeSource() { document.getElementById('srcOverlay').classList.remove('open'); }
 
 /* 单页触摸滑动翻页：横向主导手势跟手拖动纸页（阻尼 0.35），
    阈值 50px 才放行翻页，不足则弹回；纵向滚动天然让位 */
