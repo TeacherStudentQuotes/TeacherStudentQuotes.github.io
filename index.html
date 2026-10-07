@@ -1129,6 +1129,7 @@ rt {
   gap: 14px;
   width: 100%;
   max-height: 78vh;
+  max-height: 78dvh;
   overflow-y: auto; /* 跨页多图时可滚 */
   scrollbar-width: thin;
 }
@@ -1146,6 +1147,7 @@ rt {
   position: relative;
   width: 100%;
   max-width: min(92vw, calc(100vh - 140px), 1200px);
+  max-width: min(92vw, calc(100dvh - 140px), 1200px); /* 移动浏览器地址栏收起时 100vh 虚高 */
   aspect-ratio: 4 / 3; /* 占位预估；图加载后 JS 按真实比例覆写 */
   overflow: hidden;
   border-radius: 12px;
@@ -1434,7 +1436,7 @@ rt {
     <button class="filter-btn" onclick="toggleTheme(event)" title="切换主题" id="themeBtnQuote">
 <i class="bi bi-moon-fill"></i></button>
     <button class="filter-btn" onclick="openSource()" title="看原稿" id="srcBtn" style="display:none">
-<i class="bi bi-vector-pen"></i></button>
+<i class="bi bi-sticky"></i></button>
   </div>
   <button class="help-btn" id="helpBtn" onclick="openHelp()" aria-label="怎么翻页？" title="怎么翻页？">
     <i class="bi bi-question-circle"></i>
