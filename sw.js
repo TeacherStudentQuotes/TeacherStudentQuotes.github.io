@@ -1,4 +1,4 @@
-const CACHE = 'tsq-v148';
+const CACHE = 'tsq-v149';
 const CORE = [
   '.',
   'index.html',
