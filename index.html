@@ -1130,8 +1130,8 @@ rt {
   align-items: center;
   gap: 14px;
   width: 100%;
-  max-height: 78vh;
-  max-height: 78dvh;
+  max-height: 88vh;
+  max-height: 88dvh;
   overflow-y: auto; /* 跨页多图时可滚 */
   scrollbar-width: thin;
 }
@@ -1148,8 +1148,8 @@ rt {
 .src-crop {
   position: relative;
   width: 100%;
-  max-width: min(92vw, calc(100vh - 140px), 1200px);
-  max-width: min(92vw, calc(100dvh - 140px), 1200px); /* 移动浏览器地址栏收起时 100vh 虚高 */
+  max-width: min(92vw, calc(88vh - 34px), 1200px);
+  max-width: min(92vw, calc(88dvh - 34px), 1200px); /* dvh：移动浏览器地址栏/标签栏收起时 100vh 虚高 */
   aspect-ratio: 4 / 3; /* 占位预估；图加载后 JS 按真实比例覆写 */
   overflow: hidden;
   border-radius: 12px;
