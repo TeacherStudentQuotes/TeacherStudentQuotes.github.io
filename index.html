@@ -1112,7 +1112,8 @@ rt {
 .src-card {
   position: relative;
   margin: 0;
-  max-width: min(92vw, 720px);
+  max-width: min(96vw, 1240px);
+  width: fit-content; /* 卡片随图宽收缩，关闭按钮始终贴图 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1144,13 +1145,12 @@ rt {
 .src-crop {
   position: relative;
   width: 100%;
-  max-width: min(100%, calc(70vh * 4 / 3));
+  max-width: min(92vw, calc(100vh - 140px), 1200px);
   aspect-ratio: 4 / 3; /* 占位预估；图加载后 JS 按真实比例覆写 */
   overflow: hidden;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: #fff; /* 便签照片底白边，暗色下不浮黑 */
-  box-shadow: 0 12px 48px rgba(0,0,0,0.35);
 }
 .src-body.multi .src-crop { aspect-ratio: 8 / 3; } /* 同上，占位预估 */
 .src-crop img {
@@ -1163,6 +1163,8 @@ rt {
   user-select: none;
 }
 .src-crop img.on { opacity: 1; }
+.src-body.multi .src-page:first-child .src-crop { border-radius: 12px 12px 0 0; }
+.src-body.multi .src-page:last-child .src-crop { border-radius: 0 0 12px 12px; }
 .src-body.multi .src-crop img { object-fit: cover; }
 .src-body.multi .src-page:first-child .src-crop img { object-position: bottom; }
 .src-body.multi .src-page:last-child .src-crop img { object-position: top; }
