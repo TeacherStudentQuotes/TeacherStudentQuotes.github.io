@@ -719,22 +719,19 @@ body {
   white-space: nowrap;
 }
 
-/* 待确认体系：虚线=尚未定字。缺字□给琥珀虚线框，条目挂「待确认」胶囊 */
+/* 待确认体系：缺字□仅琥珀着色（线框用户否决），条目挂「待确认」胶囊 */
 .tbc-char {
-  display: inline-block;
-  min-width: 1.05em;
-  text-align: center;
-  line-height: 1.3;
-  margin: 0 1px;
   color: var(--tbc);
-  border: 1px dashed var(--tbc);
-  border-radius: 3px;
 }
 .tag-pill.tbc-pill {
   background: transparent;
   border-style: dashed;
   border-color: var(--tbc);
   color: var(--tbc);
+}
+/* 筛选里的「待确认」芯片：与胶囊同视觉语言 */
+.filter-tag-option.tbc-option {
+  border-style: dashed;
 }
 
 ruby {
@@ -1864,6 +1861,7 @@ function renderToken(t) {
 }
 
 /* 待确认标记：正文或作者含未辨认的□即挂徽章 */
+const TBC_TAG = '待确认';
 const TBC_CHAR_HTML = '<span class="tbc-char" title="此字待确认">□</span>';
 const TBC_PILL_HTML = '<span class="tag-pill tbc-pill" title="含有未确认的字，对照原稿辨认中">待确认</span>';
 function hasTbc(q) {
@@ -1871,6 +1869,14 @@ function hasTbc(q) {
 }
 function escTbc(text) {
   return escapeHtml(text).split('□').join(TBC_CHAR_HTML);
+}
+/* 伪标签：待确认走标签同一套状态机制（excludedTags/网址参数/localStorage）。
+   语义为“包含覆盖”：勾选=含□条目恒可见（不被真实标签排除，可一键只看待确认），
+   取消勾选=含□条目全部隐藏。普通纯排除语义筛不出“仅待确认”，故例外 */
+function quoteTagPassed(q, excluded) {
+  if (hasTbc(q)) return !excluded.has(TBC_TAG);
+  const tags = q.tags || [];
+  return tags.every(t => !excluded.has(t));
 }
 
 let allItems = [];
@@ -1914,6 +1920,7 @@ function createList() {
     item.dataset.content = q.content;
     item.dataset.tags = (q.tags || []).join(',');
     item.dataset.index = i + 1;
+    item.dataset.tbc = hasTbc(q) ? '1' : '';
     item.dataset.hasMath = (q.content.includes('$') || q.content.includes('\\(')) ? '1' : '';
     item.onclick = () => showQuote(i + 1);
     const preview = q.content;
@@ -1968,8 +1975,7 @@ function createFilter() {
      两者必然一致，全部早退，零动画 */
   const initiallyEligible = new Set();
   quotes.forEach(q => {
-    const tags = q.tags || [];
-    if (tags.every(t => !excludedTags.has(t))) initiallyEligible.add(q.author);
+    if (quoteTagPassed(q, excludedTags)) initiallyEligible.add(q.author);
   });
   const options = document.createElement('div');
   options.className = 'filter-options';
@@ -1994,16 +2000,15 @@ function createFilter() {
     options.appendChild(makeSectionTitle('标签', 'tag'));
     const tagWrap = document.createElement('div');
     tagWrap.className = 'filter-tags';
-    sortedTags.forEach(tag => {
+    const addTagChip = (name, count, c, extraClass) => {
       const label = document.createElement('label');
-      label.className = 'filter-tag-option';
-      const c = tagColors(tag);
-      const checked = !excludedTags.has(tag);
+      label.className = 'filter-tag-option' + (extraClass ? ' ' + extraClass : '');
+      const checked = !excludedTags.has(name);
       label.style.background = c[0];
       label.style.borderColor = c[1];
-      label.innerHTML = `<input type="checkbox" class="filter-checkbox" data-tag="${escapeHtml(tag)}"${checked ? ' checked' : ''}>` +
-        `<span class="filter-tag-name" style="color:${c[2]}">${escapeHtml(tag)}</span>` +
-        `<span class="filter-tag-count" style="color:${c[1]}">${tagCounts[tag]}</span>`;
+      label.innerHTML = `<input type="checkbox" class="filter-checkbox" data-tag="${escapeHtml(name)}"${checked ? ' checked' : ''}>` +
+        `<span class="filter-tag-name" style="color:${c[2]}">${escapeHtml(name)}</span>` +
+        `<span class="filter-tag-count" style="color:${c[1]}">${count}</span>`;
       const cb = label.querySelector('input');
       const syncOff = () => label.classList.toggle('off', !cb.checked);
       syncOff();
@@ -2014,7 +2019,11 @@ function createFilter() {
         e.stopPropagation();
       });
       tagWrap.appendChild(label);
-    });
+    };
+    /* 「待确认」伪标签置顶：与胶囊同语言（虚线+琥珀），勾选=显示含□条目 */
+    addTagChip(TBC_TAG, quotes.reduce((n, q) => n + (hasTbc(q) ? 1 : 0), 0),
+      ['transparent', 'var(--tbc)', 'var(--tbc)'], 'tbc-option');
+    sortedTags.forEach(tag => addTagChip(tag, tagCounts[tag], tagColors(tag)));
     options.appendChild(tagWrap);
     options.appendChild(makeSectionTitle('作者', 'author'));
   }
@@ -2127,8 +2136,7 @@ function syncAuthorVisibilityPreview() {
   allTagCheckboxes().forEach(cb => { if (!cb.checked) excluded.add(cb.dataset.tag); });
   const eligible = new Set();
   quotes.forEach(q => {
-    const tags = q.tags || [];
-    if (tags.every(t => !excluded.has(t))) eligible.add(q.author);
+    if (quoteTagPassed(q, excluded)) eligible.add(q.author);
   });
   document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]').forEach(cb => {
     setAuthorOptionHidden(cb, !eligible.has(cb.dataset.author));
@@ -2139,8 +2147,7 @@ function syncAuthorVisibilityPreview() {
 function syncAuthorVisibility() {
   const eligible = new Set();
   quotes.forEach(q => {
-    const tags = q.tags || [];
-    if (tags.every(t => !excludedTags.has(t))) eligible.add(q.author);
+    if (quoteTagPassed(q, excludedTags)) eligible.add(q.author);
   });
   document.querySelectorAll('#filterDropdown .filter-checkbox[data-author]').forEach(cb => {
     setAuthorOptionHidden(cb, !eligible.has(cb.dataset.author));
@@ -2185,7 +2192,10 @@ function invertSelection(kind) {
 }
 
 function confirmFilter(stay) {
-  const prevAuthors = new Set(activeAuthors);
+  /* authorFilterApplied=false=从未确认过，概念状态是“全选”：
+     首确认时若作者被标签排除隐藏，须按全选冻结回填，
+     否则隐藏作者的勾选会被重建为未选，确认后悄悄掉出筛选集（待确认场景实测 49/52） */
+  const prevAuthors = new Set(authorFilterApplied ? activeAuthors : allAuthorsSet);
   activeAuthors.clear();
   allFilterCheckboxes().forEach(cb => {
     if (cb.checked) activeAuthors.add(cb.dataset.author);
@@ -2305,7 +2315,9 @@ function applySearch() {
     const content = item.dataset.content;
     const matchesFilter = !authorFilterApplied || activeAuthors.has(author);
     const itemTags = item.dataset.tags ? item.dataset.tags.split(',') : [];
-    const matchesTag = itemTags.every(t => !excludedTags.has(t));
+    const matchesTag = item.dataset.tbc === '1'
+      ? !excludedTags.has(TBC_TAG)
+      : itemTags.every(t => !excludedTags.has(t));
     const matchesSearch = !currentSearch ||
       author.toLowerCase().includes(currentSearch.toLowerCase()) ||
       content.toLowerCase().includes(currentSearch.toLowerCase());
@@ -2338,7 +2350,10 @@ function applySearch() {
       allItems.forEach(item => {
         const author = item.dataset.author;
         const itemTags = item.dataset.tags ? item.dataset.tags.split(',') : [];
-        if ((!authorFilterApplied || activeAuthors.has(author)) && itemTags.every(t => !excludedTags.has(t))) fc++;
+        const passTags = item.dataset.tbc === '1'
+          ? !excludedTags.has(TBC_TAG)
+          : itemTags.every(t => !excludedTags.has(t));
+        if ((!authorFilterApplied || activeAuthors.has(author)) && passTags) fc++;
       });
       html += `，${fc} 条符合条件`;
     }
