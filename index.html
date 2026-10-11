@@ -1182,6 +1182,8 @@ rt {
 .src-crop {
   position: relative;
   width: 100%;
+  min-width: min(60vw, 380px); /* 加载期撑出背景框：src-card 是 fit-content，
+                                图未到尺寸未知时链条全塌，min-width 让骨架框立即显形 */
   max-width: min(92vw, calc(88vh - 34px), 1200px);
   max-width: min(92vw, calc(88dvh - 34px), 1200px); /* dvh：移动浏览器地址栏/标签栏收起时 100vh 虚高 */
   aspect-ratio: 4 / 3; /* 占位预估；图加载后 JS 按真实比例覆写 */
