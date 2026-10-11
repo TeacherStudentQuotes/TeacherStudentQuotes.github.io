@@ -1745,7 +1745,9 @@ function tagColors(tag, mode) {
 
 // 主题切换后刷新已渲染的标签胶囊（root/mode 供克隆体按目标主题预染色）
 function refreshTagPills(root, mode) {
-  (root || document).querySelectorAll('.tag-pill').forEach(pill => {
+  /* 待确认胶囊/芯片走 var(--tbc)，不进调色板——否则 tagColors 把它当普通
+     标签名分配槽位（dark map 首切空表→槽0红；light map N%6→灰），红灰交替 */
+  (root || document).querySelectorAll('.tag-pill:not(.tbc-pill)').forEach(pill => {
     const tag = pill.textContent;
     const c = tagColors(tag, mode);
     pill.style.background = c[0];
@@ -1762,7 +1764,7 @@ function refreshTagPills(root, mode) {
     const name = opt.querySelector('.filter-option-name');
     if (name) name.style.color = c[2];
   });
-  (root || document).querySelectorAll('.filter-tag-option').forEach(opt => {
+  (root || document).querySelectorAll('.filter-tag-option:not(.tbc-option)').forEach(opt => {
     const cb = opt.querySelector('.filter-checkbox[data-tag]');
     const tag = cb ? cb.dataset.tag : (opt.querySelector('.filter-tag-name')?.textContent || '');
     if (!tag) return;
