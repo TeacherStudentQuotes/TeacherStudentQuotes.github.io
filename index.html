@@ -832,9 +832,9 @@ rt {
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
-  gap: 0.5em;
+  gap: 0.32em;
   height: 1.25em;
-  padding: 0 0.72em 0 0.2em;
+  padding: 0 0.3em 0 0.2em;
   margin: 0 0.12em;
   border-radius: 999px;
   border: 1px solid var(--border);
@@ -846,8 +846,8 @@ rt {
 }
 
 .color-pill .color-swatch {
-  width: 0.95em;
-  height: 0.95em;
+  width: 0.82em;
+  height: 0.82em;
   border-radius: 50%;
   border: 1px solid var(--border-3);
   flex: 0 0 auto;
@@ -857,6 +857,9 @@ rt {
   font-family: 'STZhongsong', "SimSun", "宋体", serif;
   color: var(--text-2);
   letter-spacing: 0.02em;
+  line-height: 1;
+  /* 衬线数字的字形在行盒里偏下，抬一点才和圆、胶囊同心 */
+  transform: translateY(-0.14em);
 }
 
 .quote-author {
