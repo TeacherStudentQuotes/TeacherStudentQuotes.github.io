@@ -1,4 +1,4 @@
-name: Rebuild font subset
+name: Rebuild font subset & sync meta
 
 on:
   push:
@@ -6,18 +6,22 @@ on:
     paths:
       - 'quotes.js'
       - 'index.html'
-      - 'tools/regen_font.py'
+      - 'fonts/STZHONGS.woff2'
+      - 'tools/**'
+      - '.github/workflows/rebuild-font.yml'
 
 permissions:
   contents: write
 
+concurrency:
+  group: doc-maintenance
+  cancel-in-progress: false
+
 jobs:
-  subset:
+  maintenance:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -26,30 +30,28 @@ jobs:
       - name: Install dependencies
         run: pip install fonttools brotli
 
-      - name: Rebuild subset
+      - name: Rebuild font subset
         run: python3 tools/regen_font.py
 
-      - name: Sync OG quote count
-        run: |
-          COUNT=$(grep -c 'new Quote(' quotes.js)
-          sed -i -E "s/共 [0-9]+ 条师生名言/共 ${COUNT} 条师生名言/" index.html
+      - name: Sync quote count into meta
+        run: python3 tools/sync_meta.py
 
-      - name: Amend into triggering commit
+      - name: Stamp service worker cache version
+        run: python3 tools/stamp_sw.py
+
+      - name: Verify generated files are consistent
         run: |
-          CHANGED=0
-          if ! git diff --quiet -- fonts/STZHONGS.subset.woff2; then
-            git add fonts/STZHONGS.subset.woff2
-            CHANGED=1
-          fi
-          if ! git diff --quiet -- index.html; then
-            git add index.html
-            CHANGED=1
-          fi
-          if [ "$CHANGED" = "0" ]; then
-            echo "字体与OG均无变化，跳过"
+          python3 tools/sync_meta.py --check
+          python3 tools/stamp_sw.py --check
+
+      - name: Commit and push if changed
+        run: |
+          git add fonts/STZHONGS.subset.woff2 index.html sw.js
+          if git diff --cached --quiet; then
+            echo "字体、数量、缓存版本均无变化，跳过"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit --amend --no-edit
-          git push --force-with-lease origin HEAD:main
+          git commit -m "chore: 重建字体子集并同步元信息 [skip ci]"
+          git push origin HEAD:main
