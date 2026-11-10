@@ -28,7 +28,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install fonttools brotli
+        run: pip install -r tools/requirements.txt
 
       - name: Rebuild font subset
         run: python3 tools/regen_font.py

@@ -30,6 +30,7 @@
 │   └── 第三册/                  # 10 张
 │
 ├── tools/
+│   ├── requirements.txt        # 字体子集化依赖（fonttools / brotli 版本锁定）
 │   ├── regen_font.py           # 字体子集化：收集 quotes.js / index.html 中所有非 ASCII
 │   │                           # 字符，用 pyftsubset 重生成 STZHONGS.subset.woff2
 │   ├── sync_meta.py            # 把 quotes.js 的名言总数写进 index.html 的三处描述文案
@@ -58,10 +59,10 @@ new Quote('高子', `名言内容`, ["标签"])
 
 **添加名言**：直接编辑 `quotes.js` → push。CI 会自动重建字体子集、同步 OG/分享文案里的名言总数、刷新 Service Worker 的缓存版本号，然后以一条独立的 bot 提交推回 main（提交信息带 `[skip ci]`，不会二次触发自己）。
 
-本地若想立即生效，可手动跑同一套脚本：
+本地若想立即生效，可手动跑同一套脚本（依赖用锁定的版本，避免本地与 CI 生成出不同的字体字节）：
 
 ```bash
-pip install fonttools brotli
+pip install -r tools/requirements.txt
 python3 tools/regen_font.py    # 重建字体子集
 python3 tools/sync_meta.py     # 同步名言数量
 python3 tools/stamp_sw.py      # 派生 SW 缓存版本
