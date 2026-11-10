@@ -820,6 +820,42 @@ rt {
   transition: opacity 0.3s ease;
 }
 
+/* 括号里的注释：相对正文变浅 */
+.quote-note {
+  color: var(--text-3);
+}
+
+/* 16 进制颜色胶囊：左边圆取色，右边放码值 */
+.color-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.12em 0.72em 0.12em 0.2em;
+  margin: 0 0.12em;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--pill-bg);
+  font-size: 0.8em;
+  line-height: 1.9;
+  vertical-align: 0.18em;
+  white-space: nowrap;
+}
+
+.color-pill .color-swatch {
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  border: 1px solid var(--border-3);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  flex: 0 0 auto;
+}
+
+.color-pill .color-hex {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+
 .quote-author {
   position: absolute;
   bottom: 80px;
@@ -1799,26 +1835,86 @@ function renderMath(el) {
 
 const pinyinRegex = /([\u4e00-\u9fa5])\(([a-zA-Zāáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜüńňǹ\s]+?)\)/g;
 
+/* 16 进制颜色：单独出现、或被括号整体包住时，渲染成「左圆右码」的胶囊 */
+const HEX_VALUE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+
+function hexColorAt(text, i) {
+  const m = /^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})/.exec(text.slice(i, i + 9));
+  if (!m) return 0;
+  const next = text[i + m[0].length];
+  if (next && /[0-9a-fA-F]/.test(next)) return 0; /* 只是更长色值的前缀，别截断 */
+  return m[0].length;
+}
+
+/* 括号内的文本按“注释”处理：渲染时用更浅的颜色（全角/半角都算，拼音注音的括号已被 ruby 先吃掉） */
+const PAREN_PAIRS = { '（': '）', '(': ')' };
+
 function tokenizeContent(content) {
-  const tokens = [];
-  let lastIndex = 0;
-  let match;
+  const rubyAt = new Map();
   pinyinRegex.lastIndex = 0;
+  let match;
   while ((match = pinyinRegex.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      for (const char of content.slice(lastIndex, match.index)) {
-        tokens.push({ type: 'char', value: char });
+    rubyAt.set(match.index, { end: pinyinRegex.lastIndex, char: match[1], pinyin: match[2] });
+  }
+
+  const tokens = [];
+  let i = 0;
+  let depth = 0;
+  while (i < content.length) {
+    const ruby = rubyAt.get(i);
+    if (ruby) {
+      tokens.push({ type: 'ruby', char: ruby.char, pinyin: ruby.pinyin, dim: depth > 0 });
+      i = ruby.end;
+      continue;
+    }
+    const ch = content[i];
+    if (PAREN_PAIRS[ch]) {
+      const close = content.indexOf(PAREN_PAIRS[ch], i + 1);
+      if (close > i && HEX_VALUE.test(content.slice(i + 1, close))) {
+        /* （#RRGGBB）连括号一起换成胶囊，正文里不留空括号 */
+        tokens.push({ type: 'pill', value: content.slice(i + 1, close) });
+        i = close + 1;
+        continue;
+      }
+      if (close > i) {
+        tokens.push({ type: 'char', value: ch, dim: true });
+        depth++;
+      } else {
+        tokens.push({ type: 'char', value: ch, dim: depth > 0 });
+      }
+      i++;
+      continue;
+    }
+    if (ch === '）' || ch === ')') {
+      const wasDim = depth > 0;
+      if (depth > 0) depth--;
+      tokens.push({ type: 'char', value: ch, dim: wasDim });
+      i++;
+      continue;
+    }
+    if (ch === '#') {
+      const len = hexColorAt(content, i);
+      if (len) {
+        tokens.push({ type: 'pill', value: content.slice(i, i + len) });
+        i += len;
+        continue;
       }
     }
-    tokens.push({ type: 'ruby', char: match[1], pinyin: match[2] });
-    lastIndex = pinyinRegex.lastIndex;
-  }
-  if (lastIndex < content.length) {
-    for (const char of content.slice(lastIndex)) {
-      tokens.push({ type: 'char', value: char });
-    }
+    tokens.push({ type: 'char', value: ch, dim: depth > 0 });
+    i++;
   }
   return tokens;
+}
+
+function colorPillHtml(hex) {
+  return `<span class="color-pill" title="${escapeHtml(hex)}">` +
+    `<span class="color-swatch" style="background:${escapeHtml(hex)}"></span>` +
+    `<span class="color-hex">${escapeHtml(hex)}</span>` +
+    `</span>`;
+}
+
+function tokenText(t) {
+  return t.type === 'ruby' ? t.char : t.value;
 }
 
 function renderContentWithPinyin(content, query = '') {
@@ -1827,31 +1923,67 @@ function renderContentWithPinyin(content, query = '') {
     return content;
   }
   const tokens = tokenizeContent(content);
-  let html = '';
-  let i = 0;
   const lowerQuery = query.toLowerCase();
-  while (i < tokens.length) {
-    if (query) {
-      const slice = tokens.slice(i, i + query.length).map(t => t.type === 'ruby' ? t.char : t.value).join('');
-      if (slice.toLowerCase() === lowerQuery) {
-        const matched = tokens.slice(i, i + query.length).map(t => renderToken(t)).join('');
-        html += `<span class="search-highlight">${matched}</span>`;
-        i += query.length;
-        continue;
+
+  /* 搜索高亮：按可见字符逐个滚窗口比对，胶囊/注音都按它们的可见文本计 */
+  const hits = new Array(tokens.length).fill(false);
+  if (lowerQuery) {
+    for (let i = 0; i < tokens.length; i++) {
+      let acc = '';
+      let j = i;
+      while (j < tokens.length && acc.length < lowerQuery.length) {
+        acc += tokenText(tokens[j]);
+        j++;
+      }
+      if (acc.toLowerCase() === lowerQuery) {
+        for (let k = i; k < j; k++) hits[k] = true;
       }
     }
-    html += renderToken(tokens[i]);
-    i++;
   }
-  return html;
-}
 
-function renderToken(t) {
-  if (t.type === 'char') {
-    if (t.value === '□') return '<span class="tbc-char" title="此字待确认">□</span>';
-    return escapeHtml(t.value);
+  let html = '';
+  let buf = '';
+  let bufDim = false;
+  let bufHit = false;
+  const flush = () => {
+    if (!buf) return;
+    let frag = buf;
+    if (bufHit) frag = `<span class="search-highlight">${frag}</span>`;
+    if (bufDim) frag = `<span class="quote-note">${frag}</span>`;
+    html += frag;
+    buf = '';
+  };
+  const pushFrag = (inner, dim, hit) => {
+    if (hit) inner = `<span class="search-highlight">${inner}</span>`;
+    if (dim) inner = `<span class="quote-note">${inner}</span>`;
+    html += inner;
+  };
+
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    const hit = hits[i];
+    if (t.type === 'pill') {
+      flush();
+      pushFrag(colorPillHtml(t.value), false, hit);
+      continue;
+    }
+    if (t.type === 'ruby') {
+      flush();
+      pushFrag(`<ruby>${escapeHtml(t.char)}<rt>${escapeHtml(t.pinyin)}</rt></ruby>`, t.dim, hit);
+      continue;
+    }
+    if (t.value === '□') {
+      flush();
+      pushFrag('<span class="tbc-char" title="此字待确认">□</span>', t.dim, hit);
+      continue;
+    }
+    if (buf && (t.dim !== bufDim || hit !== bufHit)) flush();
+    bufDim = t.dim;
+    bufHit = hit;
+    buf += escapeHtml(t.value);
   }
-  return `<ruby>${escapeHtml(t.char)}<rt>${escapeHtml(t.pinyin)}</rt></ruby>`;
+  flush();
+  return html;
 }
 
 /* 待确认标记：正文或作者含未辨认的□即挂徽章 */
