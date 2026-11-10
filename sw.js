@@ -1,4 +1,4 @@
-const CACHE = 'tsq-901f1d51bc';
+const CACHE = 'tsq-27de2fc46d';
 const CORE = [
   '.',
   'index.html',
@@ -12,9 +12,6 @@ const CORE = [
 
 self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
-  if (e.data && e.data.type === 'GET_VERSION' && e.source) {
-    e.source.postMessage({ type: 'VERSION', version: CACHE });
-  }
 });
 
 self.addEventListener('install', (e) => {
