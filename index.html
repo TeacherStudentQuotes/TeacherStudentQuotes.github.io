@@ -135,9 +135,9 @@ html, body, .filter-dropdown, .quote-view {
 
 /* 列表视图滚动条（低调样式） */
 .bi {
-  vertical-align: -0.125em;
+  vertical-align: 0.3em;
   /* BI字体视觉中心偏高，flex居中布局里下移修正 */
-  transform: translateY(0.07em);
+  transform: translateY(0.045em);
 }
 
 .list-empty {
@@ -833,7 +833,7 @@ rt {
   align-items: center;
   box-sizing: border-box;
   gap: 0.32em;
-  height: 1.25em;
+  height: 1.45em;
   padding: 0 0.3em 0 0.2em;
   margin: 0 0.12em;
   border-radius: 999px;
@@ -841,7 +841,7 @@ rt {
   background: var(--pill-bg);
   font-size: 0.8em;
   line-height: 1;
-  vertical-align: -0.115em; /* 让胶囊中心与汉字视觉中心齐平 */
+  vertical-align: 0; /* 胶囊中心与正文汉字中心齐平（像素实测，va=0 时残差 0.07px） */
   white-space: nowrap;
 }
 
@@ -859,7 +859,7 @@ rt {
   letter-spacing: 0.02em;
   line-height: 1;
   /* 衬线数字的字形在行盒里偏上，压一点才和圆、胶囊同心 */
-  transform: translateY(0.07em);
+  transform: translateY(0.085em);
 }
 
 .quote-author {
