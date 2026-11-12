@@ -841,18 +841,19 @@ rt {
   background: var(--pill-bg);
   font-size: 0.8em;
   line-height: 1;
-  vertical-align: -0.0528em; /* 胶囊中心对齐正文汉字字形中心（像素实测） */
+  vertical-align: -0.0978em; /* 胶囊中心对齐正文汉字字形中心（像素实测） */
   white-space: nowrap;
 }
 
 .color-pill .color-swatch {
-  width: 0.92em;
-  height: 0.92em;
+  width: 0.98em;
+  height: 0.98em;
   /* 取整到整像素：分数尺寸会让圆在光栅化时一轴少一个像素，看着像椭圆 */
-  width: round(nearest, 0.92em, 1px);
-  height: round(nearest, 0.92em, 1px);
+  width: round(nearest, 0.98em, 1px);
+  height: round(nearest, 0.98em, 1px);
   border-radius: 999px;
-  border: 1px solid var(--border-3);
+  /* 环画在盒子外沿：用 border 会内缩掉 2px，小尺寸下深色圆只剩 10px，更容易看成扁椭圆 */
+  box-shadow: 0 0 0 1px var(--border-3);
   flex: 0 0 auto;
 }
 
