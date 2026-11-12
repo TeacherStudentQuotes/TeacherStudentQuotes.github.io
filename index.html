@@ -690,10 +690,9 @@ body {
   overflow-wrap: anywhere;
 }
 
-/* 列表行的小号胶囊：圆点在光栅化后偏上约 0.4px，单独补一点 */
+/* 列表行的小号胶囊：圆点用 transform 做亚像素下移，抵消光栅化后约 0.7px 的偏上 */
 .list-item-content .color-pill .color-swatch {
-  position: relative;
-  top: 0.5px;
+  transform: translateY(0.7px);
 }
 
 .list-item-tags {
