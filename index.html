@@ -690,6 +690,12 @@ body {
   overflow-wrap: anywhere;
 }
 
+/* 列表行的小号胶囊：圆点在光栅化后偏上约 0.4px，单独补一点 */
+.list-item-content .color-pill .color-swatch {
+  position: relative;
+  top: 0.5px;
+}
+
 .list-item-tags {
   display: none;
   flex-wrap: wrap;
