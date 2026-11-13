@@ -872,6 +872,18 @@ rt {
   transform: translateY(0.085em);
 }
 
+/* 单页视图字号更大，按 em 补偿会在 23px 档过头（码值偏下 1.8px），
+   所以两档字号各给一个定值 */
+#qContent .color-pill .color-hex {
+  transform: translateY(0.75px);
+}
+
+@media (min-width: 700px) {
+  #qContent .color-pill .color-hex {
+    transform: translateY(0.3px);
+  }
+}
+
 .quote-author {
   position: absolute;
   bottom: 80px;
